@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Module FEM &#8212; pyLabFEA 0.0.1 documentation</title>
+    <title>Modules &#8212; pyLabFEA 0.0.1 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -31,16 +31,20 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="module-pyLabFEM">
-<span id="module-fem"></span><h1>Module FEM<a class="headerlink" href="#module-pyLabFEM" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="modules">
+<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-pyLabFEM">
+<span id="module-fem"></span><h2>Module FEM<a class="headerlink" href="#module-pyLabFEM" title="Permalink to this headline">¶</a></h2>
 <p>Introduces global functions for mechanical quantities and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that
 contains that attributes and methods needed in FEA. Materials are defined in
 module pyLabMaterial.</p>
-<p>uses NumPy, SciPy, MatPlotLib and pyLabMaterial</p>
-<p>Version: 1.0 (2020-03-06)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
-Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
-distributed under GNU General Public License (GPLv3)</p>
+<div class="line-block">
+<div class="line">uses NumPy, SciPy, MatPlotLib and pyLabMaterial</div>
+<div class="line">Version: 1.0 (2020-03-06)</div>
+<div class="line">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum</div>
+</div>
+<p>| Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
+| License: distributed under GNU General Public License (GPLv3)</p>
 <dl class="class">
 <dt id="pyLabFEM.Model">
 <em class="property">class </em><code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param">dim=1</em>, <em class="sig-param">planestress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model" title="Permalink to this definition">¶</a></dt>
@@ -1141,15 +1145,17 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 
 </div>
 <div class="section" id="module-pyLabMaterial">
-<span id="module-material"></span><h1>Module Material<a class="headerlink" href="#module-pyLabMaterial" title="Permalink to this headline">¶</a></h1>
+<span id="module-material"></span><h2>Module Material<a class="headerlink" href="#module-pyLabMaterial" title="Permalink to this headline">¶</a></h2>
 <p>Introduces class <code class="docutils literal notranslate"><span class="pre">Material</span></code> that contains that attributes and methods
 needed for elastic-plastic material definitions in FEA. The module Model is defined in
 module pyLabFEM.</p>
-<p>uses NumPy, MatPlotLib, sklearn and pyLabFEM</p>
-<p>Version: 1.0 (2020-03-06)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
-Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
-distributed under GNU General Public License (GPLv3)</p>
+<div class="line-block">
+<div class="line">uses NumPy, MatPlotLib, sklearn and pyLabFEM</div>
+</div>
+<p>| Version: 1.0 (2020-03-06)
+| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum
+| Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
+| License: distributed under GNU General Public License (GPLv3)</p>
 <dl class="class">
 <dt id="pyLabMaterial.Material">
 <em class="property">class </em><code class="sig-prename descclassname">pyLabMaterial.</code><code class="sig-name descname">Material</code><span class="sig-paren">(</span><em class="sig-param">name='Material'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material" title="Permalink to this definition">¶</a></dt>
@@ -1587,6 +1593,7 @@ behavior is supported</p>
 </dd></dl>
 
 </div>
+</div>
 
 
           </div>
@@ -1607,10 +1614,13 @@ behavior is supported</p>
 <h3>Navigation</h3>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">ReadMe</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Module FEM</a></li>
-<li class="toctree-l1"><a class="reference internal" href="#module-pyLabMaterial">Module Material</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyLabFEM">Module FEM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyLabMaterial">Module Material</a></li>
+</ul>
+</li>
 </ul>
 
 <div class="relations">
@@ -1647,7 +1657,7 @@ behavior is supported</p>
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

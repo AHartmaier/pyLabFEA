@@ -1,5 +1,8 @@
+Modules
+=======
+
 Module FEM
-==========
+----------
 
 .. automodule:: pyLabFEM
    :members:
@@ -7,7 +10,7 @@ Module FEM
    :show-inheritance:
 
 Module Material
-===============
+---------------
 
 .. automodule:: pyLabMaterial
    :members:
