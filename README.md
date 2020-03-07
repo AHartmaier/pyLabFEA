@@ -1,5 +1,6 @@
 # pyLabFEA
-Python Laboratory for Finite Element Analysis
+
+### Python Laboratory for Finite Element Analysis
 
 Author: Alexander Hartmaier, ICAMS, Ruhr University Bochum, Germany; 
 Email: alexander.hartmaier@rub.de
@@ -11,3 +12,5 @@ modeling of materials.
 
 The package contains several Jupyter notebooks with tutorials on FEA, homogenization of elastic and elastic-plastic
 material behavior, and constitutive models based on machine learning algorithms, contained in subfolder ``notebooks``.
+
+Distributed under GNU General Public License (GPLv3)
