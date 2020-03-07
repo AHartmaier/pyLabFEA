@@ -14,3 +14,8 @@ The package contains several Jupyter notebooks with tutorials on FEA, homogeniza
 material behavior, and constitutive models based on machine learning algorithms, contained in subfolder ``notebooks``.
 
 Distributed under GNU General Public License (GPLv3)
+
+### Documentation
+
+Documentation for pyLabFEA is generated using Sphinx. 
+The HTML documentation can be found at pyLabFEA/docs/build/index.html
