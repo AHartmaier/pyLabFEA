@@ -10,4 +10,4 @@ pyLabFEA is suited for teaching, due to its simplicity, and that offers a great 
 modeling of materials.
 
 The package contains several Jupyter notebooks with tutorials on FEA, homogenization of elastic and elastic-plastic
-material behavior, and constitutive models based on machine learning algorithms, contained in subfolder ``notebooks''.
+material behavior, and constitutive models based on machine learning algorithms, contained in subfolder ``notebooks``.
