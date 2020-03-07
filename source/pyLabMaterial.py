@@ -1,13 +1,16 @@
 # Module Material
 '''Introduces class ``Material`` that contains that attributes and methods 
-needed for elastic-plastic material definitions in FEA. The module Model is defined in 
+needed for elastic-plastic material definitions in FEA. The class ``Model`` is defined in 
 module pyLabFEM.
 
-| uses NumPy, MatPlotLib, sklearn and pyLabFEM
-| Version: 1.0 (2020-03-06)
-| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum
-| Email: alexander.hartmaier@rub.de
-| License: distributed under GNU General Public License (GPLv3) '''
+uses NumPy, MatPlotLib, sklearn and pyLabFEM
+
+ | Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum; 
+ | Email: alexander.hartmaier@rub.de; 
+ | Version: 1.0 (2020-03-06)
+
+distributed under GNU General Public License (GPLv3)
+'''
 import numpy as np
 import pyLabFEM as FE
 import matplotlib.pyplot as plt

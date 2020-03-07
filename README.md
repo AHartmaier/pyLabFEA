@@ -9,17 +9,17 @@
 Finite Element Analysis (FEA) is a numerical method for studying
 mechanical behavior of fluids and solids. The pyLabFEA package
 introduces a simple version of FEA for solid mechanics and
-elastic-plastic materials. pyLabFEA is fully written in Python. Due to
+elastic-plastic materials, which is fully written in Python. Due to
 its simplicity, it is well-suited for teaching, and its flexibility in
 constitutive modeling of materials makes it a useful research tool.
 
 ## Jupyter notebooks
 
-The pyLabFEA package is conveniently used with Jupyter notebooks. The
-available notebooks with tutorials on FEA, homogenization of elastic and
+pyLabFEA is conveniently used with Jupyter notebooks. 
+Available notebooks with tutorials on FEA, homogenization of elastic and
 elastic-plastic material behavior, and constitutive models based on
 machine learning algorithms are contained in subfolder `notebooks`. An
-overview on the contents of of the notebooks is available in the
+overview on the contents of the notebooks is available in the
 examples of this documentation.
 
 ## Documentation
@@ -31,13 +31,11 @@ documentation can be found at pyLabFEA/docs/build/index.html
 
 pyLabFEA requires the following packages as imports:
 
->   - [NumPy](http://numpy.scipy.org) for array handling
->   - [Scipy](https://www.scipy.org/) for numerical solutions
->   - [scikit-learn](https://scikit-learn.org/stable/) for machine
->     learning algorithms
->   - [MatPlotLib](https://matplotlib.org/) for graphical output
->   - [sphinx](http://www.sphinx-doc.org/en/master/) for generating
->     documentation.
+ - [NumPy](http://numpy.scipy.org) for array handling
+ - [Scipy](https://www.scipy.org/) for numerical solutions
+ - [scikit-learn](https://scikit-learn.org/stable/) for machine learning algorithms
+ - [MatPlotLib](https://matplotlib.org/) for graphical output
+ - [sphinx](http://www.sphinx-doc.org/en/master/) for generating documentation.
 
 ## License
 

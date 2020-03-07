@@ -10,7 +10,7 @@ Python Laboratory for Finite Element Analysis (pyLabFEA)
 
 Finite Element Analysis (FEA) is a numerical method for studying
 mechanical behavior of fluids and solids. The pyLabFEA package introduces a simple version
-of FEA for solid mechanics and elastic-plastic materials. pyLabFEA is
+of FEA for solid mechanics and elastic-plastic materials, which is
 fully written in Python. Due to its simplicity, it is well-suited for teaching, and
 its flexibility in constitutive modeling of materials makes it a useful 
 research tool.
@@ -19,10 +19,10 @@ Jupyter notebooks
 -----------------
 
 The pyLabFEA package is conveniently used with Jupyter notebooks. 
-The available notebooks with tutorials on FEA,
+Available notebooks with tutorials on FEA,
 homogenization of elastic and elastic-plastic material behavior, and
 constitutive models based on machine learning algorithms are contained in
-subfolder ``notebooks``. An overview on the contents of of the notebooks 
+subfolder ``notebooks``. An overview on the contents of the notebooks 
 is available in the examples of this documentation.
 
 Documentation

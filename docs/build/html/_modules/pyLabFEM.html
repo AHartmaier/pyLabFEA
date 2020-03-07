@@ -33,14 +33,17 @@
   <h1>Source code for pyLabFEM</h1><div class="highlight"><pre>
 <span></span><span class="c1">#Module FEM</span>
 <span class="sd">&#39;&#39;&#39;Introduces global functions for mechanical quantities and class ``Model`` that </span>
-<span class="sd">contains that attributes and methods needed in FEA. Materials are defined in </span>
+<span class="sd">contains the attributes and methods needed in FEA. Materials are defined in </span>
 <span class="sd">module pyLabMaterial.</span>
 
-<span class="sd">| uses NumPy, SciPy, MatPlotLib and pyLabMaterial</span>
+<span class="sd">uses NumPy, SciPy, MatPlotLib and pyLabMaterial</span>
+
+<span class="sd">| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum;</span>
+<span class="sd">| Email: alexander.hartmaier@rub.de;</span>
 <span class="sd">| Version: 1.0 (2020-03-06)</span>
-<span class="sd">| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum</span>
-<span class="sd">| Email: alexander.hartmaier@rub.de</span>
-<span class="sd">| License: distributed under GNU General Public License (GPLv3) &#39;&#39;&#39;</span>
+
+<span class="sd">distributed under GNU General Public License (GPLv3)</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fsolve</span>
 <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
@@ -987,9 +990,9 @@
         <span class="k">return</span> <span class="n">K</span></div>
      
 <div class="viewcode-block" id="Model.solve"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Solve linear system of equations f = K^-1 . u for mechanical equiliibrium;</span>
+        <span class="sd">&#39;&#39;&#39;Solve linear system of equations f = K^-1 . u for mechanical equilibrium;</span>
 <span class="sd">        total force on internal nodes is zero;</span>
-<span class="sd">        stores solution in u, f, element attributes</span>
+<span class="sd">        stores solution in u, f, and element attributes</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>

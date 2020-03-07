@@ -1,13 +1,16 @@
 #Module FEM
 '''Introduces global functions for mechanical quantities and class ``Model`` that 
-contains that attributes and methods needed in FEA. Materials are defined in 
+contains the attributes and methods needed in FEA. Materials are defined in 
 module pyLabMaterial.
 
-| uses NumPy, SciPy, MatPlotLib and pyLabMaterial
+uses NumPy, SciPy, MatPlotLib and pyLabMaterial
+
+| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum;
+| Email: alexander.hartmaier@rub.de;
 | Version: 1.0 (2020-03-06)
-| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum
-| Email: alexander.hartmaier@rub.de
-| License: distributed under GNU General Public License (GPLv3) '''
+
+distributed under GNU General Public License (GPLv3)
+'''
 import numpy as np
 from scipy.optimize import fsolve
 import matplotlib as mpl
@@ -954,9 +957,9 @@ class Model(object):
         return K
      
     def solve(self, min_step=None, verb=False):
-        '''Solve linear system of equations f = K^-1 . u for mechanical equiliibrium;
+        '''Solve linear system of equations f = K^-1 . u for mechanical equilibrium;
         total force on internal nodes is zero;
-        stores solution in u, f, element attributes
+        stores solution in u, f, and element attributes
         
         Parameters
         ----------

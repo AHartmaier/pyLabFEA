@@ -33,14 +33,17 @@
   <h1>Source code for pyLabMaterial</h1><div class="highlight"><pre>
 <span></span><span class="c1"># Module Material</span>
 <span class="sd">&#39;&#39;&#39;Introduces class ``Material`` that contains that attributes and methods </span>
-<span class="sd">needed for elastic-plastic material definitions in FEA. The module Model is defined in </span>
+<span class="sd">needed for elastic-plastic material definitions in FEA. The class ``Model`` is defined in </span>
 <span class="sd">module pyLabFEM.</span>
 
-<span class="sd">| uses NumPy, MatPlotLib, sklearn and pyLabFEM</span>
-<span class="sd">| Version: 1.0 (2020-03-06)</span>
-<span class="sd">| Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum</span>
-<span class="sd">| Email: alexander.hartmaier@rub.de</span>
-<span class="sd">| License: distributed under GNU General Public License (GPLv3) &#39;&#39;&#39;</span>
+<span class="sd">uses NumPy, MatPlotLib, sklearn and pyLabFEM</span>
+
+<span class="sd"> | Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum; </span>
+<span class="sd"> | Email: alexander.hartmaier@rub.de; </span>
+<span class="sd"> | Version: 1.0 (2020-03-06)</span>
+
+<span class="sd">distributed under GNU General Public License (GPLv3)</span>
+<span class="sd">&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyLabFEM</span> <span class="k">as</span> <span class="nn">FE</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
