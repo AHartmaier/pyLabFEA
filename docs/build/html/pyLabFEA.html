@@ -36,15 +36,13 @@
 <div class="section" id="module-pyLabFEM">
 <span id="module-fem"></span><h2>Module FEM<a class="headerlink" href="#module-pyLabFEM" title="Permalink to this headline">¶</a></h2>
 <p>Introduces global functions for mechanical quantities and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that
-contains the attributes and methods needed in FEA. Materials are defined in
+contains that attributes and methods needed in FEA. Materials are defined in
 module pyLabMaterial.</p>
 <p>uses NumPy, SciPy, MatPlotLib and pyLabMaterial</p>
-<div class="line-block">
-<div class="line">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum;</div>
-<div class="line">Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>;</div>
-<div class="line">Version: 1.0 (2020-03-06)</div>
-</div>
-<p>distributed under GNU General Public License (GPLv3)</p>
+<p>Version: 1.0 (2020-03-06)
+Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
+Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
+distributed under GNU General Public License (GPLv3)</p>
 <dl class="class">
 <dt id="pyLabFEM.Model">
 <em class="property">class </em><code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param">dim=1</em>, <em class="sig-param">planestress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model" title="Permalink to this definition">¶</a></dt>
@@ -372,7 +370,10 @@ and post-processing (visualization of results on meshed geometry, homogenization
 <dl class="attribute">
 <dt id="pyLabFEM.Model.glob">
 <code class="sig-name descname">glob</code><a class="headerlink" href="#pyLabFEM.Model.glob" title="Permalink to this definition">¶</a></dt>
-<dd><p>Global values homogenized from BC or element solutions (defined in <code class="docutils literal notranslate"><span class="pre">calc_global</span></code>)</p>
+<dd><p>Global values homogenized from BC or element solutions, contains the elements:
+‘ebc1’, ‘ebc2’, ‘sbc1’, ‘sbc2’ : global strain and stress from BC (type: float)
+‘eps’, ‘epl’, ‘sig’,  : global strain, plastic strain, and stress tensors homogenized
+from element solutions (type: Voigt tensor)     (defined in <code class="docutils literal notranslate"><span class="pre">calc_global</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>python dictionary</p>
@@ -843,9 +844,9 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <dl class="method">
 <dt id="pyLabFEM.Model.solve">
 <code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">min_step=None</em>, <em class="sig-param">verb=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.solve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Solve linear system of equations f = K^-1 . u for mechanical equilibrium;
+<dd><p>Solve linear system of equations f = K^-1 . u for mechanical equiliibrium;
 total force on internal nodes is zero;
-stores solution in u, f, and element attributes</p>
+stores solution in u, f, element attributes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
