@@ -2,20 +2,52 @@
 
 ### Python Laboratory for Finite Element Analysis
 
-Author: Alexander Hartmaier, ICAMS, Ruhr University Bochum, Germany; 
-Email: alexander.hartmaier@rub.de
+  - Author  
+    Alexander Hartmaier
 
-Finite Element Analysis (FEA) is a numerical method for studying problems in mechanics. 
-The pyLabFEA package introduces a simple version of FEA for solid mechanics and elastic-plastic materials.
-pyLabFEA is suited for teaching, due to its simplicity, and that offers a great flexibility in constitutive
-modeling of materials.
+  - Organization  
+    ICAMS, Ruhr University Bochum, Germany
 
-The package contains several Jupyter notebooks with tutorials on FEA, homogenization of elastic and elastic-plastic
-material behavior, and constitutive models based on machine learning algorithms, contained in subfolder ``notebooks``.
+  - Contact  
+    <alexander.hartmaier@rub.de>
 
-Distributed under GNU General Public License (GPLv3)
+Finite Element Analysis (FEA) is a numerical method for studying
+mechanical behavior of fluids and solids. The pyLabFEA package
+introduces a simple version of FEA for solid mechanics and
+elastic-plastic materials. pyLabFEA is fully written in Python. Due to
+its simplicity, it is well-suited for teaching, and its flexibility in
+constitutive modeling of materials makes it a useful research tool.
 
-### Documentation
+## Jupyter notebooks
 
-Documentation for pyLabFEA is generated using Sphinx. 
-The HTML documentation can be found at pyLabFEA/docs/build/html/index.html
+The pyLabFEA package is conveniently used with Jupyter notebooks. The
+available notebooks with tutorials on FEA, homogenization of elastic and
+elastic-plastic material behavior, and constitutive models based on
+machine learning algorithms are contained in subfolder `notebooks`. An
+overview on the contents of of the notebooks is available in the
+examples of this documentation.
+
+## Documentation
+
+Documentation for pyLabFEA is generated using Sphinx. The HTML
+documentation can be found at pyLabFEA/docs/build/index.html
+
+## Dependencies
+
+pyLabFEA requires the following packages as imports:
+
+>   - [NumPy](http://numpy.scipy.org) for array handling
+>   - [Scipy](https://www.scipy.org/) for numerical solutions
+>   - [scikit-learn](https://scikit-learn.org/stable/) for machine
+>     learning algorithms
+>   - [MatPlotLib](https://matplotlib.org/) for graphical output
+>   - [sphinx](http://www.sphinx-doc.org/en/master/) for generating
+>     documentation.
+
+## License
+
+The pyLabFEA package comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under the conditions of
+the GNU General Public License
+([GPLv3](http://www.fsf.org/licensing/licenses/gpl.html))
+
