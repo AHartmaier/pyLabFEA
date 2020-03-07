@@ -2,14 +2,9 @@
 
 ### Python Laboratory for Finite Element Analysis
 
-  - Author  
-    Alexander Hartmaier
-
-  - Organization  
-    ICAMS, Ruhr University Bochum, Germany
-
-  - Contact  
-    <alexander.hartmaier@rub.de>
+  - Author: Alexander Hartmaier
+  - Organization: ICAMS, Ruhr University Bochum, Germany
+  - Contact: <alexander.hartmaier@rub.de>
 
 Finite Element Analysis (FEA) is a numerical method for studying
 mechanical behavior of fluids and solids. The pyLabFEA package
