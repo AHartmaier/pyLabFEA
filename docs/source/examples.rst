@@ -9,6 +9,15 @@ In this tutorial, the basic steps of using pyLabFEA for elastic materials are de
 .. raw:: html
    :file: _static/pyLabFEA_Introduction.html
    
+Tutorial Composites
+-------------------
+
+In this tutorial, the properties of composites made from different elastic materials are
+analyzed, and the numerical solution is compared with the expected values from mechanical models.
+
+.. raw:: html
+   :file: _static/pyLabFEA_Tutorial_Composite.html
+   
 ML Flow Rule
 ------------
 
