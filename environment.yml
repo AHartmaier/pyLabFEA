@@ -1,0 +1,8 @@
+name: pyLabFEA-environment
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - matplotlib
+  - scipy
+  - sklearn

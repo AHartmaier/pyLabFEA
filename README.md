@@ -22,6 +22,9 @@ machine learning algorithms are contained in subfolder `notebooks`. An
 overview on the contents of the notebooks is available in the
 examples of this documentation.
 
+Jupyter notebooks are also available on 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
+
 ## Documentation
 
 Documentation for pyLabFEA is generated using Sphinx. Open 
@@ -45,4 +48,5 @@ the GNU General Public License
 ([GPLv3](http://www.fsf.org/licensing/licenses/gpl.html))
 
 The contents of the examples and notebooks are published under the 
-([Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/))
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+([CC BY-NC-SA 4.0](http://creativecommons.org/licenses/by-nc-sa/4.0/))
