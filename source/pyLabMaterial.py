@@ -1,16 +1,14 @@
 # Module Material
 '''Introduces class ``Material`` that contains that attributes and methods 
-needed for elastic-plastic material definitions in FEA. The class ``Model`` is defined in 
+needed for elastic-plastic material definitions in FEA. The module Model is defined in 
 module pyLabFEM.
 
 uses NumPy, MatPlotLib, sklearn and pyLabFEM
 
- | Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum; 
- | Email: alexander.hartmaier@rub.de; 
- | Version: 1.0 (2020-03-06)
-
-distributed under GNU General Public License (GPLv3)
-'''
+Version: 1.0 (2020-03-06)
+Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
+Email: alexander.hartmaier@rub.de
+distributed under GNU General Public License (GPLv3)'''
 import numpy as np
 import pyLabFEM as FE
 import matplotlib.pyplot as plt
@@ -209,6 +207,9 @@ class Material(object):
         self.svm_yf = svm.SVC(kernel='rbf',C=C,gamma=gamma)
         self.svm_yf.fit(X_train, y_train)
         self.ML_yf = True
+        if (FE.ptol>=1.):
+            FE.ptol=0.9
+            print('Warning: ptol must be <1 for ML yield function, set to 0.9')
         'calculate scores'
         train_sc = 100*self.svm_yf.score(X_train, y_train)
         if x_test is None:
@@ -274,18 +275,21 @@ class Material(object):
                 return grad
             'define Jacobian of coordinate transformation'
             def Jac(sig):
+                global flag
+                J = np.ones((3,3))
                 hyd = np.sum(sig)/3.  # hydrostatic stress
                 dev = sig - hyd  # deviatoric princ. stress
-                vn = np.linalg.norm(dev)  #norms of stress vectors
-                dseqds = 3.*dev/(vn*np.sqrt(1.5))
-                J = np.ones((3,3))
-                J[:,2] /= 3.
-                J[:,0] = dseqds
-                dsa = np.dot(sig,FE.a_vec)
-                dsb = np.dot(sig,FE.b_vec)
-                sc = dsa + 1j*dsb
-                z = -1j*((FE.a_vec+1j*FE.b_vec)/sc - dseqds/(vn*np.sqrt(1.5)))
-                J[:,1] = np.real(z)
+                vn = np.linalg.norm(dev)*np.sqrt(1.5)  #norm of stress vector
+                if vn>0.1:
+                    'only calculate Jacobian if sig>0'
+                    dseqds = 3.*dev/vn
+                    J[:,2] /= 3.
+                    J[:,0] = dseqds
+                    dsa = np.dot(sig,FE.a_vec)
+                    dsb = np.dot(sig,FE.b_vec)
+                    sc = dsa + 1j*dsb
+                    z = -1j*((FE.a_vec+1j*FE.b_vec)/sc - dseqds/vn)
+                    J[:,1] = np.real(z)
                 return J
             N = len(sig)
             x = np.zeros((N,2))
@@ -433,7 +437,7 @@ class Material(object):
         else:
             sys.exit('Error: Inconsistent definition of material parameters')   
 
-    def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=None):
+    def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0.):
         '''Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
         
@@ -477,9 +481,13 @@ class Material(object):
             Plastic strain increment
         '''
         peeq = FE.eps_eq(epl)     # equiv. plastic strain
-        yfun = self.calc_yf(sig,peeq=peeq)
-        if (yfun<1.e-5):
-            pdot = 0.
+        yfun = self.calc_yf(sig+Cel@deps, peeq=peeq, pred=True)
+        if self.ML_yf:
+            seq = FE.Stress(sig).sJ2()
+            if seq<0.1:
+                yfun=0. # catch error that can be produced for ML yield function
+        if (yfun<=FE.ptol):
+            pdot = np.zeros(6)
         else:
             a = np.zeros(6)
             a[0:3] = self.calc_fgrad(FE.Stress(sig).p)
@@ -598,17 +606,17 @@ class Material(object):
         line = contour.collections
         return line
 
-    def plot_yield_locus(self, fun=None, label='undefined', data=None, trange=1.e-2, 
-                         xstart=-2., xend=2., axis1=[0], axis2=[1], ref=True, ref_mat=None,
-                         field=True, Nmesh=100, file=None, fontsize = 20):
+    def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2, 
+                         xstart=-2., xend=2., axis1=[0], axis2=[1], iso=False, ref_mat=None,
+                         field=False, Nmesh=100, file=None, fontsize = 20):
         '''Plot different cuts through yield locus in 3D principle stress space.
         
         Parameters
         ----------
         fun   : function handle
-            Reference function to be plotted (optional)
+            Yield function to be plotted (optional, default: own yield function)
         label : str
-            Label for reference function (optional, default:'undefined')
+            Label for yield function (optional, default: own name)
         data  : (N,3) array
             Stress data to be used for scatter plot (optional)
         trange : float
@@ -621,18 +629,23 @@ class Material(object):
             Cartesian stress coordinates to be plotted on x-axis of slices (optional, default: [0])
         axis2 : list
             Cartesian stress coordinates to be plotted on y-axis of slices (optional, default: [1])
-        ref   : Boolean
-            Decide if reference ellipsis for isotropic material is plotted (optional, default: True)
+        iso   : Boolean
+            Decide if reference ellipsis for isotropic material is plotted (optional, default: False)
         ref_mat=None
             Reference material to plot yield locus (optional)
         field : Boolean
-            Decide if field of yield function is plotted (optional, default: True)
+            Decide if field of yield function is plotted (optional, default: False)
         Nmesh : int
             Number of mesh points per axis on which yield function is evaluated (optional, default:100)
         file  : str
             File name for output of olot (optional)
         fontsize : int
             Fontsize for axis annotations (optional, default: 20)
+            
+        Returns
+        -------
+        ax : pyplot axis handle
+            Axis of the plot
         '''
         xx, yy = np.meshgrid(np.linspace(xstart, xend, Nmesh),
                          np.linspace(xstart, xend, Nmesh))
@@ -649,6 +662,7 @@ class Material(object):
         fig, axs  = plt.subplots(nrows=1, ncols=Nc, figsize=fs)
         fig.subplots_adjust(hspace=0.3)
         
+        'loop over subplots in axis1 and axis2'
         for j in range(Nc):
             if Nc==1:
                 ax=axs
@@ -719,28 +733,33 @@ class Material(object):
                 s3 = np.zeros(Nm2)
                 si3 = 2
             sig = np.c_[s1, s2, s3]  # set stresses for yield locus calculation
-            if ref_mat is None:
-                Z = self.calc_yf(sig*self.sy, ana=True, pred=True)/self.sy
-                labels.extend([self.name])
+
+            'evaluate yield function to be plotted'
+            if fun is None:
+                Z = self.calc_yf(sig*self.sy, pred=True)/self.sy
             else:
+                Z = fun(sig*self.sy, pred=True)/self.sy
+            if label is None:
+                label = self.name
+            hl = self.plot_data(Z, ax, xx, yy, field=field)
+            lines.extend(hl)
+            labels.extend([label])
+            'plot reference function if provided'
+            if ref_mat is not None:
                 Z = ref_mat.calc_yf(sig*ref_mat.sy, pred=True)/ref_mat.sy
                 labels.extend([ref_mat.name])
-            hl = self.plot_data(Z, ax, xx, yy, field=False)
-            lines.extend(hl)
-            
-            if (fun is not None):
-                Z = fun(sig*self.sy, pred=True)
-                hl = self.plot_data(Z, ax, xx, yy, field=field, c='black')
+                hl = self.plot_data(Z, ax, xx, yy, field=False, c='black')
                 lines.extend(hl)
-                labels.extend(label)
-            if ref:
+            'plot ellipsis as reference if requested'
+            if iso:
                 x0, y0 = self.ellipsis()  # reference for isotropic material
                 hl = ax.plot(x0,y0,'-b')
                 lines.extend(hl)
                 labels.extend(['isotropic J2'])
+            'plot data is provided'
             if (data is not None):
                 # select data from 3D stress space within range [xstart, xend] and to fit to slice
-                dat = data/self.sy
+                dat = np.array(data)/self.sy
                 dsel = np.nonzero(np.logical_and(np.abs(dat[:,si3])<trange, 
                     np.logical_and(dat[:,axis1[j]]>xstart, dat[:,axis1[j]]<xend)))
                 ir = dsel[0]
@@ -753,9 +772,10 @@ class Material(object):
             ax.set_ylabel(ylab,fontsize=fontsize)
             ax.tick_params(axis="x", labelsize=fontsize-6)
             ax.tick_params(axis="y", labelsize=fontsize-6)
+        'svae plot to file if filename is provided'
         if file is not None:
             fig.savefig(file+'.pdf', format='pdf', dpi=300)
-        plt.show()
+        return ax
 
     
     def calc_properties(self, size=2, Nel=2, verb=False, eps=0.005, min_step=None, sigeps=False):
@@ -806,7 +826,7 @@ class Material(object):
             self.propJ2[sel]['peeq'] = peeq
             if sigeps:
                 self.sigeps[sel]['sig'] = fe.sgl
-                self.sigeps[sel]['eps'] = 1. #fe.egl
+                self.sigeps[sel]['eps'] = fe.egl
                 self.sigeps[sel]['epl'] = fe.epgl
             return
         def calc_stx():

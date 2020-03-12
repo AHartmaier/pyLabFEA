@@ -22,7 +22,8 @@ a_vec = np.array([1., -0.5, -0.5])/np.sqrt(1.5)
 '''First unit vector spanning deviatoric stress plane (real axis)'''
 b_vec = np.array([0.,  0.5, -0.5])*np.sqrt(2)  
 '''Second unit vector spanning deviatoric stress plane (imaginary axis)'''
-
+ptol = 0.5
+'''Tolerance: Plastic yielding if yield function > ptol'''
 def seq_J2(sprinc):
     '''Calculate J2 equivalent stress from principal stresses
     
@@ -486,14 +487,18 @@ class Model(object):
             y-locations of Gauss points in element
         Bmat  : list
             List of B-matrices at Gauss points
-        Vel   : float
-            Eolume of element
-        Kel   : 2-d array
-            Element stiffness matrix
-        Jac   : float
-            Determinant of Jacobian of iso-parametric formulation
         wght  : 1-d array
             List of weight of each Gauss point in integration
+        Vel   : float
+            Volume of element
+        Jac   : float
+            Determinant of Jacobian of iso-parametric formulation
+        CV    : 2d array
+            Voigt stiffness matrix of element material
+        elstiff : 2-d array
+            Tangent stiffness tensor of element
+        Kel   : 2-d array
+            Element stiffness matrix
         Sect  : int
             Section of model in which element is located
         Mat   : object of class ``Material``
@@ -504,8 +509,6 @@ class Model(object):
             average element stress (defined in ``Model.solve``)
         epl   : Voigt tensor
             average plastic element strain (defined in ``Model.solve``)
-        CV    : 2d array
-            Voigt stiffness matrix of element material
         '''
         'Methods'
         #calc_Bmat: Calculate B matrix at Gauss point
@@ -655,11 +658,10 @@ class Model(object):
             depl : Voigt tensor
                 Plastic strain increment
             '''
-            depl = 0.
-            if (self.Mat.sy!=None):
-                deps = self.deps()
-                sig  = self.sig + self.CV @ deps
-                depl = self.Mat.epl_dot(sig, self.epl, self.CV, deps)
+            if (self.Mat.sy==None):
+                depl = np.zeros(6)
+            else:
+                depl = self.Mat.epl_dot(self.sig, self.epl, self.CV, self.deps())
             return depl
         
         def calc_Bmat(self, x=0., y=0.):
@@ -970,16 +972,16 @@ class Model(object):
             Be verbose in text output (optional, default: False)
         '''
         'calculate reduced stiffness matrix according to BC'
-        def calc_Kred(ind):
+        def Kred(ind):
             Kred = np.zeros((len(ind), len(ind)))
             for i in range(len(ind)):
                 for j in range(len(ind)):
                     Kred[i,j] = K[ind[i], ind[j]]
             return Kred
         
-        'test if stress has converged to yield surface'
-        def test_convergence():
-            conv = True
+        'evaluate yield function in each element an change element stiffness matrix'
+        'to tangent stiffness if in plastic regime'
+        def calc_el_yldfct():
             f = []
             # test if yield criterion is exceeded
             for el in self.element:
@@ -987,12 +989,17 @@ class Model(object):
                     peeq = eps_eq(el.epl+el.depl()) # calculate equiv. plastic strain
                     sig = el.sig+el.dsig()
                     hh = el.Mat.calc_yf(sig, peeq=peeq)
+                    if el.Mat.ML_yf and hh>ptol:
+                        seq = Stress(el.sig).sJ2()
+                        if seq<0.1:
+                            hh = 0. # catch error that can be produced for ML yield function
                     f.append(hh)
-                    if hh > 1.e-3:
-                        el.elstiff = el.Mat.C_tan(sig, el.CV)
-                        el.calc_Kel()
-                        conv = False
-            return conv, f
+                    if hh > ptol:
+                        el.elstiff = el.Mat.C_tan(el.sig, el.CV)  # for plasticity calculate tangent stiffness
+                        el.calc_Kel()                             # and update element stiffness matrix
+                else:
+                    f.append(0.)
+            return np.array(f)
         
         'calculate scaling factor for load steps'
         def calc_scf(sglob):
@@ -1000,13 +1007,14 @@ class Model(object):
             for el in self.element:
                 # test if yield criterion is exceeded
                 if (el.Mat.sy!=None):  # not necessary for elastic material
-                    yf0 = el.Mat.calc_yf(el.sig, peeq=0.)  # yield fct. at stat of load step
+                    peeq = 0.#eps_eq(el.epl) # calculate equiv. plastic strain
+                    yf0 = el.Mat.calc_yf(el.sig, peeq=peeq)  # yield fct. at start of load step
                     'if element starts in elestic regime load step can only touch yield surface'
                     if  yf0 < -0.15:
                         sref = el.Mat.calc_seq(sglob)   # global equiv. stress at max load step
                         if el.Mat.ML_yf:
                             # for ML categorical yield function get better approximation for predictor step
-                            seq = Stress(el.sig).seq(el.Mat)
+                            seq = Stress(el.sig).sJ2()
                             hs = np.zeros(3)
                             if np.abs(max_dbcr)>1.e-6:
                                 hs[0] = el.Mat.sy*np.sign(max_dbcr) # construct stress vector for search of yield point
@@ -1018,18 +1026,16 @@ class Model(object):
                             x1, infodict, ier, msg = fsolve(el.Mat.find_yloc, x0, args=hs, xtol=1.e-5, 
                                                                 full_output=True)
                             y1 = infodict['fvec']
-                            if np.abs(y1)<1.e-5 and x1<3.:
+                            if np.abs(y1)<1.e-3 and x1<3.:
                                 # zero of ML yield fct. detected at x1*sy
                                 yf0 = seq - x1[0]*el.Mat.calc_seq(hs)
                             else:
                                 # zero of ML yield fct. not found: get conservative estimate
                                 yf0 = seq - 0.85*el.Mat.sy
-                                if (verb):
+                                if verb:
                                     print('Warning in calc_scf')
                                     print('*** detection not successful. yf0=', yf0,', seq=', seq)
                                     print('*** optimization result (x1,y1,ier,msg):', x1, y1, ier, msg)
-                            if yf0 > -0.15:
-                                yf0 = -sref
                         sc_list.append(-yf0/sref)
             # select scaling appropriate scaling such that no element crosses yield surface
             scf = np.amin(sc_list)
@@ -1130,29 +1136,35 @@ class Model(object):
                 self.ubctop = False
                 self.namebct = 'force'
                 
-        K = self.setupK()  # assemble system stiffness matrix from element stiffness matrices
         jin = []
         for j in self.noinner:
             jin.append(j*self.dim)
             jin.append(j*self.dim+1)
                 
         if self.u is None:
-            # declare and initialize solution vectors and boundary conditions
+            # declare and initialize solution and result vectors, and boundary conditions
             self.u = np.zeros(self.Ndof)
             self.f = np.zeros(self.Ndof)
+            self.sgl = np.zeros((1,6))
+            self.egl = np.zeros((1,6))
+            self.epgl = np.zeros((1,6)) 
             'initialize element quantities'
             for el in self.element:
                 el.elstiff = el.CV
+                el.calc_Kel()
                 el.eps = np.zeros(6)
                 el.sig = np.zeros(6)
                 el.epl = np.zeros(6)
             bcr0 = 0.
             bct0 = 0.
+            self.bct_mem = 0.
+            self.bcr_mem = 0.
         else:
             bcr0 = self.bcr_mem
             bct0 = self.bct_mem
         ul = self.uleft
         ub = self.ubot
+        K = self.setupK()  # assemble system stiffness matrix from element stiffness matrices
         
         'define loop for external load steps (BC subdivision)'
         'during each load step mechanical equilibrium is calculated for sub-step'
@@ -1178,11 +1190,11 @@ class Model(object):
             'calculate du and df fulfilling for max. load step consistent with stiffness matrix K'
             dbcr = max_dbcr
             dbct = max_dbct
-            self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ.  
-            Kred = calc_Kred(ind)  # setup K matrix for reduced system acc. to BC
-            self.du[ind] = np.linalg.solve(Kred, self.df[ind]) # Solve reduced system of equations
+            self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ. 
+            self.du[ind] = np.linalg.solve(Kred(ind), self.df[ind]) # Solve reduced system of equations
+            self.df = K@self.du
             self.u += self.du
-            self.f += K@self.du
+            self.f += self.df
             'calculate scaling factor for predictor step in case of non-linear model'
             if self.nonlin:
                 self.calc_global()  # calculate global values for solution
@@ -1196,31 +1208,39 @@ class Model(object):
                 dbct = max_dbct*scale_bc  # dbct <= self.bct - bct0
                 'calculate du and df fulfilling for scaled load step consistent with stiffness matrix K'
                 self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ.  
-                #Kred = calc_Kred(ind)  # setup K matrix for reduced system acc. to BC
-                self.du[ind] = np.linalg.solve(Kred, self.df[ind]) # Solve reduced system of equations
-                conv, f = test_convergence() # false if yield function >1.e-6; modify elem. stiffness
+                self.du[ind] = np.linalg.solve(Kred(ind), self.df[ind]) # Solve reduced system of equations
+                f = calc_el_yldfct() # evaluate elemental yld.fct. and  modify elem. stiffness matrix if required
+                conv = np.all(f<=ptol)
                 i = 0
                 if verb:
                     print('**Load step #',il)
                     fres = K@(self.u+self.du)
                     print('yield function=',f,'residual forces on inner nodes=',fres[jin])
-                while not conv: 
-                    # calculate tangent stiffness matrix
-                    K = self.setupK()  #setup BC anew if K changes
-                    dbcr -= i*0.1*dbcr
-                    dbct -= i*0.1*dbct
+                while not conv:
+                    'if not converged with predictor step and initial stiffness matrix,'
+                    'use tangent stiffness assigned to elements in "calc_el_yldfct"'
+                    'same step size is used for initial predictor step'
+                    K = self.setupK()  # assemble tangent stiffness matrix
                     self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct)
-                    Kred = calc_Kred(ind)
-                    self.du[ind] = np.linalg.solve(Kred, self.df[ind]) # solve du with current stiffness matrix
-                    conv, f = test_convergence()
-                    i += 1
+                    self.du[ind] = np.linalg.solve(Kred(ind), self.df[ind]) # solve du with current stiffness matrix
+                    f = calc_el_yldfct()
+                    conv = np.all(f<=ptol)
                     if verb:
                         print('+++Inner load step #',i)
                         fres = K@(self.u+self.du)
+                        print('load increment right:', dbcr)
+                        print('load increment top:',dbct)
                         print('yield function=',f,'residual forces on inner nodes=',fres[jin])
-                    if i>10:
+                        el = self.element[0]
+                        print('sig, disg, epl, depl, deps:',el.sig, el.dsig(), el.epl, el.depl(), el.deps())
+                    if i>5:
                         print('Warning: No convergence achieved, abandoning')
+                        print('conv,i,f,ptol,dbcr,dbct,sglob',conv,i,f,ptol,dbcr,dbct,sglob)
                         conv = True
+                    if not conv:
+                        dbcr *= 0.25
+                        dbct *= 0.25
+                    i += 1
                 self.u += self.du
                 self.f += K@self.du
             'update internal variables with results of load step'
@@ -1307,7 +1327,8 @@ class Model(object):
         self.glob['eps'] = eps/Vm
         self.glob['epl'] = epl/Vm
 
-    def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True):
+    def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True,
+            vmin=None, vmax=None):
         '''Produce graphical output: draw elements in deformed shape with color 
         according to field variable 'fsel'; uses matplotlib
         
@@ -1330,19 +1351,27 @@ class Model(object):
         cmap = mpl.cm.get_cmap(colormap, cdepth)
         def strain1():
             hh = [el.eps[0]*100 for el in self.element]
-            text_cb = 'strain_11 (%)'
-            return hh, text_cb
-        def stress1():
-            hh = [el.sig[0] for el in self.element]
-            text_cb = 'stress_11 (MPa)'
+            text_cb = 'etot_11 (%)'
             return hh, text_cb
         def strain2():
             hh = [el.eps[1]*100 for el in self.element]
-            text_cb = 'strain_22 (%)'
+            text_cb = 'etot_22 (%)'
+            return hh, text_cb
+        def stress1():
+            hh = [el.sig[0] for el in self.element]
+            text_cb = 'sig_11 (MPa)'
             return hh, text_cb
         def stress2():
             hh = [el.sig[1] for el in self.element]
-            text_cb = 'stress_22 (MPa)'
+            text_cb = 'sig_22 (MPa)'
+            return hh, text_cb
+        def plastic1():
+            hh = [el.epl[0]*100 for el in self.element]
+            text_cb = 'epl_11 (%)'
+            return hh, text_cb
+        def plastic2():
+            hh = [el.epl[1]*100 for el in self.element]
+            text_cb = 'epl_22 (%)'
             return hh, text_cb
         def stress_eq():
             hh = [Stress(el.sig).seq(el.Mat) for el in self.element]
@@ -1366,9 +1395,11 @@ class Model(object):
             return hh, text_cb
         field={
             'strain1' : strain1(),
-            'stress1' : stress1(),
             'strain2' : strain2(),
+            'stress1' : stress1(),
             'stress2' : stress2(),
+            'plastic1': plastic1(),
+            'plastic2': plastic2(),
             'seq'     : stress_eq(),
             'peeq'    : strain_peeq(),
             'etot'    : strain_etot(),
@@ -1378,10 +1409,13 @@ class Model(object):
         
         'define color value by mapping field value of element to interval [0,1]'
         val, text_cb = field[fsel]
-        vmin = np.min(val)
-        vmax = np.max(val)
+        auto_scale = (vmin is None) and (vmax is None)
+        if vmin is None:
+            vmin = np.amin(val)
+        if vmax is None:
+            vmax = np.amax(val)
         delta = np.abs(vmax - vmin)
-        if delta < 0.1 or delta/vmax < 0.04:
+        if auto_scale and (delta < 0.1 or delta/vmax < 0.04):
             if np.abs(vmax) < 0.1:
                 vmax += 0.05
                 vmin -= 0.05
@@ -1392,14 +1426,14 @@ class Model(object):
                 vmax *= 0.98
                 vmin *= 1.02
             delta = np.abs(vmax - vmin)
-        col = np.round((val-vmin)/delta, decimals=5)
+        col = np.round(np.subtract(val,vmin)/delta, decimals=5)
         
         'create element plots'
         for el in self.element:
             # draw filled polygon for each element
             if (self.dim==1):
-                ih = np.min(el.nodes)       # left node of current element
-                jh = np.max(el.nodes)    # right node of current element
+                ih = np.amin(el.nodes)       # left node of current element
+                jh = np.amax(el.nodes)    # right node of current element
                 ih1 = ih*self.dim            # position of ux in u vector
                 jh1 = jh*self.dim            # position of ux in u vector
                 hx1 = self.npos[ih] + mag*self.u[ih1] # x position of left node 

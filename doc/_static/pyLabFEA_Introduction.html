@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>pyLabFEA_Introduction_v1</title>
+<title>pyLabFEA_Introduction</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,11 +13077,19 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Finite-Element-Tutorial-in-Python">Finite Element Tutorial in Python<a class="anchor-link" href="#Finite-Element-Tutorial-in-Python">&#182;</a></h1><p>Introduction to python module for Finite Element Analysis with elements in 1-d or 2-d. Allows laminate geometries and materials with anisotropic linear elasticity.</p>
+<h1 id="Finite-Element-Tutorial-in-Python">Finite Element Tutorial in Python<a class="anchor-link" href="#Finite-Element-Tutorial-in-Python">&#182;</a></h1><p>Introduction to Python Laboratory for Finite Element Analysis (pyLabFEA). This tutorial covers FEA with elements in 1-d or 2-d to evaluate the mechanical behavior of laminate geometries with linear elastic materials. See the documentation of the pyLabFEA package for detailed information.</p>
 <p>Author: Alexander Hartmaier, ICAMS / Ruhr-Universität Bochum</p>
-<p>June 2019</p>
-<h2 id="Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">Python Laboratory for Finite Element Analysis (pyLabFEA)<a class="anchor-link" href="#Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">&#182;</a></h2><p>Defines a class <code>Model</code> for the finite element model. Call class to generate a container for the Finite Element Model. This container stores all attributes of the model and defines the methods. On this model, the following steps are performed: (i) geometry definition, (ii) material definition, (iii) applying boundary conditions, (iv) meshing, (v) solving of linear equations, and (vi) calculation of element stresses and strains by calling the corresponding methods of the class <code>Model</code>. Also provides a class <code>Materials</code> for material definitions.</p>
+<p>March 2020</p>
+<p>This work is licensed under a 
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative 
+Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>
+ <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0;max-heigt:9px;height:100%;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a></p>
+<p>The pyLabFEA package comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under the conditions of
+the <a href="http://www.fsf.org/licensing/licenses/gpl.html">GNU General Public License (GPLv3)</a></p>
 <p>Uses NumPy (<a href="http://www.numpy.org">http://www.numpy.org</a>) and matplotlib (<a href="https://matplotlib.org/">https://matplotlib.org/</a>).</p>
+<h2 id="Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">Python Laboratory for Finite Element Analysis (pyLabFEA)<a class="anchor-link" href="#Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">&#182;</a></h2><p>In the first step, the pyLabFEA package, containing the modules pyLabFEM and pyLabMaterial, is imported.</p>
 
 </div>
 </div>
@@ -13117,7 +13125,7 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h2 id="Model">Model<a class="anchor-link" href="#Model">&#182;</a></h2><p>Generate a container for the Finite Element Model. This container stores all model attributes and defines the methods to be applied. On this model, the following steps are performed: (i) geometry definition, (ii) material definition, (iii) applying boundary conditions, (iv) meshing, (v) solving of linear equations for mechanical equilibrium, and (vi) calculation of global stresses and strains by calling the corresponding methods of the class <code>Model</code>.</p>
+<h2 id="Model">Model<a class="anchor-link" href="#Model">&#182;</a></h2><p>The class <code>Model</code> is invoked to create an objecte for the finite element model to be used. This object contains all attributes of the model and defines the methods. To use the model for FEA, the following steps are performed: (i) geometry definition, (ii) material definition, (iii) applying boundary conditions, (iv) meshing, (v) solving of linear equations, and (vi) calculation of element stresses and strains by calling the corresponding methods of the class <code>Model</code>.</p>
 <p><b>Parameters:</b> <br/>
 dim (optional): dim=1 for 1-d model, dim=2 for 2-d model (default: dim=1)<br/>
 planestress (optional, used only in 2-d models): True if plane stress conditions shall be considered (default: planestress=False)<br/></p>
@@ -13268,7 +13276,7 @@ fem.mat: list with pointer to material for each section<br/></p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[&lt;pyLabMaterial.Material object at 0x1a1b5e8750&gt;, &lt;pyLabMaterial.Material object at 0x1a1b5e8790&gt;, &lt;pyLabMaterial.Material object at 0x1a1b5e8890&gt;]
+<pre>[&lt;pyLabMaterial.Material object at 0x1a1674dfd0&gt;, &lt;pyLabMaterial.Material object at 0x1a16730ed0&gt;, &lt;pyLabMaterial.Material object at 0x1a16727750&gt;]
 </pre>
 </div>
 </div>

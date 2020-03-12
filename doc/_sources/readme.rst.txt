@@ -28,7 +28,7 @@ is available in the examples of this documentation.
 Documentation
 -------------
 Documentation for pyLabFEA is generated using Sphinx. 
-The HTML documentation can be found at pyLabFEA/docs/build/index.html
+Open pyLabFEA/doc/index.html to browse through the contents.
 
 Dependencies
 ------------
@@ -54,3 +54,9 @@ This is free software, and you are welcome to redistribute it
 under the conditions of the GNU General Public License (`GPLv3`_)
 
 .. _GPLv3: http://www.fsf.org/licensing/licenses/gpl.html
+
+The contents of the examples and notebooks are published under the 
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+(`CC BY-NC-SA 4.0`_)
+
+.. _CC BY-NC-SA 4.0: http://creativecommons.org/licenses/by-nc-sa/4.0/

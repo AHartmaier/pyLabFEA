@@ -18,11 +18,20 @@ analyzed, and the numerical solution is compared with the expected values from m
 .. raw:: html
    :file: _static/pyLabFEA_Tutorial_Composite.html
    
-ML Flow Rule
-------------
+Non-linear FEA: Plasticity
+--------------------------
+
+Non-linear material behavior in form of plasticity is introduced in this example.
+
+.. raw:: html
+   :file: _static/pyLabFEA_Plasticity.html
+
+   
+Machine Learning Flow Rule
+--------------------------
 
 This example demonstrates how a trained machine learning algorithm 
 can be used as constitutive model for anisotropic plasticity of metals.
 
 .. raw:: html
-   :file: _static/ML-Plasticity-SupplementaryMaterial.html
+   :file: _static/pyLabFEA_ML-FlowRule.html

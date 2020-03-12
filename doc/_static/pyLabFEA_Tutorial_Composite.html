@@ -2,7 +2,7 @@
 <html>
 <head><meta charset="utf-8" />
 
-<title>pyLabFEA_Tutorial_Composite-v2</title>
+<title>pyLabFEA_Tutorial_Composite</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
@@ -13077,9 +13077,17 @@ div#notebook {
 <div class="cell border-box-sizing text_cell rendered"><div class="prompt input_prompt">
 </div><div class="inner_cell">
 <div class="text_cell_render border-box-sizing rendered_html">
-<h1 id="Micromechanics-of-Composites">Micromechanics of Composites<a class="anchor-link" href="#Micromechanics-of-Composites">&#182;</a></h1><p>Assess properties of composites by Finite Element Analysis. Model structures of laminates are created to analyse their properties. The example makes use of the Python FEM module pyLab_FE_Module_v1.py, see documentation of this module for further information.</p>
-<p>Author: Alexander Hartmaier, ICAMS / Ruhr-Universität Bochum</p>
-<p>June 2019</p>
+<h1 id="Micromechanics-of-Composites">Micromechanics of Composites<a class="anchor-link" href="#Micromechanics-of-Composites">&#182;</a></h1><p>Assess properties of composites by Finite Element Analysis. Model structures of laminates are created to analyse their properties with pyLab_FEA package, see the documentation for detailed information on the functionality of the package.</p>
+<p>Author: Alexander Hartmaier, ICAMS / Ruhr-Universität Bochum, Germany</p>
+<p>March 2020</p>
+<p>This work is licensed under a 
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">Creative 
+Commons Attribution-NonCommercial-ShareAlike 4.0 International License</a>
+ <a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">
+<img alt="Creative Commons License" style="border-width:0;max-heigt:9px;height:100%;" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a></p>
+<p>The pyLabFEA package comes with ABSOLUTELY NO WARRANTY. This is free
+software, and you are welcome to redistribute it under the conditions of
+the <a href="http://www.fsf.org/licensing/licenses/gpl.html">GNU General Public License (GPLv3)</a></p>
 <h2 id="1.-Finite-Element-Model">1. Finite Element Model<a class="anchor-link" href="#1.-Finite-Element-Model">&#182;</a></h2><p>In a first step, the class <code>Model</code> is invoked to generate a container for the Finite Element Model. This container stores all attributes and defines methods to be applied. On this model, the following steps are performed: (i) geometry definition, (ii) material definition, (iii) applying boundary conditions, (iv) meshing, (v) solving of linear equations, and (vi) calculation of global stresses and strains to obtain the effective stiffness of the laminate structure.</p>
 <h3 id="Geometry">Geometry<a class="anchor-link" href="#Geometry">&#182;</a></h3><p>Define a laminate composite geometry for the model with the method <code>geom</code>. The method takes a list with the sizes of the sections of the laminate as input. Later material properties are assigned to each section.</p>
 <h3 id="Materials">Materials<a class="anchor-link" href="#Materials">&#182;</a></h3><p>Linear elastic material properties are defined here in terms of Young's modulus $E$ and Poisson ratio $\nu$, by using the class <code>Material</code>. The resulting material definitions are assigned to the sections of the geometry with the <code>assign</code> method of the finite element model.</p>

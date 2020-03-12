@@ -55,7 +55,8 @@
 <span class="sd">&#39;&#39;&#39;First unit vector spanning deviatoric stress plane (real axis)&#39;&#39;&#39;</span>
 <span class="n">b_vec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">])</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>  
 <span class="sd">&#39;&#39;&#39;Second unit vector spanning deviatoric stress plane (imaginary axis)&#39;&#39;&#39;</span>
-
+<span class="n">ptol</span> <span class="o">=</span> <span class="mf">0.5</span>
+<span class="sd">&#39;&#39;&#39;Tolerance: Plastic yielding if yield function &gt; ptol&#39;&#39;&#39;</span>
 <div class="viewcode-block" id="seq_J2"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.seq_J2">[docs]</a><span class="k">def</span> <span class="nf">seq_J2</span><span class="p">(</span><span class="n">sprinc</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Calculate J2 equivalent stress from principal stresses</span>
 <span class="sd">    </span>
@@ -519,14 +520,18 @@
 <span class="sd">            y-locations of Gauss points in element</span>
 <span class="sd">        Bmat  : list</span>
 <span class="sd">            List of B-matrices at Gauss points</span>
-<span class="sd">        Vel   : float</span>
-<span class="sd">            Eolume of element</span>
-<span class="sd">        Kel   : 2-d array</span>
-<span class="sd">            Element stiffness matrix</span>
-<span class="sd">        Jac   : float</span>
-<span class="sd">            Determinant of Jacobian of iso-parametric formulation</span>
 <span class="sd">        wght  : 1-d array</span>
 <span class="sd">            List of weight of each Gauss point in integration</span>
+<span class="sd">        Vel   : float</span>
+<span class="sd">            Volume of element</span>
+<span class="sd">        Jac   : float</span>
+<span class="sd">            Determinant of Jacobian of iso-parametric formulation</span>
+<span class="sd">        CV    : 2d array</span>
+<span class="sd">            Voigt stiffness matrix of element material</span>
+<span class="sd">        elstiff : 2-d array</span>
+<span class="sd">            Tangent stiffness tensor of element</span>
+<span class="sd">        Kel   : 2-d array</span>
+<span class="sd">            Element stiffness matrix</span>
 <span class="sd">        Sect  : int</span>
 <span class="sd">            Section of model in which element is located</span>
 <span class="sd">        Mat   : object of class ``Material``</span>
@@ -537,8 +542,6 @@
 <span class="sd">            average element stress (defined in ``Model.solve``)</span>
 <span class="sd">        epl   : Voigt tensor</span>
 <span class="sd">            average plastic element strain (defined in ``Model.solve``)</span>
-<span class="sd">        CV    : 2d array</span>
-<span class="sd">            Voigt stiffness matrix of element material</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="s1">&#39;Methods&#39;</span>
         <span class="c1">#calc_Bmat: Calculate B matrix at Gauss point</span>
@@ -688,11 +691,12 @@
 <span class="sd">            depl : Voigt tensor</span>
 <span class="sd">                Plastic strain increment</span>
 <span class="sd">            &#39;&#39;&#39;</span>
-            <span class="n">depl</span> <span class="o">=</span> <span class="mf">0.</span>
-            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">sy</span><span class="o">!=</span><span class="kc">None</span><span class="p">):</span>
-                <span class="n">deps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">()</span>
-                <span class="n">sig</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sig</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">CV</span> <span class="o">@</span> <span class="n">deps</span>
-                <span class="n">depl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">epl_dot</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CV</span><span class="p">,</span> <span class="n">deps</span><span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">sy</span><span class="o">==</span><span class="kc">None</span><span class="p">):</span>
+                <span class="n">depl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1">#deps = self.deps()</span>
+                <span class="c1">#sig  = self.sig + self.CV @ deps</span>
+                <span class="n">depl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">epl_dot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">epl</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CV</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">deps</span><span class="p">())</span>
             <span class="k">return</span> <span class="n">depl</span></div>
         
 <div class="viewcode-block" id="Model.Element.calc_Bmat"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.Element.calc_Bmat">[docs]</a>        <span class="k">def</span> <span class="nf">calc_Bmat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">0.</span><span class="p">):</span>
@@ -1003,29 +1007,30 @@
 <span class="sd">            Be verbose in text output (optional, default: False)</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="s1">&#39;calculate reduced stiffness matrix according to BC&#39;</span>
-        <span class="k">def</span> <span class="nf">calc_Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">):</span>
             <span class="n">Kred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">)))</span>
             <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">)):</span>
                 <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">)):</span>
                     <span class="n">Kred</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">K</span><span class="p">[</span><span class="n">ind</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">ind</span><span class="p">[</span><span class="n">j</span><span class="p">]]</span>
             <span class="k">return</span> <span class="n">Kred</span>
         
-        <span class="s1">&#39;test if stress has converged to yield surface&#39;</span>
-        <span class="k">def</span> <span class="nf">test_convergence</span><span class="p">():</span>
-            <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="s1">&#39;evaluate yield function in each element an change element stiffness matrix&#39;</span>
+        <span class="s1">&#39;to tangent stiffness if in plastic regime&#39;</span>
+        <span class="k">def</span> <span class="nf">calc_el_yldfct</span><span class="p">():</span>
             <span class="n">f</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="c1"># test if yield criterion is exceeded</span>
             <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">:</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">sy</span><span class="o">!=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># not necessary for elastic material</span>
                     <span class="n">peeq</span> <span class="o">=</span> <span class="n">eps_eq</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">epl</span><span class="o">+</span><span class="n">el</span><span class="o">.</span><span class="n">depl</span><span class="p">())</span> <span class="c1"># calculate equiv. plastic strain</span>
                     <span class="n">sig</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="o">+</span><span class="n">el</span><span class="o">.</span><span class="n">dsig</span><span class="p">()</span>
-                    <span class="n">hh</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">)</span>
+                    <span class="n">hh</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                     <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hh</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">hh</span> <span class="o">&gt;</span> <span class="mf">1.e-3</span><span class="p">:</span>
-                        <span class="n">el</span><span class="o">.</span><span class="n">elstiff</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">C_tan</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">CV</span><span class="p">)</span>
-                        <span class="n">el</span><span class="o">.</span><span class="n">calc_Kel</span><span class="p">()</span>
-                        <span class="n">conv</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="k">return</span> <span class="n">conv</span><span class="p">,</span> <span class="n">f</span>
+                    <span class="k">if</span> <span class="n">hh</span> <span class="o">&gt;</span> <span class="n">ptol</span><span class="p">:</span>
+                        <span class="n">el</span><span class="o">.</span><span class="n">elstiff</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">C_tan</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">CV</span><span class="p">)</span>  <span class="c1"># for plasticity calculate tangent stiffness</span>
+                        <span class="n">el</span><span class="o">.</span><span class="n">calc_Kel</span><span class="p">()</span>                             <span class="c1"># and update element stiffness matrix</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
         
         <span class="s1">&#39;calculate scaling factor for load steps&#39;</span>
         <span class="k">def</span> <span class="nf">calc_scf</span><span class="p">(</span><span class="n">sglob</span><span class="p">):</span>
@@ -1033,7 +1038,8 @@
             <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">:</span>
                 <span class="c1"># test if yield criterion is exceeded</span>
                 <span class="k">if</span> <span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">sy</span><span class="o">!=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># not necessary for elastic material</span>
-                    <span class="n">yf0</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="mf">0.</span><span class="p">)</span>  <span class="c1"># yield fct. at stat of load step</span>
+                    <span class="n">peeq</span> <span class="o">=</span> <span class="mf">0.</span><span class="c1">#eps_eq(el.epl) # calculate equiv. plastic strain</span>
+                    <span class="n">yf0</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># yield fct. at start of load step</span>
                     <span class="s1">&#39;if element starts in elestic regime load step can only touch yield surface&#39;</span>
                     <span class="k">if</span>  <span class="n">yf0</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mf">0.15</span><span class="p">:</span>
                         <span class="n">sref</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="n">sglob</span><span class="p">)</span>   <span class="c1"># global equiv. stress at max load step</span>
@@ -1163,29 +1169,35 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">ubctop</span> <span class="o">=</span> <span class="kc">False</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">namebct</span> <span class="o">=</span> <span class="s1">&#39;force&#39;</span>
                 
-        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setupK</span><span class="p">()</span>  <span class="c1"># assemble system stiffness matrix from element stiffness matrices</span>
         <span class="n">jin</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">noinner</span><span class="p">:</span>
             <span class="n">jin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="p">)</span>
             <span class="n">jin</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">j</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
                 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1"># declare and initialize solution vectors and boundary conditions</span>
+            <span class="c1"># declare and initialize solution and result vectors, and boundary conditions</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ndof</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Ndof</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sgl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">egl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">epgl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span> 
             <span class="s1">&#39;initialize element quantities&#39;</span>
             <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">:</span>
                 <span class="n">el</span><span class="o">.</span><span class="n">elstiff</span> <span class="o">=</span> <span class="n">el</span><span class="o">.</span><span class="n">CV</span>
+                <span class="n">el</span><span class="o">.</span><span class="n">calc_Kel</span><span class="p">()</span>
                 <span class="n">el</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
                 <span class="n">el</span><span class="o">.</span><span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
                 <span class="n">el</span><span class="o">.</span><span class="n">epl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
             <span class="n">bcr0</span> <span class="o">=</span> <span class="mf">0.</span>
             <span class="n">bct0</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bct_mem</span> <span class="o">=</span> <span class="mf">0.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bcr_mem</span> <span class="o">=</span> <span class="mf">0.</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">bcr0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcr_mem</span>
             <span class="n">bct0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bct_mem</span>
         <span class="n">ul</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uleft</span>
         <span class="n">ub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ubot</span>
+        <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setupK</span><span class="p">()</span>  <span class="c1"># assemble system stiffness matrix from element stiffness matrices</span>
         
         <span class="s1">&#39;define loop for external load steps (BC subdivision)&#39;</span>
         <span class="s1">&#39;during each load step mechanical equilibrium is calculated for sub-step&#39;</span>
@@ -1211,11 +1223,11 @@
             <span class="s1">&#39;calculate du and df fulfilling for max. load step consistent with stiffness matrix K&#39;</span>
             <span class="n">dbcr</span> <span class="o">=</span> <span class="n">max_dbcr</span>
             <span class="n">dbct</span> <span class="o">=</span> <span class="n">max_dbct</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">ind</span> <span class="o">=</span> <span class="n">calc_BC</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">ul</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dbcr</span><span class="p">,</span> <span class="n">dbct</span><span class="p">)</span> <span class="c1"># consider BC for system of equ.  </span>
-            <span class="n">Kred</span> <span class="o">=</span> <span class="n">calc_Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>  <span class="c1"># setup K matrix for reduced system acc. to BC</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Kred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span> <span class="c1"># Solve reduced system of equations</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">ind</span> <span class="o">=</span> <span class="n">calc_BC</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">ul</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dbcr</span><span class="p">,</span> <span class="n">dbct</span><span class="p">)</span> <span class="c1"># consider BC for system of equ. </span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span> <span class="c1"># Solve reduced system of equations</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">K</span><span class="nd">@self</span><span class="o">.</span><span class="n">du</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">du</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">+=</span> <span class="n">K</span><span class="nd">@self</span><span class="o">.</span><span class="n">du</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span>
             <span class="s1">&#39;calculate scaling factor for predictor step in case of non-linear model&#39;</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">nonlin</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">calc_global</span><span class="p">()</span>  <span class="c1"># calculate global values for solution</span>
@@ -1229,31 +1241,38 @@
                 <span class="n">dbct</span> <span class="o">=</span> <span class="n">max_dbct</span><span class="o">*</span><span class="n">scale_bc</span>  <span class="c1"># dbct &lt;= self.bct - bct0</span>
                 <span class="s1">&#39;calculate du and df fulfilling for scaled load step consistent with stiffness matrix K&#39;</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">ind</span> <span class="o">=</span> <span class="n">calc_BC</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">ul</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dbcr</span><span class="p">,</span> <span class="n">dbct</span><span class="p">)</span> <span class="c1"># consider BC for system of equ.  </span>
-                <span class="c1">#Kred = calc_Kred(ind)  # setup K matrix for reduced system acc. to BC</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Kred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span> <span class="c1"># Solve reduced system of equations</span>
-                <span class="n">conv</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">test_convergence</span><span class="p">()</span> <span class="c1"># false if yield function &gt;1.e-6; modify elem. stiffness</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span> <span class="c1"># Solve reduced system of equations</span>
+                <span class="n">f</span> <span class="o">=</span> <span class="n">calc_el_yldfct</span><span class="p">()</span> <span class="c1"># evaluate elemental yld.fct. and  modify elem. stiffness matrix if required</span>
+                <span class="n">conv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">f</span><span class="o">&lt;=</span><span class="n">ptol</span><span class="p">)</span>
                 <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="k">if</span> <span class="n">verb</span><span class="p">:</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;**Load step #&#39;</span><span class="p">,</span><span class="n">il</span><span class="p">)</span>
                     <span class="n">fres</span> <span class="o">=</span> <span class="n">K</span><span class="o">@</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">)</span>
                     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;yield function=&#39;</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="s1">&#39;residual forces on inner nodes=&#39;</span><span class="p">,</span><span class="n">fres</span><span class="p">[</span><span class="n">jin</span><span class="p">])</span>
-                <span class="k">while</span> <span class="ow">not</span> <span class="n">conv</span><span class="p">:</span> 
-                    <span class="c1"># calculate tangent stiffness matrix</span>
-                    <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setupK</span><span class="p">()</span>  <span class="c1">#setup BC anew if K changes</span>
-                    <span class="n">dbcr</span> <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="mf">0.1</span><span class="o">*</span><span class="n">dbcr</span>
-                    <span class="n">dbct</span> <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="mf">0.1</span><span class="o">*</span><span class="n">dbct</span>
+                <span class="k">while</span> <span class="ow">not</span> <span class="n">conv</span><span class="p">:</span>
+                    <span class="s1">&#39;if not converged with predictor step and initial stiffness matrix,&#39;</span>
+                    <span class="s1">&#39;use tangent stiffness assigned to elements in &quot;calc_el_yldfct&quot;&#39;</span>
+                    <span class="s1">&#39;same step size is used for initial predictor step&#39;</span>
+                    <span class="n">K</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setupK</span><span class="p">()</span>  <span class="c1"># assemble tangent stiffness matrix</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">,</span> <span class="n">ind</span> <span class="o">=</span> <span class="n">calc_BC</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">ul</span><span class="p">,</span> <span class="n">ub</span><span class="p">,</span> <span class="n">dbcr</span><span class="p">,</span> <span class="n">dbct</span><span class="p">)</span>
-                    <span class="n">Kred</span> <span class="o">=</span> <span class="n">calc_Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Kred</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span> <span class="c1"># solve du with current stiffness matrix</span>
-                    <span class="n">conv</span><span class="p">,</span> <span class="n">f</span> <span class="o">=</span> <span class="n">test_convergence</span><span class="p">()</span>
-                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">[</span><span class="n">ind</span><span class="p">])</span> <span class="c1"># solve du with current stiffness matrix</span>
+                    <span class="n">f</span> <span class="o">=</span> <span class="n">calc_el_yldfct</span><span class="p">()</span>
+                    <span class="n">conv</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">f</span><span class="o">&lt;=</span><span class="n">ptol</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">verb</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;+++Inner load step #&#39;</span><span class="p">,</span><span class="n">i</span><span class="p">)</span>
                         <span class="n">fres</span> <span class="o">=</span> <span class="n">K</span><span class="o">@</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">du</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;load increment right:&#39;</span><span class="p">,</span> <span class="n">dbcr</span><span class="p">)</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;load increment top:&#39;</span><span class="p">,</span><span class="n">dbct</span><span class="p">)</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;yield function=&#39;</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="s1">&#39;residual forces on inner nodes=&#39;</span><span class="p">,</span><span class="n">fres</span><span class="p">[</span><span class="n">jin</span><span class="p">])</span>
-                    <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">10</span><span class="p">:</span>
+                        <span class="n">el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sig, disg, epl, depl, deps:&#39;</span><span class="p">,</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">dsig</span><span class="p">(),</span> <span class="n">el</span><span class="o">.</span><span class="n">epl</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">depl</span><span class="p">(),</span> <span class="n">el</span><span class="o">.</span><span class="n">deps</span><span class="p">())</span>
+                    <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">5</span><span class="p">:</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: No convergence achieved, abandoning&#39;</span><span class="p">)</span>
                         <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">conv</span><span class="p">:</span>
+                        <span class="n">dbcr</span> <span class="o">*=</span> <span class="mf">0.25</span>
+                        <span class="n">dbct</span> <span class="o">*=</span> <span class="mf">0.25</span>
+                    <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">du</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">+=</span> <span class="n">K</span><span class="nd">@self</span><span class="o">.</span><span class="n">du</span>
             <span class="s1">&#39;update internal variables with results of load step&#39;</span>
@@ -1340,7 +1359,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">glob</span><span class="p">[</span><span class="s1">&#39;eps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eps</span><span class="o">/</span><span class="n">Vm</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">glob</span><span class="p">[</span><span class="s1">&#39;epl&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">epl</span><span class="o">/</span><span class="n">Vm</span></div>
 
-<div class="viewcode-block" id="Model.plot"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fsel</span><span class="p">,</span> <span class="n">mag</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">cdepth</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">showmesh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shownodes</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="Model.plot"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.plot">[docs]</a>    <span class="k">def</span> <span class="nf">plot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fsel</span><span class="p">,</span> <span class="n">mag</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">colormap</span><span class="o">=</span><span class="s1">&#39;viridis&#39;</span><span class="p">,</span> <span class="n">cdepth</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">showmesh</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">shownodes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">vmin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Produce graphical output: draw elements in deformed shape with color </span>
 <span class="sd">        according to field variable &#39;fsel&#39;; uses matplotlib</span>
 <span class="sd">        </span>
@@ -1363,19 +1383,27 @@
         <span class="n">cmap</span> <span class="o">=</span> <span class="n">mpl</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="n">colormap</span><span class="p">,</span> <span class="n">cdepth</span><span class="p">)</span>
         <span class="k">def</span> <span class="nf">strain1</span><span class="p">():</span>
             <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">eps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
-            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;strain_11 (%)&#39;</span>
-            <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
-        <span class="k">def</span> <span class="nf">stress1</span><span class="p">():</span>
-            <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
-            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;stress_11 (MPa)&#39;</span>
+            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;etot_11 (%)&#39;</span>
             <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
         <span class="k">def</span> <span class="nf">strain2</span><span class="p">():</span>
             <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">eps</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
-            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;strain_22 (%)&#39;</span>
+            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;etot_22 (%)&#39;</span>
+            <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
+        <span class="k">def</span> <span class="nf">stress1</span><span class="p">():</span>
+            <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
+            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;sig_11 (MPa)&#39;</span>
             <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
         <span class="k">def</span> <span class="nf">stress2</span><span class="p">():</span>
             <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
-            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;stress_22 (MPa)&#39;</span>
+            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;sig_22 (MPa)&#39;</span>
+            <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
+        <span class="k">def</span> <span class="nf">plastic1</span><span class="p">():</span>
+            <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">epl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
+            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;epl_11 (%)&#39;</span>
+            <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
+        <span class="k">def</span> <span class="nf">plastic2</span><span class="p">():</span>
+            <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">epl</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="mi">100</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
+            <span class="n">text_cb</span> <span class="o">=</span> <span class="s1">&#39;epl_22 (%)&#39;</span>
             <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
         <span class="k">def</span> <span class="nf">stress_eq</span><span class="p">():</span>
             <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">Stress</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">seq</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">Mat</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
@@ -1399,9 +1427,11 @@
             <span class="k">return</span> <span class="n">hh</span><span class="p">,</span> <span class="n">text_cb</span>
         <span class="n">field</span><span class="o">=</span><span class="p">{</span>
             <span class="s1">&#39;strain1&#39;</span> <span class="p">:</span> <span class="n">strain1</span><span class="p">(),</span>
-            <span class="s1">&#39;stress1&#39;</span> <span class="p">:</span> <span class="n">stress1</span><span class="p">(),</span>
             <span class="s1">&#39;strain2&#39;</span> <span class="p">:</span> <span class="n">strain2</span><span class="p">(),</span>
+            <span class="s1">&#39;stress1&#39;</span> <span class="p">:</span> <span class="n">stress1</span><span class="p">(),</span>
             <span class="s1">&#39;stress2&#39;</span> <span class="p">:</span> <span class="n">stress2</span><span class="p">(),</span>
+            <span class="s1">&#39;plastic1&#39;</span><span class="p">:</span> <span class="n">plastic1</span><span class="p">(),</span>
+            <span class="s1">&#39;plastic2&#39;</span><span class="p">:</span> <span class="n">plastic2</span><span class="p">(),</span>
             <span class="s1">&#39;seq&#39;</span>     <span class="p">:</span> <span class="n">stress_eq</span><span class="p">(),</span>
             <span class="s1">&#39;peeq&#39;</span>    <span class="p">:</span> <span class="n">strain_peeq</span><span class="p">(),</span>
             <span class="s1">&#39;etot&#39;</span>    <span class="p">:</span> <span class="n">strain_etot</span><span class="p">(),</span>
@@ -1411,10 +1441,13 @@
         
         <span class="s1">&#39;define color value by mapping field value of element to interval [0,1]&#39;</span>
         <span class="n">val</span><span class="p">,</span> <span class="n">text_cb</span> <span class="o">=</span> <span class="n">field</span><span class="p">[</span><span class="n">fsel</span><span class="p">]</span>
-        <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
-        <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="n">auto_scale</span> <span class="o">=</span> <span class="p">(</span><span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vmin</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmin</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">vmax</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">vmax</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
         <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vmax</span> <span class="o">-</span> <span class="n">vmin</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">delta</span> <span class="o">&lt;</span> <span class="mf">0.1</span> <span class="ow">or</span> <span class="n">delta</span><span class="o">/</span><span class="n">vmax</span> <span class="o">&lt;</span> <span class="mf">0.04</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">auto_scale</span> <span class="ow">and</span> <span class="p">(</span><span class="n">delta</span> <span class="o">&lt;</span> <span class="mf">0.1</span> <span class="ow">or</span> <span class="n">delta</span><span class="o">/</span><span class="n">vmax</span> <span class="o">&lt;</span> <span class="mf">0.04</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vmax</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mf">0.1</span><span class="p">:</span>
                 <span class="n">vmax</span> <span class="o">+=</span> <span class="mf">0.05</span>
                 <span class="n">vmin</span> <span class="o">-=</span> <span class="mf">0.05</span>
@@ -1425,14 +1458,14 @@
                 <span class="n">vmax</span> <span class="o">*=</span> <span class="mf">0.98</span>
                 <span class="n">vmin</span> <span class="o">*=</span> <span class="mf">1.02</span>
             <span class="n">delta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">vmax</span> <span class="o">-</span> <span class="n">vmin</span><span class="p">)</span>
-        <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">((</span><span class="n">val</span><span class="o">-</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="n">delta</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">val</span><span class="p">,</span><span class="n">vmin</span><span class="p">)</span><span class="o">/</span><span class="n">delta</span><span class="p">,</span> <span class="n">decimals</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
         
         <span class="s1">&#39;create element plots&#39;</span>
         <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">:</span>
             <span class="c1"># draw filled polygon for each element</span>
             <span class="k">if</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span><span class="o">==</span><span class="mi">1</span><span class="p">):</span>
-                <span class="n">ih</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>       <span class="c1"># left node of current element</span>
-                <span class="n">jh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>    <span class="c1"># right node of current element</span>
+                <span class="n">ih</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>       <span class="c1"># left node of current element</span>
+                <span class="n">jh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">nodes</span><span class="p">)</span>    <span class="c1"># right node of current element</span>
                 <span class="n">ih1</span> <span class="o">=</span> <span class="n">ih</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span>            <span class="c1"># position of ux in u vector</span>
                 <span class="n">jh1</span> <span class="o">=</span> <span class="n">jh</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">dim</span>            <span class="c1"># position of ux in u vector</span>
                 <span class="n">hx1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">npos</span><span class="p">[</span><span class="n">ih</span><span class="p">]</span> <span class="o">+</span> <span class="n">mag</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">u</span><span class="p">[</span><span class="n">ih1</span><span class="p">]</span> <span class="c1"># x position of left node </span>
