@@ -22,7 +22,7 @@ machine learning algorithms are contained in subfolder `notebooks`. An
 overview on the contents of the notebooks is available in the
 examples of this documentation.
 
-Jupyter notebooks are also available on 
+Jupyter notebooks are also available on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
 ## Documentation
