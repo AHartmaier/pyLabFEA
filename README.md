@@ -16,14 +16,21 @@ constitutive modeling of materials makes it a useful research tool.
 ## Jupyter notebooks
 
 pyLabFEA is conveniently used with Jupyter notebooks. 
-Available notebooks with tutorials on FEA, homogenization of elastic and
+Available notebooks with tutorials on linear and non-linear FEA, homogenization of elastic and
 elastic-plastic material behavior, and constitutive models based on
 machine learning algorithms are contained in subfolder `notebooks`. An
 overview on the contents of the notebooks is available in the
 examples of this documentation.
 
-Jupyter notebooks are also available on Binder 
+The Jupyter notebooks of the pyLabFEA tutorials are also available on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
+
+## Contributions
+
+Contributions to the pyLabFEA package are highly welcome, either in form of new 
+notebooks with application examples or tutorials, or in form of new functionalities 
+to the Python code. Furthermore, bug reports or any comments on possible improvements of 
+the code or its documentation are greatly appreciated.
 
 ## Documentation
 
