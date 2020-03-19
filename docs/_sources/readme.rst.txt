@@ -19,16 +19,40 @@ Jupyter notebooks
 -----------------
 
 The pyLabFEA package is conveniently used with Jupyter notebooks. 
-Available notebooks with tutorials on FEA,
+Available notebooks with tutorials on linear and non-linear FEA,
 homogenization of elastic and elastic-plastic material behavior, and
 constitutive models based on machine learning algorithms are contained in
 subfolder ``notebooks``. An overview on the contents of the notebooks 
-is available in the examples of this documentation.
+is available `here`_ .
+
+.. _here: https://ahartmaier.github.io/pyLabFEA/examples.html
+
+The Jupyter notebooks of the pyLabFEA tutorials are also available on `Binder`_
+
+.. _Binder: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
+
+.. image:: https://mybinder.org/badge_logo.svg
+   :target: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
 
 Documentation
 -------------
-Documentation for pyLabFEA is generated using Sphinx. 
-Open pyLabFEA/doc/index.html to browse through the contents.
+Online documentations for pyLabFEA is found 
+under https://ahartmaier.github.io/pyLabFEA, for offline use
+open pyLabFEA/doc/index.html to browse through the contents. 
+the documentation is generated using `Sphinx`_. 
+
+.. _Sphinx: http://www.sphinx-doc.org/en/master/
+
+Contributions
+-------------
+
+Contributions to the pyLabFEA package are highly welcome, either in form of new 
+notebooks with application examples or tutorials, or in form of new functionalities 
+to the Python code. Furthermore, bug reports or any comments on possible improvements of 
+the code or its documentation are greatly appreciated.
+
+The latest version of the pyLabFEA package can be found on GitHub: 
+https://github.com/AHartmaier/pyLabFEA.git
 
 Dependencies
 ------------
@@ -39,13 +63,11 @@ pyLabFEA requires the following packages as imports:
   - Scipy_ for numerical solutions
   - scikit-learn_ for machine learning algorithms
   - MatPlotLib_ for graphical output
-  - sphinx_ for generating documentation.
   
 .. _NumPy: http://numpy.scipy.org
 .. _Scipy: https://www.scipy.org/
 .. _scikit-learn: https://scikit-learn.org/stable/
 .. _MatPlotLib: https://matplotlib.org/
-.. _sphinx: http://www.sphinx-doc.org/en/master/
 
 License
 -------

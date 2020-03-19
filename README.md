@@ -19,11 +19,16 @@ pyLabFEA is conveniently used with Jupyter notebooks.
 Available notebooks with tutorials on linear and non-linear FEA, homogenization of elastic and
 elastic-plastic material behavior, and constitutive models based on
 machine learning algorithms are contained in subfolder `notebooks`. An
-overview on the contents of the notebooks is available in the
-examples of this documentation.
+overview on the contents of the notebooks is available [here](https://ahartmaier.github.io/pyLabFEA/examples.html).
 
 The Jupyter notebooks of the pyLabFEA tutorials are also available on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
+
+## Documentation
+
+Online documentation for pyLabFEA can be found under https://ahartmaier.github.io/pyLabFEA/.
+For offline use, open pyLabFEA/docs/index.html to browse through the contents.
+The documentation is generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 ## Contributions
 
@@ -31,11 +36,6 @@ Contributions to the pyLabFEA package are highly welcome, either in form of new
 notebooks with application examples or tutorials, or in form of new functionalities 
 to the Python code. Furthermore, bug reports or any comments on possible improvements of 
 the code or its documentation are greatly appreciated.
-
-## Documentation
-
-Documentation for pyLabFEA is generated using Sphinx. Open 
-pyLabFEA/doc/index.html to browse through the contents.
 
 ## Dependencies
 
@@ -45,7 +45,6 @@ pyLabFEA requires the following packages as imports:
  - [Scipy](https://www.scipy.org/) for numerical solutions
  - [scikit-learn](https://scikit-learn.org/stable/) for machine learning algorithms
  - [MatPlotLib](https://matplotlib.org/) for graphical output
- - [sphinx](http://www.sphinx-doc.org/en/master/) for generating documentation.
 
 ## License
 

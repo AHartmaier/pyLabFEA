@@ -12,6 +12,7 @@ distributed under GNU General Public License (GPLv3)'''
 import numpy as np
 import pyLabFEM as FE
 import matplotlib.pyplot as plt
+from scipy.optimize import fsolve
 from sklearn import svm
 import sys
       
@@ -136,14 +137,57 @@ class Material(object):
             self.msg['yield_fct'] = 'analytical'
         return f
     
+    def ML_full_yf(self, sig, ld=None, verb=False):
+        '''Calculate full ML yield function as distance of given stress to yield locus in loading direction.
+        
+        Parameters
+        ----------
+        sig : Voigt stress tensor
+            Stress
+        ld  : (3,) array
+            Vector of loading direction in princ. stress space (optional)
+        verb : Boolean
+            Indicate whether to be verbose in text output (optional, default: False)
+            
+        Returns
+        -------
+        yf : float
+            Full ML yield function, i.e. distance of sig to yield locus
+        '''
+        sp = FE.Stress(sig).p
+        seq = self.calc_seq(sp)
+        if seq<0.01 and ld is None:
+            yf = seq - 0.85*self.sy
+        else:
+            if (seq>=0.01): #(ld is None) or
+                ld = sp*self.sy/seq
+            x0 = 1.
+            if ld[0]*ld[1] < 0.:
+                x0 = 0.5
+            x1, infodict, ier, msg = fsolve(self.find_yloc, x0, args=ld, xtol=1.e-5, full_output=True)
+            y1 = infodict['fvec']
+            if np.abs(y1)<1.e-3 and x1[0]<3.:
+                # zero of ML yield fct. detected at x1*sy
+                yf = seq - x1[0]*self.calc_seq(ld)
+            else:
+                # zero of ML yield fct. not found: get conservative estimate
+                yf = seq - 0.85*self.sy
+                if verb:
+                    print('Warning in calc_scf')
+                    print('*** detection not successful. yf=', yf,', seq=', seq)
+                    print('*** optimization result (x1,y1,ier,msg):', x1, y1, ier, msg)
+        return yf
     
-    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1, plot=False):
+    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1, 
+                     plot=False, cyl=False):
         '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function
         
         Parameters
         ----------
         x   :  (N,2) or (N,3) array
             Training data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2)
+        cyl : Boolean
+            Indicator for cylindrical stresses if x is has shape (N,3) 
         y_train : 1d-array 
             Result vector for training data (same size as x) 
         x_test  : (N,2) or (N,3) array
@@ -171,14 +215,16 @@ class Material(object):
         N = len(x)
         sh = np.shape(x)
         X_train = np.zeros((N,2))
-        if sh==(N,3):
+        if sh==(N,3) and not cyl:
             'data format: princ. stresses'
             X_train[:,0] = FE.seq_J2(x)/self.sy - 1.
             X_train[:,1] = FE.polar_ang(x)/np.pi
-        elif sh==(N,2):
+            print('Using priciples stresses for training')
+        elif sh==(N,2) or cyl:
             'data format: seq, theta values'
             X_train[:,0] = x[:,0]/self.sy - 1.
             X_train[:,1] = x[:,1]/np.pi
+            print('Using cyclindrical stresses for training')
         else:
             print('*** N, sh', N, sh)
             sys.exit('Data format of training data not recognized')
@@ -398,7 +444,9 @@ class Material(object):
             seq = seq[0]
         return seq
     
-    def elasticity(self, C11=None, C12=None, C44=None, E=None, nu=None):
+    def elasticity(self, C11=None, C12=None, C44=None, # standard parameters for crystals with cubic symmetry
+                   CV=None,                            # user specified Voigt matrix
+                   E=None, nu=None):                   # parameters for isotropic material
         '''Define elastic material properties
         
         Parameters
@@ -406,16 +454,20 @@ class Material(object):
         C11 : float
         C12 : float
         C44 : float 
-            Anisoptropic elastic constants of material (optional, if C11, C12, C44 not given, E and nu must be specified)
+            Anisoptropic elastic constants of material (optional, 
+            if (C11,C12,C44) not given, either (E,nu) or CV must be specified)
         E   : float
         nu  : float 
             Isotropic parameters Young's modulus and Poisson's number (optional, 
-            if E and nu not given, C11, C12, C44 must be specified)
+            if (E,nu) not given, either (C11,C12,C44) or CV must be specified)
+        CV  : (6,6) array
+            Voigt matrix of elastic constants (optional, if CV not given, either
+            (C11,C12,C44) or (E,nu) must be specified)
         '''
-        if (E!=None):
-            if (nu==None):
+        if (E is not None):
+            if (nu is None):
                 sys.exit('Error: Inconsistent definition of material parameters: Only E provided')
-            if ((C11!=None)or(C12!=None)or(C44!=None)):
+            if ((C11 is not None)or(C12 is not None)or(C44 is not None)):
                 sys.exit('Error: Inconsistent definition of material parameters: E provided together with C_ij')
             hh = E/((1.+nu)*(1.-2.*nu))
             self.C11 = (1.-nu)*hh
@@ -423,17 +475,24 @@ class Material(object):
             self.C44 = (0.5-nu)*hh
             self.E = E
             self.nu = nu
-        elif (C11!=None):
-            if (nu!=None):
+            self.CV = None
+        elif (C11 is not None):
+            if (nu is not None):
                 sys.exit('Error: Inconsistent definition of material parameters: nu provided together with C_ij')
-            if ((C12==None)or(C44==None)):
+            if ((C12 is None)or(C44 is None)):
                 sys.exit('Error: Inconsistent definition of material parameters: C_12 or C_44 values missing')
             self.C11 = C11
             self.C12 = C12
             self.C44 = C44
             self.nu = C12/(C11+C12)
             self.E = 2*C44*(1+self.nu) # only for isotropy
+            self.CV = None
             print('Warning: E and nu calculated from anisotropic elastic parameters')
+        elif (CV is not None):
+            self.CV = np.array(CV)
+            self.nu = self.CV[0,1]/(self.CV[0,0]+self.CV[0,1])
+            self.E = 2*self.CV[3,3]*(1+self.nu) # only for isotropy
+            #print('Warning: E and nu calculated from anisotropic elastic parameters')
         else:
             sys.exit('Error: Inconsistent definition of material parameters')   
 
@@ -458,7 +517,7 @@ class Material(object):
         self.Hpr = khard/(1.-khard/self.E)  # constant for w.h.
         self.hill = np.array(hill)  # Hill anisotropic parameters
         self.drucker = drucker   # Drucker-Prager parameter: weight of hydrostatic stress
-
+    
     def epl_dot(self, sig, epl, Cel, deps):
         '''Calculate plastic strain increment relaxing stress back to yield locus; 
         Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures, 
@@ -481,11 +540,16 @@ class Material(object):
             Plastic strain increment
         '''
         peeq = FE.eps_eq(epl)     # equiv. plastic strain
-        yfun = self.calc_yf(sig+Cel@deps, peeq=peeq, pred=True)
-        if self.ML_yf:
-            seq = FE.Stress(sig).sJ2()
-            if seq<0.1:
-                yfun=0. # catch error that can be produced for ML yield function
+        yfun = self.calc_yf(sig+Cel@deps, peeq=peeq)
+        #for DEBUGGING
+        '''yf0  = self.calc_yf(sig, peeq=peeq)
+        if yf0<-FE.ptol and yfun>FE.ptol and peeq<1.e-5:
+            if self.ML_yf:
+                ds = Cel@deps
+                yfun = self.ML_full_yf(sig+ds)
+            print('*** Warning in epl_dot: Step crosses yield surface')
+            print('sig, epl, deps, yfun, yf0, peeq,caller', sig, epl, deps, yfun, yf0, peeq, sys._getframe().f_back.f_code.co_name)
+            yfun=0. # catch error that can be produced for anisotropic materials'''
         if (yfun<=FE.ptol):
             pdot = np.zeros(6)
         else:
@@ -520,7 +584,7 @@ class Material(object):
         Ct = Cel - np.kron(ca, ca).reshape(6,6)/hh
         return Ct
     
-    def find_yloc(self, x, snorm, ana=False):
+    def find_yloc(self, x, sp, ana=False):
         '''Function to expand unit stresses by factor and calculate yield function;
         used by search algorithm to find zeros of yield function.
         
@@ -528,17 +592,17 @@ class Material(object):
         ----------
         x : 1d-array
             Multiplyer for stress
-        snorm : (3,) array
+        sp : (3,) array
             Principal stress
         ana : Boolean
             Decides if analytical yield function is evaluated (optional, default: False)
         Returns
         -------
         f : 1d-array
-            Yield function evaluated at sig=x.snorm
+            Yield function evaluated at sig=x.sp
         '''
         y = np.array([x,x,x]).transpose()
-        f = self.calc_yf(y*snorm, ana=ana)
+        f = self.calc_yf(y*sp, ana=ana, pred=False)
         return f
     
     def ellipsis(self, a=1., b=1./np.sqrt(3.), n=72):
@@ -775,7 +839,7 @@ class Material(object):
         'svae plot to file if filename is provided'
         if file is not None:
             fig.savefig(file+'.pdf', format='pdf', dpi=300)
-        return ax
+        return axs
 
     
     def calc_properties(self, size=2, Nel=2, verb=False, eps=0.005, min_step=None, sigeps=False):
@@ -875,10 +939,10 @@ class Material(object):
             Fontsize for axis annotations (optional, default: 14)
         '''
         legend = []
-        print('==============================================================')
+        print('---------------------------------------------------------')
         for sel in self.prop:
-            print('J2 yield stress under',self.prop[sel]['name'],'loading:', self.propJ2[sel]['ys'],'MPa')
-            print('==============================================================')
+            print('J2 yield stress under',self.prop[sel]['name'],'loading:', self.propJ2[sel]['ys'].round(decimals=3),'MPa')
+            print('---------------------------------------------------------')
             plt.plot(self.propJ2[sel]['eeq']*100., self.propJ2[sel]['seq'], self.prop[sel]['style'])
             legend.append(self.prop[sel]['name'])
         plt.title('Material: '+self.name,fontsize=fontsize)
@@ -892,8 +956,8 @@ class Material(object):
         plt.show()
         if Hill:
             for sel in self.prop:
-                print('Hill yield stress under',self.prop[sel]['name'],'loading:', self.prop[sel]['ys'],'MPa')
-                print('==============================================================')
+                print('Hill yield stress under',self.prop[sel]['name'],'loading:', self.prop[sel]['ys'].round(decimals=3),'MPa')
+                print('---------------------------------------------------------')
                 plt.plot(self.prop[sel]['eeq']*100., self.prop[sel]['seq'], self.prop[sel]['style'])
                 legend.append(self.prop[sel]['name'])
             plt.title('Material: '+self.name,fontsize=fontsize)

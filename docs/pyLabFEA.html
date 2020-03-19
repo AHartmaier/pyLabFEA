@@ -14,7 +14,7 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Examples" href="examples.html" />
+    <link rel="prev" title="Notebooks" href="examples.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -527,7 +527,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Voigt stiffness matrix of element material</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>2d array</p>
+<dd class="field-odd"><p>(6,6) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1321,6 +1321,27 @@ Chapter 6, Eqs. (6.9) and (6.18)</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="pyLabMaterial.Material.ML_full_yf">
+<code class="sig-name descname">ML_full_yf</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">ld=None</em>, <em class="sig-param">verb=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.ML_full_yf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.ML_full_yf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate full ML yield function as distance of given stress to yield locus in loading direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sig</strong> (<em>Voigt stress tensor</em>) – Stress</p></li>
+<li><p><strong>ld</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Vector of loading direction in princ. stress space (optional)</p></li>
+<li><p><strong>verb</strong> (<em>Boolean</em>) – Indicate whether to be verbose in text output (optional, default: False)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>yf</strong> – Full ML yield function, i.e. distance of sig to yield locus</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="pyLabMaterial.Material.calc_fgrad">
 <code class="sig-name descname">calc_fgrad</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">seq=None</em>, <em class="sig-param">ana=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.calc_fgrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.calc_fgrad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate gradient to yield surface</p>
@@ -1403,17 +1424,20 @@ Drucker-like approach for tension-compression assymetry</p>
 
 <dl class="method">
 <dt id="pyLabMaterial.Material.elasticity">
-<code class="sig-name descname">elasticity</code><span class="sig-paren">(</span><em class="sig-param">C11=None</em>, <em class="sig-param">C12=None</em>, <em class="sig-param">C44=None</em>, <em class="sig-param">E=None</em>, <em class="sig-param">nu=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.elasticity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">elasticity</code><span class="sig-paren">(</span><em class="sig-param">C11=None</em>, <em class="sig-param">C12=None</em>, <em class="sig-param">C44=None</em>, <em class="sig-param">CV=None</em>, <em class="sig-param">E=None</em>, <em class="sig-param">nu=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.elasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define elastic material properties</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>C11</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p></li>
 <li><p><strong>C12</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p></li>
-<li><p><strong>C44</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Anisoptropic elastic constants of material (optional, if C11, C12, C44 not given, E and nu must be specified)</p></li>
+<li><p><strong>C44</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Anisoptropic elastic constants of material (optional,
+if (C11,C12,C44) not given, either (E,nu) or CV must be specified)</p></li>
 <li><p><strong>E</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – </p></li>
 <li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Isotropic parameters Young’s modulus and Poisson’s number (optional,
-if E and nu not given, C11, C12, C44 must be specified)</p></li>
+if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</p></li>
+<li><p><strong>CV</strong> (<em>(</em><em>6</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Voigt matrix of elastic constants (optional, if CV not given, either
+(C11,C12,C44) or (E,nu) must be specified)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1466,19 +1490,19 @@ Chapter 6, Eqs. (6.4), (6.8) and (6.17)</p>
 
 <dl class="method">
 <dt id="pyLabMaterial.Material.find_yloc">
-<code class="sig-name descname">find_yloc</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">snorm</em>, <em class="sig-param">ana=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.find_yloc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.find_yloc" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">find_yloc</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">sp</em>, <em class="sig-param">ana=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.find_yloc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.find_yloc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to expand unit stresses by factor and calculate yield function;
 used by search algorithm to find zeros of yield function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>1d-array</em>) – Multiplyer for stress</p></li>
-<li><p><strong>snorm</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Principal stress</p></li>
+<li><p><strong>sp</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Principal stress</p></li>
 <li><p><strong>ana</strong> (<em>Boolean</em>) – Decides if analytical yield function is evaluated (optional, default: False)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>f</strong> – Yield function evaluated at sig=x.snorm</p>
+<dd class="field-even"><p><strong>f</strong> – Yield function evaluated at sig=x.sp</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>1d-array</p>
@@ -1592,12 +1616,13 @@ behavior is supported</p>
 
 <dl class="method">
 <dt id="pyLabMaterial.Material.setup_yf_SVM">
-<code class="sig-name descname">setup_yf_SVM</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y_train</em>, <em class="sig-param">x_test=None</em>, <em class="sig-param">y_test=None</em>, <em class="sig-param">C=10.0</em>, <em class="sig-param">gamma=1.0</em>, <em class="sig-param">fs=0.1</em>, <em class="sig-param">plot=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.setup_yf_SVM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.setup_yf_SVM" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">setup_yf_SVM</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y_train</em>, <em class="sig-param">x_test=None</em>, <em class="sig-param">y_test=None</em>, <em class="sig-param">C=10.0</em>, <em class="sig-param">gamma=1.0</em>, <em class="sig-param">fs=0.1</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">cyl=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.setup_yf_SVM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.setup_yf_SVM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Training data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2)</p></li>
+<li><p><strong>cyl</strong> (<em>Boolean</em>) – Indicator for cylindrical stresses if x is has shape (N,3)</p></li>
 <li><p><strong>y_train</strong> (<em>1d-array</em>) – Result vector for training data (same size as x)</p></li>
 <li><p><strong>x_test</strong> (<em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Test data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2) (optional)</p></li>
 <li><p><strong>y_test</strong> – Result vector for test data (optional)</p></li>
@@ -1642,7 +1667,7 @@ behavior is supported</p>
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Notebooks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyLabFEM">Module FEM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyLabMaterial">Module Material</a></li>
@@ -1654,7 +1679,7 @@ behavior is supported</p>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="examples.html" title="previous chapter">Examples</a></li>
+      <li>Previous: <a href="examples.html" title="previous chapter">Notebooks</a></li>
   </ul></li>
 </ul>
 </div>

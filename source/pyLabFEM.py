@@ -10,7 +10,6 @@ Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 import numpy as np
-from scipy.optimize import fsolve
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import sys
@@ -119,10 +118,10 @@ def sp_cart(scyl):
               np.tensordot(np.sin(theta), b_vec, axes=0)) \
              *np.sqrt(2./3.)*np.array([seq,seq,seq]).T
     if sh[0]==3:
-        p = scyl[:,3]
+        p = scyl[:,2]
         sprinc += np.array([p,p,p]).T
     if sh==(2,) or sh==(3,):
-        sprinc=sc[0]
+        sprinc=sprinc[0]
     return sprinc
 
 def s_cyl(sprinc, mat=None):
@@ -493,7 +492,7 @@ class Model(object):
             Volume of element
         Jac   : float
             Determinant of Jacobian of iso-parametric formulation
-        CV    : 2d array
+        CV    : (6,6) array
             Voigt stiffness matrix of element material
         elstiff : 2-d array
             Tangent stiffness tensor of element
@@ -522,27 +521,30 @@ class Model(object):
             self.Sect = sect
             self.Mat = mat
             DIM = model.dim
-            C11 = mat.C11
-            C12 = mat.C12
-            C44 = mat.C44 
             #Calculate Voigt stiffness matrix for plane stress and plane strain'
-            if (model.planestress):
-                hh = mat.E/(1-mat.nu*mat.nu)
-                C12 = mat.nu*hh
-                C11 = hh
-                self.CV = np.array([[C11, C12, 0., 0.,  0.,  0.], \
-                   [C12, C11, 0., 0.,  0.,  0.], \
-                   [0., 0., 0., 0.,  0.,  0.], \
-                   [0.,  0.,  0.,  0., 0.,  0.], \
-                   [0.,  0.,  0.,  0.,  0., 0.], \
-                   [0.,  0.,  0.,  0.,  0.,  C44]])
+            if mat.CV is None:
+                C11 = mat.C11
+                C12 = mat.C12
+                C44 = mat.C44 
+                if (model.planestress):
+                    hh = mat.E/(1-mat.nu*mat.nu)
+                    C12 = mat.nu*hh
+                    C11 = hh
+                    self.CV = np.array([[C11, C12, 0., 0.,  0.,  0.], \
+                       [C12, C11, 0., 0.,  0.,  0.], \
+                       [0., 0., 0., 0.,  0.,  0.], \
+                       [0.,  0.,  0.,  0., 0.,  0.], \
+                       [0.,  0.,  0.,  0.,  0., 0.], \
+                       [0.,  0.,  0.,  0.,  0.,  C44]])
+                else:
+                    self.CV = np.array([[C11, C12, C12, 0.,  0.,  0.], \
+                       [C12, C11, C12, 0.,  0.,  0.], \
+                       [C12, C12, C11, 0.,  0.,  0.], \
+                       [0.,  0.,  0.,  C44, 0.,  0.], \
+                       [0.,  0.,  0.,  0.,  C44, 0.], \
+                       [0.,  0.,  0.,  0.,  0.,  C44]])
             else:
-                self.CV = np.array([[C11, C12, C12, 0.,  0.,  0.], \
-                   [C12, C11, C12, 0.,  0.,  0.], \
-                   [C12, C12, C11, 0.,  0.,  0.], \
-                   [0.,  0.,  0.,  C44, 0.,  0.], \
-                   [0.,  0.,  0.,  0.,  C44, 0.], \
-                   [0.,  0.,  0.,  0.,  0.,  C44]])
+                self.CV = mat.CV
             self.elstiff = self.CV
             
             #initialize element quantities
@@ -979,7 +981,7 @@ class Model(object):
                     Kred[i,j] = K[ind[i], ind[j]]
             return Kred
         
-        'evaluate yield function in each element an change element stiffness matrix'
+        'evaluate yield function in each element/for each Gauss point and change element stiffness matrix'
         'to tangent stiffness if in plastic regime'
         def calc_el_yldfct():
             f = []
@@ -989,53 +991,44 @@ class Model(object):
                     peeq = eps_eq(el.epl+el.depl()) # calculate equiv. plastic strain
                     sig = el.sig+el.dsig()
                     hh = el.Mat.calc_yf(sig, peeq=peeq)
-                    if el.Mat.ML_yf and hh>ptol:
-                        seq = Stress(el.sig).sJ2()
-                        if seq<0.1:
-                            hh = 0. # catch error that can be produced for ML yield function
-                    f.append(hh)
                     if hh > ptol:
+                        # for debuggin
+                        '''h0 = el.Mat.calc_yf(el.sig,peeq=eps_eq(el.epl)) # calculate yield function at last converged step
+                        if h0 < -ptol:
+                            'origin of step in elastic region, force step to end at yield surface'
+                            print('Warning in calc_el_yldfct: Increment crosses yield surface')
+                            print('sig, peeq, hh, h0, ptol, el.sig, el.epl', sig, peeq, hh, h0, ptol, el.sig, el.epl)
+                            hh = 0.
+                        else:
+                            'step fully in plastic regime'
+                        '''
                         el.elstiff = el.Mat.C_tan(el.sig, el.CV)  # for plasticity calculate tangent stiffness
                         el.calc_Kel()                             # and update element stiffness matrix
+                    f.append(hh)
                 else:
                     f.append(0.)
             return np.array(f)
         
         'calculate scaling factor for load steps'
-        def calc_scf(sglob):
+        def calc_scf():
             sc_list = [1.]
             for el in self.element:
                 # test if yield criterion is exceeded
                 if (el.Mat.sy!=None):  # not necessary for elastic material
-                    peeq = 0.#eps_eq(el.epl) # calculate equiv. plastic strain
+                    peeq = eps_eq(el.epl) # calculate equiv. plastic strain
                     yf0 = el.Mat.calc_yf(el.sig, peeq=peeq)  # yield fct. at start of load step
-                    'if element starts in elestic regime load step can only touch yield surface'
+                    'if element starts in elastic regime load step can only touch yield surface'
                     if  yf0 < -0.15:
-                        sref = el.Mat.calc_seq(sglob)   # global equiv. stress at max load step
+                        sref = Stress(el.sig+el.dsig()).seq(el.Mat) # element stress at max load step
                         if el.Mat.ML_yf:
-                            # for ML categorical yield function get better approximation for predictor step
-                            seq = Stress(el.sig).sJ2()
+                            'for categorial ML yield function, calculate yf0 as distance to yield surface'
+                            'construct normal stress vector in loading sirection for search of yield point'
                             hs = np.zeros(3)
                             if np.abs(max_dbcr)>1.e-6:
-                                hs[0] = el.Mat.sy*np.sign(max_dbcr) # construct stress vector for search of yield point
+                                hs[0] = el.Mat.sy*np.sign(max_dbcr)
                             if np.abs(max_dbct)>1.e-6:
                                 hs[1] = el.Mat.sy*np.sign(max_dbct)
-                            x0 = 1.
-                            if max_dbcr*max_dbct<0:
-                                x0 = 0.5
-                            x1, infodict, ier, msg = fsolve(el.Mat.find_yloc, x0, args=hs, xtol=1.e-5, 
-                                                                full_output=True)
-                            y1 = infodict['fvec']
-                            if np.abs(y1)<1.e-3 and x1<3.:
-                                # zero of ML yield fct. detected at x1*sy
-                                yf0 = seq - x1[0]*el.Mat.calc_seq(hs)
-                            else:
-                                # zero of ML yield fct. not found: get conservative estimate
-                                yf0 = seq - 0.85*el.Mat.sy
-                                if verb:
-                                    print('Warning in calc_scf')
-                                    print('*** detection not successful. yf0=', yf0,', seq=', seq)
-                                    print('*** optimization result (x1,y1,ier,msg):', x1, y1, ier, msg)
+                            yf0 = el.Mat.ML_full_yf(el.sig, ld=hs, verb=verb)  # distance of initial stress state to yield locus
                         sc_list.append(-yf0/sref)
             # select scaling appropriate scaling such that no element crosses yield surface
             scf = np.amin(sc_list)
@@ -1090,10 +1083,10 @@ class Model(object):
                 # force bc on rhs nodes
                 for j in self.noright:
                     i = j*self.dim
-                    hh=1.
+                    hh=1./(self.NnodeY-1)
                     hy = self.npos[i+1] #y-position of node
                     if hy<1.e-3 or hy>self.leny-1.e-3:
-                        hh=0.5  # reduce force on corner nodes
+                        hh*=0.5  # reduce force on corner nodes
                     df[i] += dbcr*hh
                 
             # BC on top nodes can be force or displacement
@@ -1112,10 +1105,10 @@ class Model(object):
                     # force bc on top nodes
                     for j in self.notop:
                         i = j*self.dim + 1
-                        hh=1.
+                        hh=1./(self.NnodeX-1)
                         hx = self.npos[i-1] #x-position of node
                         if hx<1.e-3 or hx>self.lenx-1.e-3:
-                            hh=0.5  # reduce force on corner nodes
+                            hh*=0.5  # reduce force on corner nodes
                         df[i] += dbct*hh
             return du, df, ind
             
@@ -1173,7 +1166,7 @@ class Model(object):
         il = 0
         bc_inc = True
         while bc_inc:
-            'define increments for boundary conditions'
+            'define global increments for boundary conditions'
             if min_step is None:
                 if self.dim==1:
                     max_dbct = None
@@ -1187,28 +1180,21 @@ class Model(object):
                 else:
                     max_dbct = (self.bct-bct0)/sc
                 max_dbcr = (self.bcr-bcr0)/sc
-            'calculate du and df fulfilling for max. load step consistent with stiffness matrix K'
+            'calculate du and df fulfilling mech. equil. for max. load step consistent with stiffness matrix K'
             dbcr = max_dbcr
             dbct = max_dbct
-            self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ. 
-            self.du[ind] = np.linalg.solve(Kred(ind), self.df[ind]) # Solve reduced system of equations
-            self.df = K@self.du
-            self.u += self.du
-            self.f += self.df
+            self.du, df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ. 
+            self.du[ind] = np.linalg.solve(Kred(ind), df[ind]) # Solve reduced system of equations
             'calculate scaling factor for predictor step in case of non-linear model'
             if self.nonlin:
-                self.calc_global()  # calculate global values for solution
-                self.u -= self.du
-                self.f -= self.df
-                sglob = np.array([self.glob['sbc1'], self.glob['sbc2'], 0.])
-                scale_bc = calc_scf(sglob) # calculate predictor step to hit the yield surface
+                scale_bc = calc_scf() # calculate global predictor step to hit the yield surface
                 if verb:
                     print('##scaling factor',scale_bc)
                 dbcr = max_dbcr*scale_bc  # dbcr >= self.bcr - bcr0
                 dbct = max_dbct*scale_bc  # dbct <= self.bct - bct0
                 'calculate du and df fulfilling for scaled load step consistent with stiffness matrix K'
-                self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ.  
-                self.du[ind] = np.linalg.solve(Kred(ind), self.df[ind]) # Solve reduced system of equations
+                self.du, df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ.  
+                self.du[ind] = np.linalg.solve(Kred(ind), df[ind]) # Solve reduced system of equations
                 f = calc_el_yldfct() # evaluate elemental yld.fct. and  modify elem. stiffness matrix if required
                 conv = np.all(f<=ptol)
                 i = 0
@@ -1221,8 +1207,8 @@ class Model(object):
                     'use tangent stiffness assigned to elements in "calc_el_yldfct"'
                     'same step size is used for initial predictor step'
                     K = self.setupK()  # assemble tangent stiffness matrix
-                    self.du, self.df, ind = calc_BC(K, ul, ub, dbcr, dbct)
-                    self.du[ind] = np.linalg.solve(Kred(ind), self.df[ind]) # solve du with current stiffness matrix
+                    self.du, df, ind = calc_BC(K, ul, ub, dbcr, dbct)
+                    self.du[ind] = np.linalg.solve(Kred(ind), df[ind]) # solve du with current stiffness matrix
                     f = calc_el_yldfct()
                     conv = np.all(f<=ptol)
                     if verb:
@@ -1233,17 +1219,17 @@ class Model(object):
                         print('yield function=',f,'residual forces on inner nodes=',fres[jin])
                         el = self.element[0]
                         print('sig, disg, epl, depl, deps:',el.sig, el.dsig(), el.epl, el.depl(), el.deps())
-                    if i>5:
+                    if i>7:
                         print('Warning: No convergence achieved, abandoning')
-                        print('conv,i,f,ptol,dbcr,dbct,sglob',conv,i,f,ptol,dbcr,dbct,sglob)
+                        print('conv,i,f,ptol,dbcr,dbct',conv,i,f,ptol,dbcr,dbct)
                         conv = True
                     if not conv:
                         dbcr *= 0.25
                         dbct *= 0.25
                     i += 1
-                self.u += self.du
-                self.f += K@self.du
             'update internal variables with results of load step'
+            self.u += self.du
+            self.f += K@self.du
             for el in self.element:
                 el.eps = el.eps_t()
                 el.epl += el.depl()

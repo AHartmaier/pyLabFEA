@@ -45,6 +45,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pyLabFEM</span> <span class="k">as</span> <span class="nn">FE</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fsolve</span>
 <span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">svm</span>
 <span class="kn">import</span> <span class="nn">sys</span>
       
@@ -169,14 +170,57 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;yield_fct&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;analytical&#39;</span>
         <span class="k">return</span> <span class="n">f</span></div>
     
+<div class="viewcode-block" id="Material.ML_full_yf"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.ML_full_yf">[docs]</a>    <span class="k">def</span> <span class="nf">ML_full_yf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">ld</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Calculate full ML yield function as distance of given stress to yield locus in loading direction.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        sig : Voigt stress tensor</span>
+<span class="sd">            Stress</span>
+<span class="sd">        ld  : (3,) array</span>
+<span class="sd">            Vector of loading direction in princ. stress space (optional)</span>
+<span class="sd">        verb : Boolean</span>
+<span class="sd">            Indicate whether to be verbose in text output (optional, default: False)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        yf : float</span>
+<span class="sd">            Full ML yield function, i.e. distance of sig to yield locus</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">FE</span><span class="o">.</span><span class="n">Stress</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">p</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">seq</span><span class="o">&lt;</span><span class="mf">0.01</span> <span class="ow">and</span> <span class="n">ld</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">yf</span> <span class="o">=</span> <span class="n">seq</span> <span class="o">-</span> <span class="mf">0.85</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">seq</span><span class="o">&gt;=</span><span class="mf">0.01</span><span class="p">):</span> <span class="c1">#(ld is None) or</span>
+                <span class="n">ld</span> <span class="o">=</span> <span class="n">sp</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span><span class="o">/</span><span class="n">seq</span>
+            <span class="n">x0</span> <span class="o">=</span> <span class="mf">1.</span>
+            <span class="k">if</span> <span class="n">ld</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">ld</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
+                <span class="n">x0</span> <span class="o">=</span> <span class="mf">0.5</span>
+            <span class="n">x1</span><span class="p">,</span> <span class="n">infodict</span><span class="p">,</span> <span class="n">ier</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="n">fsolve</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">find_yloc</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">ld</span><span class="p">,</span> <span class="n">xtol</span><span class="o">=</span><span class="mf">1.e-5</span><span class="p">,</span> <span class="n">full_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">y1</span> <span class="o">=</span> <span class="n">infodict</span><span class="p">[</span><span class="s1">&#39;fvec&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">y1</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">1.e-3</span> <span class="ow">and</span> <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">&lt;</span><span class="mf">3.</span><span class="p">:</span>
+                <span class="c1"># zero of ML yield fct. detected at x1*sy</span>
+                <span class="n">yf</span> <span class="o">=</span> <span class="n">seq</span> <span class="o">-</span> <span class="n">x1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="n">ld</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># zero of ML yield fct. not found: get conservative estimate</span>
+                <span class="n">yf</span> <span class="o">=</span> <span class="n">seq</span> <span class="o">-</span> <span class="mf">0.85</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span>
+                <span class="k">if</span> <span class="n">verb</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning in calc_scf&#39;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** detection not successful. yf=&#39;</span><span class="p">,</span> <span class="n">yf</span><span class="p">,</span><span class="s1">&#39;, seq=&#39;</span><span class="p">,</span> <span class="n">seq</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** optimization result (x1,y1,ier,msg):&#39;</span><span class="p">,</span> <span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">ier</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yf</span></div>
     
-<div class="viewcode-block" id="Material.setup_yf_SVM"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.setup_yf_SVM">[docs]</a>    <span class="k">def</span> <span class="nf">setup_yf_SVM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Material.setup_yf_SVM"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.setup_yf_SVM">[docs]</a>    <span class="k">def</span> <span class="nf">setup_yf_SVM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> 
+                     <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cyl</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        x   :  (N,2) or (N,3) array</span>
 <span class="sd">            Training data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2)</span>
+<span class="sd">        cyl : Boolean</span>
+<span class="sd">            Indicator for cylindrical stresses if x is has shape (N,3) </span>
 <span class="sd">        y_train : 1d-array </span>
 <span class="sd">            Result vector for training data (same size as x) </span>
 <span class="sd">        x_test  : (N,2) or (N,3) array</span>
@@ -204,14 +248,16 @@
         <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
         <span class="n">X_train</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-        <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">cyl</span><span class="p">:</span>
             <span class="s1">&#39;data format: princ. stresses&#39;</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">FE</span><span class="o">.</span><span class="n">seq_J2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span> <span class="o">-</span> <span class="mf">1.</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">FE</span><span class="o">.</span><span class="n">polar_ang</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-        <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Using priciples stresses for training&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span> <span class="ow">or</span> <span class="n">cyl</span><span class="p">:</span>
             <span class="s1">&#39;data format: seq, theta values&#39;</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span> <span class="o">-</span> <span class="mf">1.</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Using cyclindrical stresses for training&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** N, sh&#39;</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">sh</span><span class="p">)</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Data format of training data not recognized&#39;</span><span class="p">)</span>
@@ -308,6 +354,7 @@
                 <span class="k">return</span> <span class="n">grad</span>
             <span class="s1">&#39;define Jacobian of coordinate transformation&#39;</span>
             <span class="k">def</span> <span class="nf">Jac</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
+                <span class="k">global</span> <span class="n">flag</span>
                 <span class="n">J</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
                 <span class="n">hyd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span>  <span class="c1"># hydrostatic stress</span>
                 <span class="n">dev</span> <span class="o">=</span> <span class="n">sig</span> <span class="o">-</span> <span class="n">hyd</span>  <span class="c1"># deviatoric princ. stress</span>
@@ -430,7 +477,9 @@
             <span class="n">seq</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="k">return</span> <span class="n">seq</span></div>
     
-<div class="viewcode-block" id="Material.elasticity"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.elasticity">[docs]</a>    <span class="k">def</span> <span class="nf">elasticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C11</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">E</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Material.elasticity"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.elasticity">[docs]</a>    <span class="k">def</span> <span class="nf">elasticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">C11</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C12</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C44</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="c1"># standard parameters for crystals with cubic symmetry</span>
+                   <span class="n">CV</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>                            <span class="c1"># user specified Voigt matrix</span>
+                   <span class="n">E</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>                   <span class="c1"># parameters for isotropic material</span>
         <span class="sd">&#39;&#39;&#39;Define elastic material properties</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
@@ -438,16 +487,20 @@
 <span class="sd">        C11 : float</span>
 <span class="sd">        C12 : float</span>
 <span class="sd">        C44 : float </span>
-<span class="sd">            Anisoptropic elastic constants of material (optional, if C11, C12, C44 not given, E and nu must be specified)</span>
+<span class="sd">            Anisoptropic elastic constants of material (optional, </span>
+<span class="sd">            if (C11,C12,C44) not given, either (E,nu) or CV must be specified)</span>
 <span class="sd">        E   : float</span>
 <span class="sd">        nu  : float </span>
 <span class="sd">            Isotropic parameters Young&#39;s modulus and Poisson&#39;s number (optional, </span>
-<span class="sd">            if E and nu not given, C11, C12, C44 must be specified)</span>
+<span class="sd">            if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</span>
+<span class="sd">        CV  : (6,6) array</span>
+<span class="sd">            Voigt matrix of elastic constants (optional, if CV not given, either</span>
+<span class="sd">            (C11,C12,C44) or (E,nu) must be specified)</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">if</span> <span class="p">(</span><span class="n">E</span><span class="o">!=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">nu</span><span class="o">==</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">E</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">nu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Error: Inconsistent definition of material parameters: Only E provided&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">((</span><span class="n">C11</span><span class="o">!=</span><span class="kc">None</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">C12</span><span class="o">!=</span><span class="kc">None</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">C44</span><span class="o">!=</span><span class="kc">None</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">C11</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">C12</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">C44</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">)):</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Error: Inconsistent definition of material parameters: E provided together with C_ij&#39;</span><span class="p">)</span>
             <span class="n">hh</span> <span class="o">=</span> <span class="n">E</span><span class="o">/</span><span class="p">((</span><span class="mf">1.</span><span class="o">+</span><span class="n">nu</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="mf">2.</span><span class="o">*</span><span class="n">nu</span><span class="p">))</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">C11</span> <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">nu</span><span class="p">)</span><span class="o">*</span><span class="n">hh</span>
@@ -455,17 +508,24 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">C44</span> <span class="o">=</span> <span class="p">(</span><span class="mf">0.5</span><span class="o">-</span><span class="n">nu</span><span class="p">)</span><span class="o">*</span><span class="n">hh</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="n">E</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">nu</span>
-        <span class="k">elif</span> <span class="p">(</span><span class="n">C11</span><span class="o">!=</span><span class="kc">None</span><span class="p">):</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">nu</span><span class="o">!=</span><span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CV</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">C11</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">nu</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Error: Inconsistent definition of material parameters: nu provided together with C_ij&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="p">((</span><span class="n">C12</span><span class="o">==</span><span class="kc">None</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">C44</span><span class="o">==</span><span class="kc">None</span><span class="p">)):</span>
+            <span class="k">if</span> <span class="p">((</span><span class="n">C12</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)</span><span class="ow">or</span><span class="p">(</span><span class="n">C44</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">)):</span>
                 <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Error: Inconsistent definition of material parameters: C_12 or C_44 values missing&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">C11</span> <span class="o">=</span> <span class="n">C11</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">C12</span> <span class="o">=</span> <span class="n">C12</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">C44</span> <span class="o">=</span> <span class="n">C44</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="n">C12</span><span class="o">/</span><span class="p">(</span><span class="n">C11</span><span class="o">+</span><span class="n">C12</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">C44</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span> <span class="c1"># only for isotropy</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CV</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: E and nu calculated from anisotropic elastic parameters&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="p">(</span><span class="n">CV</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CV</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">CV</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">nu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CV</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CV</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">CV</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">E</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">CV</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">nu</span><span class="p">)</span> <span class="c1"># only for isotropy</span>
+            <span class="c1">#print(&#39;Warning: E and nu calculated from anisotropic elastic parameters&#39;)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Error: Inconsistent definition of material parameters&#39;</span><span class="p">)</span>   </div>
 
@@ -490,7 +550,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">Hpr</span> <span class="o">=</span> <span class="n">khard</span><span class="o">/</span><span class="p">(</span><span class="mf">1.</span><span class="o">-</span><span class="n">khard</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">E</span><span class="p">)</span>  <span class="c1"># constant for w.h.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hill</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span>  <span class="c1"># Hill anisotropic parameters</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">drucker</span> <span class="o">=</span> <span class="n">drucker</span>   <span class="c1"># Drucker-Prager parameter: weight of hydrostatic stress</span></div>
-
+    
 <div class="viewcode-block" id="Material.epl_dot"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.epl_dot">[docs]</a>    <span class="k">def</span> <span class="nf">epl_dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">epl</span><span class="p">,</span> <span class="n">Cel</span><span class="p">,</span> <span class="n">deps</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Calculate plastic strain increment relaxing stress back to yield locus; </span>
 <span class="sd">        Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures, </span>
@@ -513,7 +573,16 @@
 <span class="sd">            Plastic strain increment</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">peeq</span> <span class="o">=</span> <span class="n">FE</span><span class="o">.</span><span class="n">eps_eq</span><span class="p">(</span><span class="n">epl</span><span class="p">)</span>     <span class="c1"># equiv. plastic strain</span>
-        <span class="n">yfun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">sig</span><span class="o">+</span><span class="n">Cel</span><span class="nd">@deps</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">yfun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">sig</span><span class="o">+</span><span class="n">Cel</span><span class="nd">@deps</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">)</span>
+        <span class="c1">#for DEBUGGING</span>
+        <span class="sd">&#39;&#39;&#39;yf0  = self.calc_yf(sig, peeq=peeq)</span>
+<span class="sd">        if yf0&lt;-FE.ptol and yfun&gt;FE.ptol and peeq&lt;1.e-5:</span>
+<span class="sd">            if self.ML_yf:</span>
+<span class="sd">                ds = Cel@deps</span>
+<span class="sd">                yfun = self.ML_full_yf(sig+ds)</span>
+<span class="sd">            print(&#39;*** Warning in epl_dot: Step crosses yield surface&#39;)</span>
+<span class="sd">            print(&#39;sig, epl, deps, yfun, yf0, peeq,caller&#39;, sig, epl, deps, yfun, yf0, peeq, sys._getframe().f_back.f_code.co_name)</span>
+<span class="sd">            yfun=0. # catch error that can be produced for anisotropic materials&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">yfun</span><span class="o">&lt;=</span><span class="n">FE</span><span class="o">.</span><span class="n">ptol</span><span class="p">):</span>
             <span class="n">pdot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -548,7 +617,7 @@
         <span class="n">Ct</span> <span class="o">=</span> <span class="n">Cel</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">ca</span><span class="p">,</span> <span class="n">ca</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span><span class="o">/</span><span class="n">hh</span>
         <span class="k">return</span> <span class="n">Ct</span></div>
     
-<div class="viewcode-block" id="Material.find_yloc"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.find_yloc">[docs]</a>    <span class="k">def</span> <span class="nf">find_yloc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">snorm</span><span class="p">,</span> <span class="n">ana</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="Material.find_yloc"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.find_yloc">[docs]</a>    <span class="k">def</span> <span class="nf">find_yloc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">ana</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Function to expand unit stresses by factor and calculate yield function;</span>
 <span class="sd">        used by search algorithm to find zeros of yield function.</span>
 <span class="sd">        </span>
@@ -556,17 +625,17 @@
 <span class="sd">        ----------</span>
 <span class="sd">        x : 1d-array</span>
 <span class="sd">            Multiplyer for stress</span>
-<span class="sd">        snorm : (3,) array</span>
+<span class="sd">        sp : (3,) array</span>
 <span class="sd">            Principal stress</span>
 <span class="sd">        ana : Boolean</span>
 <span class="sd">            Decides if analytical yield function is evaluated (optional, default: False)</span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        f : 1d-array</span>
-<span class="sd">            Yield function evaluated at sig=x.snorm</span>
+<span class="sd">            Yield function evaluated at sig=x.sp</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">,</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span>
-        <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">snorm</span><span class="p">,</span> <span class="n">ana</span><span class="o">=</span><span class="n">ana</span><span class="p">)</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_yf</span><span class="p">(</span><span class="n">y</span><span class="o">*</span><span class="n">sp</span><span class="p">,</span> <span class="n">ana</span><span class="o">=</span><span class="n">ana</span><span class="p">,</span> <span class="n">pred</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">f</span></div>
     
 <div class="viewcode-block" id="Material.ellipsis"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.ellipsis">[docs]</a>    <span class="k">def</span> <span class="nf">ellipsis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mf">1.</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">3.</span><span class="p">),</span> <span class="n">n</span><span class="o">=</span><span class="mi">72</span><span class="p">):</span>
@@ -803,7 +872,7 @@
         <span class="s1">&#39;svae plot to file if filename is provided&#39;</span>
         <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">file</span><span class="o">+</span><span class="s1">&#39;.pdf&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">ax</span></div>
+        <span class="k">return</span> <span class="n">axs</span></div>
 
     
 <div class="viewcode-block" id="Material.calc_properties"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.calc_properties">[docs]</a>    <span class="k">def</span> <span class="nf">calc_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">Nel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">0.005</span><span class="p">,</span> <span class="n">min_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sigeps</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
@@ -903,10 +972,10 @@
 <span class="sd">            Fontsize for axis annotations (optional, default: 14)</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">legend</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;==============================================================&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;J2 yield stress under&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="s1">&#39;loading:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">propJ2</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;ys&#39;</span><span class="p">],</span><span class="s1">&#39;MPa&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;==============================================================&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;J2 yield stress under&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="s1">&#39;loading:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">propJ2</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;ys&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">decimals</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span><span class="s1">&#39;MPa&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">propJ2</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;eeq&#39;</span><span class="p">]</span><span class="o">*</span><span class="mf">100.</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">propJ2</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;seq&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;style&#39;</span><span class="p">])</span>
             <span class="n">legend</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Material: &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
@@ -920,8 +989,8 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">if</span> <span class="n">Hill</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">sel</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Hill yield stress under&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="s1">&#39;loading:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;ys&#39;</span><span class="p">],</span><span class="s1">&#39;MPa&#39;</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;==============================================================&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Hill yield stress under&#39;</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">],</span><span class="s1">&#39;loading:&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;ys&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">decimals</span><span class="o">=</span><span class="mi">3</span><span class="p">),</span><span class="s1">&#39;MPa&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
                 <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;eeq&#39;</span><span class="p">]</span><span class="o">*</span><span class="mf">100.</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;seq&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;style&#39;</span><span class="p">])</span>
                 <span class="n">legend</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Material: &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
@@ -955,7 +1024,7 @@
 <p class="caption"><span class="caption-text">Contents:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pyLabFEA.html">Modules</a></li>
 </ul>
 

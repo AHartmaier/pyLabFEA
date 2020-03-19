@@ -1,37 +1,46 @@
-Examples
-========
+Notebooks
+=========
 
-Introduction
-------------
+The following tutorials and research applications refer to Jupyter notebooks provided 
+in the repository. These notebooks can be started directly with `Binder`_
+
+.. _Binder: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
+
+.. image:: https://mybinder.org/badge_logo.svg
+ :target: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
+
+
+Tutorial 1: Introduction
+------------------------
 
 In this tutorial, the basic steps of using pyLabFEA for elastic materials are demonstrated.
 
 .. raw:: html
    :file: _static/pyLabFEA_Introduction.html
    
-Tutorial Composites
--------------------
+Tutorial 2: Composites
+----------------------
 
 In this tutorial, the properties of composites made from different elastic materials are
 analyzed, and the numerical solution is compared with the expected values from mechanical models.
 
 .. raw:: html
-   :file: _static/pyLabFEA_Tutorial_Composite.html
+   :file: _static/pyLabFEA_Composites.html
    
-Non-linear FEA: Plasticity
---------------------------
+Tutorial 3: Plasticity
+----------------------
 
-Non-linear material behavior in form of plasticity is introduced in this example.
+Non-linear material behavior in form of plasticity is introduced in this tutorial.
 
 .. raw:: html
    :file: _static/pyLabFEA_Plasticity.html
 
    
-Machine Learning Flow Rule
---------------------------
+Application 1: Machine Learning Flow Rule
+-----------------------------------------
 
-This example demonstrates how a trained machine learning algorithm 
-can be used as constitutive model for anisotropic plasticity of metals.
+In this application, a machine learning algorithm is trained to
+be used as constitutive model for anisotropic plasticity of metals.
 
 .. raw:: html
    :file: _static/pyLabFEA_ML-FlowRule.html
