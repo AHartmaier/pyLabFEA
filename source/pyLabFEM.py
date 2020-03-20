@@ -23,31 +23,35 @@ b_vec = np.array([0.,  0.5, -0.5])*np.sqrt(2)
 '''Second unit vector spanning deviatoric stress plane (imaginary axis)'''
 ptol = 0.5
 '''Tolerance: Plastic yielding if yield function > ptol'''
-def seq_J2(sprinc):
+def seq_J2(sig):
     '''Calculate J2 equivalent stress from principal stresses
     
     Parameters
     ----------
-    sprinc : (3,), (N,3) or (N,6) array
-         (3,) or (N,3): Principal stress or list of principal stresses;
-         (N,6): Voigt stress
+    sig : (3,), (6,) (N,3) or (N,6) array
+         (3,), (N,3): Principal stress or list of principal stresses;
+         (6,), (N,6): Voigt stress
          
     Returns
     -------
     seq : float or (N,) array
         J2 equivalent stresses
     '''
-    N = len(sprinc)
-    sh = np.shape(sprinc)
+    N = len(sig)
+    sh = np.shape(sig)
     if sh==(3,):
         N = 1 # sprinc is single principle stress vector
-        sprinc=np.array([sprinc])
+        sprinc=np.array([sig])
+    elif sh==(6,):
+        N = 1 # sprinc is single Voigt stress
+        sprinc=np.array([Stress(sig).p])
     elif sh==(N,6):
-        sig = sprinc
         sprinc=np.zeros((N,3))
         for i in range(N):
             sprinc[i,:] = Stress(sig[i,:]).p
-    elif sh!=(N,3):
+    elif sh==(N,3):
+        sprinc=np.array(sig)
+    else:
         print('*** seq_J2: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
         sys.exit('Error: Unknown format of stress in seq_J2')
     d12 = sprinc[:,0] - sprinc[:,1]
@@ -55,35 +59,38 @@ def seq_J2(sprinc):
     d31 = sprinc[:,2] - sprinc[:,0]
     J2  = 0.5*(np.square(d12) + np.square(d23) + np.square(d31))
     seq  = np.sqrt(J2)  # J2 eqiv. stress
-    if sh==(3,): 
+    if sh==(3,) or sh==(6,): 
         seq = seq[0]
     return seq
 
-def polar_ang(sprinc):
+def polar_ang(sig):
     '''Transform principal stresses into polar angle on deviatoric plane spanned by a_vec and b_vec
     
     Parameters
     ----------
-    sprinc : (3,), (N,3) or (N,6) array
+    sig : (3,), (6,) (N,3) or (N,6) array
          (3,), (N,3): Principal stresses; 
-         (N,6): Voigt stress
+         (6,), (N,6): Voigt stress
          
     Returns
     -------
     theta : float or (N,) array
         polar angles in deviatoric plane as positive angle between sprinc and a_vec in range [-pi,+p]
     '''
-    sh = np.shape(sprinc) 
-    N = len(sprinc)
+    sh = np.shape(sig) 
+    N = len(sig)
     if sh==(3,):
         N = 1
-        sprinc = np.array([sprinc])
+        sprinc = np.array([sig])
+    elif sh==(6,):
+        sprinc = np.array([Stress(sig).p])
     elif sh==(N,6):
-        sig = sprinc
         sprinc=np.zeros((N,3))
         for i in range(N):
             sprinc[i,:] = Stress(sig[i,:]).p
-    elif sh!=(N,3):
+    elif sh==(N,3):
+        sprinc=np.array(sig)
+    else:
         print('*** polar_angle: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
         sys.exit('Error: Unknown format of stress in polar_angle')
     hyd = np.sum(sprinc,axis=1)/3.  # hydrostatic component
@@ -92,7 +99,7 @@ def polar_ang(sprinc):
     dsa = np.dot(dev,a_vec)
     dsb = np.dot(dev,b_vec)
     theta = np.angle(dsa + 1j*dsb)
-    if sh==(3,):
+    if sh==(3,) or sh==(6,):
         theta=theta[0]
     return theta
 
@@ -509,9 +516,6 @@ class Model(object):
         epl   : Voigt tensor
             average plastic element strain (defined in ``Model.solve``)
         '''
-        'Methods'
-        #calc_Bmat: Calculate B matrix at Gauss point
-        #calc_quant: calculate element stress, total and plastic strain
 
         def __init__(self, model, nodes, lx, ly, sect, mat):
             self.Model = model
@@ -1237,10 +1241,10 @@ class Model(object):
             'update load step'
             il += 1
             bcr0 += dbcr
-            hl = np.abs(bcr0-self.bcr)>1.e-6 and np.abs(dbcr)>1.e-9
+            hl = np.abs(bcr0-self.bcr)>1.e-6 and np.abs(self.bcr)>1.e-9
             if self.dim>1:
                 bct0 += dbct
-                hr = np.abs(bct0-self.bct)>1.e-6 and np.abs(dbct)>1.e-9
+                hr = np.abs(bct0-self.bct)>1.e-6 and np.abs(self.bct)>1.e-9
             else:
                 hr = False
             bc_inc = hr or hl
@@ -1314,14 +1318,14 @@ class Model(object):
         self.glob['epl'] = epl/Vm
 
     def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True,
-            vmin=None, vmax=None):
+            vmin=None, vmax=None, annot=True):
         '''Produce graphical output: draw elements in deformed shape with color 
         according to field variable 'fsel'; uses matplotlib
         
         Parameters
         ----------
         fsel   : str
-            Field selector for library field
+            Field selector for library field, see Keyword Arguments for possible values
         mag    : float
             Magnification factor for displacements (optional, default: 10)
         cdepth : int
@@ -1332,52 +1336,85 @@ class Model(object):
             Set/unset plotting of nodes (optional, default: True)
         colormap : str
             Name of colormap to be used (optional, default: viridis)
+        annot: Boolean
+            Show annotations for x and y-axis (optional, default: True)
+            
+        Keyword Arguments
+        -----------------
+        strain1  : 
+            total strain in horizontal direction
+        strain2  :
+            total strain in vertical direction
+        stress1  : 
+            horizontal stress component
+        stress2  : 
+            vertical stress component
+        plastic1 :
+            plastic strain in horizontal direction
+        plastic2 :
+            plastic strain in vertical direction
+        seq      :
+            equivalent stress (Hill-formulation for anisotropic plasticity)
+        seqJ2    :
+            equivalent J2 stress
+        peeq     : 
+            equivalent plastic strain
+        etot     : 
+            equivalent total strain
+        ux       : 
+            horizontal displacement
+        uy       : 
+            vertical displacement  
         '''
         fig, ax = plt.subplots(1)
         cmap = mpl.cm.get_cmap(colormap, cdepth)
         def strain1():
             hh = [el.eps[0]*100 for el in self.element]
-            text_cb = 'etot_11 (%)'
+            text_cb = '$\epsilon^\mathrm{tot}_{11}$ (%)'
             return hh, text_cb
         def strain2():
             hh = [el.eps[1]*100 for el in self.element]
-            text_cb = 'etot_22 (%)'
+            text_cb = '$\epsilon^\mathrm{tot}_{22}$ (%)'
             return hh, text_cb
         def stress1():
             hh = [el.sig[0] for el in self.element]
-            text_cb = 'sig_11 (MPa)'
+            text_cb = '$\sigma_{11}$ (MPa)'
             return hh, text_cb
         def stress2():
             hh = [el.sig[1] for el in self.element]
-            text_cb = 'sig_22 (MPa)'
+            text_cb = '$\sigma_{22}$ (MPa)'
             return hh, text_cb
         def plastic1():
             hh = [el.epl[0]*100 for el in self.element]
-            text_cb = 'epl_11 (%)'
+            text_cb = '$\epsilon^\mathrm{pl}_{11}$ (%)'
             return hh, text_cb
         def plastic2():
             hh = [el.epl[1]*100 for el in self.element]
-            text_cb = 'epl_22 (%)'
+            text_cb = '$\epsilon^\mathrm{pl}_{22}$ (%)'
             return hh, text_cb
         def stress_eq():
             hh = [Stress(el.sig).seq(el.Mat) for el in self.element]
-            text_cb = 'eqiv. stress (MPa)'
+            text_cb = '$\sigma_{eq}$ (MPa)'
+            return hh, text_cb
+        def stress_eqJ2():
+            hh = [Stress(el.sig).sJ2() for el in self.element]
+            text_cb = '$\sigma^\mathrm{J2}_{eq}$ (MPa)'
             return hh, text_cb
         def strain_peeq():
             hh = [eps_eq(el.epl)*100 for el in self.element]
-            text_cb = 'eqiv. plastic strain (%)'
+            text_cb = '$\epsilon^\mathrm{pl}_{eq}$ (%)'
             return hh, text_cb
         def strain_etot():
             hh = [eps_eq(el.eps)*100 for el in self.element]
-            text_cb = "eqiv. total strain (%)"
+            text_cb = '$\epsilon^\mathrm{tot}_{eq}$ (%)'
             return hh, text_cb
         def disp_x():
             hh = [el.eps[0]*self.lenx for el in self.element]
-            text_cb = "u_x (mm)"
+            text_cb = '$u_x$ (mm)'
             return hh, text_cb
         def disp_y():
             hh = [el.eps[1]*self.leny for el in self.element]
-            text_cb = "u_y (mm)"
+            text_cb = '$u_y$ (mm)'
             return hh, text_cb
         field={
             'strain1' : strain1(),
@@ -1387,6 +1424,7 @@ class Model(object):
             'plastic1': plastic1(),
             'plastic2': plastic2(),
             'seq'     : stress_eq(),
+            'seqJ2'   : stress_eqJ2(),
             'peeq'    : strain_peeq(),
             'etot'    : strain_etot(),
             'ux'      : disp_x(),
@@ -1458,7 +1496,10 @@ class Model(object):
         axl = fig.add_axes([1.01, 0.15, 0.04, 0.7])  #[left, bottom, width, height]
         # for use in juypter note book: left = 1.01, for python: left = 0.86
         norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
-        cb1 = mpl.colorbar.ColorbarBase(axl, cmap=cmap, norm=norm,
-                               orientation='vertical')
+        cb1 = mpl.colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
         cb1.set_label(text_cb)
+        'add axis annotations'
+        if annot:
+            ax.set_xlabel('x (mm)')
+            ax.set_ylabel('y (mm)')
         plt.show()

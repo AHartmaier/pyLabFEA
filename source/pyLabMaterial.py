@@ -50,6 +50,21 @@ class Material(object):
         Anisotropic elastic constants
     E, nu : float
         Isotropic elastic constants, Young's modulus and Poisson's number
+    
+    Keyword Arguments
+    -----------------
+    prop-propJ2 :
+        Store properties of material (Hill-formulation or J2 formulation) in sub-dictonaries: 
+        'stx' (tensile horiz. stress), 'sty' (tensile vert. stress), 
+        'et2' (equibiaxial tensile strain), 'ect' (pure shear)
+    stx-sty-et2-ect  : sub-dictionaries
+        Store data for 'ys' (float - yield strength), seq (array - eqiv. stress), 
+        'eeq' (array - equiv. total strain), 'peeq' (array - equiv. plastic strain),
+        'sytel' (str - line style for plot), 'name' (str - name in legend)
+    sigeps : 
+        Store tensorial stress strain data in sub-directories;
+        Contains data for 'sig' (2d-array - stress), 'eps' (2d-array - strain),
+        'epl' (2d-array - plastic strain)
     '''
     'Methods'
     #elasticity: define elastic material parameters C11, C12, C44
