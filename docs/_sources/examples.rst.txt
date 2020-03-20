@@ -35,6 +35,14 @@ Non-linear material behavior in form of plasticity is introduced in this tutoria
 .. raw:: html
    :file: _static/pyLabFEA_Plasticity.html
 
+Tutorial 4: Homogenization
+--------------------------
+
+Laminate structures with different elastic-plastic materials are 
+analyzed with respect to the mechanical behavior.
+
+.. raw:: html
+   :file: _static/pyLabFEA_Homogenization.html
    
 Application 1: Machine Learning Flow Rule
 -----------------------------------------

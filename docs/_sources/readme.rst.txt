@@ -39,7 +39,7 @@ Documentation
 Online documentations for pyLabFEA is found 
 under https://ahartmaier.github.io/pyLabFEA, for offline use
 open pyLabFEA/doc/index.html to browse through the contents. 
-the documentation is generated using `Sphinx`_. 
+The documentation is generated using `Sphinx`_. 
 
 .. _Sphinx: http://www.sphinx-doc.org/en/master/
 
