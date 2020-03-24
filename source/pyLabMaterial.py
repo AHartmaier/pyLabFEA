@@ -35,9 +35,11 @@ class Material(object):
     sy      : float
         Yield strength
     ML_yf   : Boolean
-        Existence of trained machine learning (ML) yield function
+        Existence of trained machine learning (ML) yield function (default: False)
     ML_grad : Boolean
-        Existence of trained ML gradient
+        Existence of trained ML gradient (default: False)
+    Tresca  : Boolean
+        Indicate if Tresca equivalent stress should be used (default: False)
     msg     : dictionary
         Messages returned
     prop    : dictionary
@@ -75,6 +77,7 @@ class Material(object):
         self.sy = None  # Elasticity will be considered unless sy is set
         self.ML_yf = False # use conventional plasticity unless trained ML functions exists
         self.ML_grad = False # use conventional gradient unless ML function exists
+        self.Trseca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.name = name
         self.msg = {
             'yield_fct' : None,
@@ -439,22 +442,25 @@ class Material(object):
         elif sh!=(N,3):
             print('*** calc_seq: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
             sys.exit('Error: Unknown format of stress in calc_seq')
-        d12 = sprinc[:,0] - sprinc[:,1]
-        d23 = sprinc[:,1] - sprinc[:,2]
-        d31 = sprinc[:,2] - sprinc[:,0]
-        if (self.sy==None):
-            h0 = h1 = h2 = 1.
-            d0 = 0.
+        if self.Tresca:
+            seq = np.amax(sprinc,axis=1) - np.amin(sprinc,axis=1)
         else:
-            h0 = self.hill[0]
-            h1 = self.hill[1]
-            h2 = self.hill[2]
-            d0 = self.drucker
-        # consider anisotropy in flow behavior in second invariant in Hill-type approach
-        I2  = 0.5*(h0*np.square(d12) + h1*np.square(d23) + h2*np.square(d31))
-        # consider hydrostatic stresses for tension-compression assymetry
-        I1  = np.sum(sprinc[:,0:3], axis=1)/3.
-        seq  = np.sqrt(I2) + d0*I1   # generalized eqiv. stress
+            d12 = sprinc[:,0] - sprinc[:,1]
+            d23 = sprinc[:,1] - sprinc[:,2]
+            d31 = sprinc[:,2] - sprinc[:,0]
+            if (self.sy==None):
+                h0 = h1 = h2 = 1.
+                d0 = 0.
+            else:
+                h0 = self.hill[0]
+                h1 = self.hill[1]
+                h2 = self.hill[2]
+                d0 = self.drucker
+            # consider anisotropy in flow behavior in second invariant in Hill-type approach
+            I2  = 0.5*(h0*np.square(d12) + h1*np.square(d23) + h2*np.square(d31))
+            # consider hydrostatic stresses for tension-compression assymetry
+            I1  = np.sum(sprinc[:,0:3], axis=1)/3.
+            seq  = np.sqrt(I2) + d0*I1   # generalized eqiv. stress
         if sh==(3,): 
             seq = seq[0]
         return seq
@@ -511,7 +517,7 @@ class Material(object):
         else:
             sys.exit('Error: Inconsistent definition of material parameters')   
 
-    def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0.):
+    def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0., Tresca=False):
         '''Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
         
@@ -525,6 +531,8 @@ class Material(object):
             Parameter for Drucker-like tension-compression asymmetry (optional, default: 0)
         khard: float
             Paramater for linear strain hardening (optional, default: 0)
+        Tresca : Boolean
+            Indicate if Tresca equivalent stress should be used (optional, default: False)
         '''
         self.pm = 1  # set plasticity model to Hill
         self.sy = sy   # yield strength
@@ -532,6 +540,7 @@ class Material(object):
         self.Hpr = khard/(1.-khard/self.E)  # constant for w.h.
         self.hill = np.array(hill)  # Hill anisotropic parameters
         self.drucker = drucker   # Drucker-Prager parameter: weight of hydrostatic stress
+        self.Tresca = Tresca
     
     def epl_dot(self, sig, epl, Cel, deps):
         '''Calculate plastic strain increment relaxing stress back to yield locus; 
@@ -687,7 +696,7 @@ class Material(object):
 
     def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2, 
                          xstart=-2., xend=2., axis1=[0], axis2=[1], iso=False, ref_mat=None,
-                         field=False, Nmesh=100, file=None, fontsize = 20):
+                         field=False, Nmesh=100, file=None, fontsize=20):
         '''Plot different cuts through yield locus in 3D principle stress space.
         
         Parameters
@@ -723,7 +732,7 @@ class Material(object):
             
         Returns
         -------
-        ax : pyplot axis handle
+        axs : pyplot axis handle
             Axis of the plot
         '''
         xx, yy = np.meshgrid(np.linspace(xstart, xend, Nmesh),
@@ -846,12 +855,12 @@ class Material(object):
                 h1 = ax.scatter(dat[ir,axis1[j]], dat[ir,axis2[j]], s=60, c=yf, 
                                     cmap=plt.cm.Paired, edgecolors='k')
             ax.legend(lines,labels,loc='upper left',fontsize=fontsize-4)
-            ax.set_title(title,fontsize=fontsize)
+            #ax.set_title(title,fontsize=fontsize)
             ax.set_xlabel(xlab,fontsize=fontsize)
             ax.set_ylabel(ylab,fontsize=fontsize)
             ax.tick_params(axis="x", labelsize=fontsize-6)
             ax.tick_params(axis="y", labelsize=fontsize-6)
-        'svae plot to file if filename is provided'
+        'save plot to file if filename is provided'
         if file is not None:
             fig.savefig(file+'.pdf', format='pdf', dpi=300)
         return axs

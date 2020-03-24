@@ -821,7 +821,7 @@ List of elements is initialized with method Model.Element</p>
 
 <dl class="method">
 <dt id="pyLabFEM.Model.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">fsel</em>, <em class="sig-param">mag=10</em>, <em class="sig-param">colormap='viridis'</em>, <em class="sig-param">cdepth=20</em>, <em class="sig-param">showmesh=True</em>, <em class="sig-param">shownodes=True</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">annot=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.plot" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">fsel</em>, <em class="sig-param">mag=10</em>, <em class="sig-param">colormap='viridis'</em>, <em class="sig-param">cdepth=20</em>, <em class="sig-param">showmesh=True</em>, <em class="sig-param">shownodes=True</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">annot=True</em>, <em class="sig-param">file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce graphical output: draw elements in deformed shape with color
 according to field variable ‘fsel’; uses matplotlib</p>
 <dl class="field-list simple">
@@ -834,6 +834,7 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <li><p><strong>shownodes</strong> (<em>Boolean</em>) – Set/unset plotting of nodes (optional, default: True)</p></li>
 <li><p><strong>colormap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Name of colormap to be used (optional, default: viridis)</p></li>
 <li><p><strong>annot</strong> (<em>Boolean</em>) – Show annotations for x and y-axis (optional, default: True)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – If a filename is provided, plot is exported as PDF (optional, default: None)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
@@ -1230,7 +1231,7 @@ and derived properties und various loading conditions (dictionary)</p>
 <dl class="attribute">
 <dt id="pyLabMaterial.Material.ML_yf">
 <code class="sig-name descname">ML_yf</code><a class="headerlink" href="#pyLabMaterial.Material.ML_yf" title="Permalink to this definition">¶</a></dt>
-<dd><p>Existence of trained machine learning (ML) yield function</p>
+<dd><p>Existence of trained machine learning (ML) yield function (default: False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Boolean</p>
@@ -1241,7 +1242,18 @@ and derived properties und various loading conditions (dictionary)</p>
 <dl class="attribute">
 <dt id="pyLabMaterial.Material.ML_grad">
 <code class="sig-name descname">ML_grad</code><a class="headerlink" href="#pyLabMaterial.Material.ML_grad" title="Permalink to this definition">¶</a></dt>
-<dd><p>Existence of trained ML gradient</p>
+<dd><p>Existence of trained ML gradient (default: False)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabMaterial.Material.Tresca">
+<code class="sig-name descname">Tresca</code><a class="headerlink" href="#pyLabMaterial.Material.Tresca" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate if Tresca equivalent stress should be used (default: False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Boolean</p>
@@ -1544,7 +1556,7 @@ used by search algorithm to find zeros of yield function.</p>
 
 <dl class="method">
 <dt id="pyLabMaterial.Material.plasticity">
-<code class="sig-name descname">plasticity</code><span class="sig-paren">(</span><em class="sig-param">sy=None, hill=[1.0, 1.0, 1.0], drucker=0.0, khard=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.plasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.plasticity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plasticity</code><span class="sig-paren">(</span><em class="sig-param">sy=None, hill=[1.0, 1.0, 1.0], drucker=0.0, khard=0.0, Tresca=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.plasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.plasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define plastic material parameters; anisotropic Hill-like and Drucker-like
 behavior is supported</p>
 <dl class="field-list simple">
@@ -1554,6 +1566,7 @@ behavior is supported</p>
 <li><p><strong>hill</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Parameters for Hill-like orthotropic anisotropy (optional, default: isotropy)</p></li>
 <li><p><strong>drucker</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Parameter for Drucker-like tension-compression asymmetry (optional, default: 0)</p></li>
 <li><p><strong>khard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Paramater for linear strain hardening (optional, default: 0)</p></li>
+<li><p><strong>Tresca</strong> (<em>Boolean</em>) – Indicate if Tresca equivalent stress should be used (optional, default: False)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1622,7 +1635,7 @@ behavior is supported</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>ax</strong> – Axis of the plot</p>
+<dd class="field-even"><p><strong>axs</strong> – Axis of the plot</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>pyplot axis handle</p>
