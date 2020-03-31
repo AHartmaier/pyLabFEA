@@ -38,7 +38,7 @@
 
 <span class="sd">uses NumPy, MatPlotLib, sklearn and pyLabFEM</span>
 
-<span class="sd">Version: 1.0 (2020-03-06)</span>
+<span class="sd">Version: 1.1 (2020-03-31)</span>
 <span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020</span>
 <span class="sd">Email: alexander.hartmaier@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
@@ -210,7 +210,7 @@
         <span class="k">if</span> <span class="n">seq</span><span class="o">&lt;</span><span class="mf">0.01</span> <span class="ow">and</span> <span class="n">ld</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">yf</span> <span class="o">=</span> <span class="n">seq</span> <span class="o">-</span> <span class="mf">0.85</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">if</span> <span class="p">(</span><span class="n">seq</span><span class="o">&gt;=</span><span class="mf">0.01</span><span class="p">):</span> <span class="c1">#(ld is None) or</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">seq</span><span class="o">&gt;=</span><span class="mf">0.01</span><span class="p">):</span> 
                 <span class="n">ld</span> <span class="o">=</span> <span class="n">sp</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span><span class="o">/</span><span class="n">seq</span>
             <span class="n">x0</span> <span class="o">=</span> <span class="mf">1.</span>
             <span class="k">if</span> <span class="n">ld</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">ld</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.</span><span class="p">:</span>
@@ -230,8 +230,11 @@
         <span class="k">return</span> <span class="n">yf</span></div>
     
 <div class="viewcode-block" id="Material.setup_yf_SVM"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.setup_yf_SVM">[docs]</a>    <span class="k">def</span> <span class="nf">setup_yf_SVM</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> 
-                     <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cyl</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function</span>
+                     <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cyl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inherit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test</span>
+<span class="sd">        data (features) are accepted as either 3D principle stresses or cylindrical stresses. ML yield functions can also be inherited </span>
+<span class="sd">        from other materials with a ML yield function. Graphical output on the trained SVC yield function is possible.</span>
+<span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -251,6 +254,8 @@
 <span class="sd">            Parameter for kernel function of SVC (optional, default: 1)</span>
 <span class="sd">        fs  : float</span>
 <span class="sd">            Parameters for size of periodic continuation of training data (optional, default:0.1)</span>
+<span class="sd">        inherit : object of class ``Material`` </span>
+<span class="sd">            Material from which trained ML function is inherited </span>
 <span class="sd">        plot : Boolean</span>
 <span class="sd">            Indicates if plot of decision function should be generated (optional, default: False)</span>
 <span class="sd">            </span>
@@ -329,7 +334,10 @@
         <span class="k">return</span> <span class="n">train_sc</span><span class="p">,</span> <span class="n">test_sc</span></div>
     
 <div class="viewcode-block" id="Material.calc_fgrad"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.calc_fgrad">[docs]</a>    <span class="k">def</span> <span class="nf">calc_fgrad</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">seq</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ana</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Calculate gradient to yield surface</span>
+        <span class="sd">&#39;&#39;&#39;Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield </span>
+<span class="sd">        function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield </span>
+<span class="sd">        function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function </span>
+<span class="sd">        (activated if ML_grad=True and ana=False)</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -575,6 +583,26 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">drucker</span> <span class="o">=</span> <span class="n">drucker</span>   <span class="c1"># Drucker-Prager parameter: weight of hydrostatic stress</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Tresca</span> <span class="o">=</span> <span class="n">Tresca</span></div>
     
+<div class="viewcode-block" id="Material.microstructure"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.microstructure">[docs]</a>    <span class="k">def</span> <span class="nf">microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texture_param</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grain_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grain_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">porosity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Define microstructural parameters of the material: crstallographic texture, grain size, grain shape</span>
+<span class="sd">        and porosity.</span>
+<span class="sd">        </span>
+<span class="sd">        Paramaters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        text_param : array-like</span>
+<span class="sd">            Parameters describing texture (optional)</span>
+<span class="sd">        grain_size : float</span>
+<span class="sd">            Average grain size of material (optional)</span>
+<span class="sd">        grain_shape : (3,) array</span>
+<span class="sd">            Lengths of the three main axes of ellipsoid describing grain shape (optional)</span>
+<span class="sd">        porosity : float</span>
+<span class="sd">            Porosity of the material</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">texture_param</span> <span class="o">=</span> <span class="n">texture_param</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grain_size</span> <span class="o">=</span> <span class="n">grain_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">grain_shape</span> <span class="o">=</span> <span class="n">grain_shape</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">porosity</span> <span class="o">=</span> <span class="n">porosity</span></div>
+        
 <div class="viewcode-block" id="Material.epl_dot"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.epl_dot">[docs]</a>    <span class="k">def</span> <span class="nf">epl_dot</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">epl</span><span class="p">,</span> <span class="n">Cel</span><span class="p">,</span> <span class="n">deps</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Calculate plastic strain increment relaxing stress back to yield locus; </span>
 <span class="sd">        Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures, </span>
@@ -641,6 +669,64 @@
         <span class="n">Ct</span> <span class="o">=</span> <span class="n">Cel</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">ca</span><span class="p">,</span> <span class="n">ca</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span><span class="o">/</span><span class="n">hh</span>
         <span class="k">return</span> <span class="n">Ct</span></div>
     
+<div class="viewcode-block" id="Material.create_sig_data"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.create_sig_data">[docs]</a>    <span class="k">def</span> <span class="nf">create_sig_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">syc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">Nseq</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">offs</span> <span class="o">=</span> <span class="mf">0.01</span><span class="p">,</span> <span class="n">extend</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rand</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Function to create consistent data sets on the deviatoric stress plane</span>
+<span class="sd">        for training or testing of ML yield function. Data is created in form of cylindrical stresses</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        N    : int</span>
+<span class="sd">            Number of load cases (polar angles) to be created (optional,</span>
+<span class="sd">            either N or theta must be provided)</span>
+<span class="sd">        theta: (N,) array</span>
+<span class="sd">            List of polar angles from which training data in deviatoric stress plane is created </span>
+<span class="sd">            (optional, either theta or N must be provided)</span>
+<span class="sd">        Nseq : int</span>
+<span class="sd">            Number of equiv. stresses generated up to yield strength (optional, default: 12)</span>
+<span class="sd">        offs : float</span>
+<span class="sd">            Start of range for equiv. stress (optional, default: 0.01)</span>
+<span class="sd">        extend : Boolean</span>
+<span class="sd">            Create additional data in plastic regime (optional, default: False)</span>
+<span class="sd">        rand   : Boolean</span>
+<span class="sd">            Chose random load cases (polar angles) (optional, default: False)</span>
+<span class="sd">            </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        st : (M,3) array</span>
+<span class="sd">            Cylindrical training stresses, M = N (2 Nseq + Nextend)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">syc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">N</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning in create_sig_data: Neither N not theta provided.&#39;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Continuing with N=36&#39;</span><span class="p">)</span>
+                <span class="n">N</span> <span class="o">=</span> <span class="mi">36</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rand</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">theta</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">-</span><span class="mf">0.5</span><span class="p">)</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">syc</span><span class="p">)</span>
+            <span class="n">sc</span>    <span class="o">=</span> <span class="n">syc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">theta</span> <span class="o">=</span> <span class="n">syc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">seq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">offs</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">Nseq</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">extend</span><span class="p">:</span>
+            <span class="c1"># add training points in plastic regime to avoid fallback of SVC decision fct. to zero</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">seq</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.4</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">])</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span><span class="p">)</span>
+        <span class="n">Nd</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="o">*</span><span class="n">Nd</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">syc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">yt</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">yt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="o">*</span><span class="n">Nd</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">Nd</span><span class="p">):</span>
+            <span class="n">j0</span> <span class="o">=</span> <span class="n">i</span><span class="o">*</span><span class="n">N</span>
+            <span class="n">j1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">N</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">j0</span><span class="p">:</span><span class="n">j1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">j0</span><span class="p">:</span><span class="n">j1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">theta</span>
+            <span class="k">if</span> <span class="n">syc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">yt</span><span class="p">[</span><span class="n">j0</span><span class="p">:</span><span class="n">j1</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">seq</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">-</span> <span class="n">sc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">st</span><span class="p">,</span> <span class="n">yt</span></div>
+        
 <div class="viewcode-block" id="Material.find_yloc"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.find_yloc">[docs]</a>    <span class="k">def</span> <span class="nf">find_yloc</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">sp</span><span class="p">,</span> <span class="n">ana</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Function to expand unit stresses by factor and calculate yield function;</span>
 <span class="sd">        used by search algorithm to find zeros of yield function.</span>
@@ -693,9 +779,9 @@
 <span class="sd">            Data for field plot</span>
 <span class="sd">        axs : handle</span>
 <span class="sd">            Axes where plot is added</span>
-<span class="sd">        xx  : array</span>
+<span class="sd">        xx  : meshgrid</span>
 <span class="sd">            x-coordinates </span>
-<span class="sd">        yy  : array</span>
+<span class="sd">        yy  : meshgrid</span>
 <span class="sd">            y-coordinates</span>
 <span class="sd">        field : Boolean</span>
 <span class="sd">            Decide if field is plotted (optional, default: True)</span>
@@ -877,7 +963,7 @@
                 <span class="n">hl</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x0</span><span class="p">,</span><span class="n">y0</span><span class="p">,</span><span class="s1">&#39;-b&#39;</span><span class="p">)</span>
                 <span class="n">lines</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">hl</span><span class="p">)</span>
                 <span class="n">labels</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s1">&#39;isotropic J2&#39;</span><span class="p">])</span>
-            <span class="s1">&#39;plot data is provided&#39;</span>
+            <span class="s1">&#39;plot data if provided&#39;</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="c1"># select data from 3D stress space within range [xstart, xend] and to fit to slice</span>
                 <span class="n">dat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">sy</span>
@@ -1004,7 +1090,7 @@
             <span class="n">legend</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">prop</span><span class="p">[</span><span class="n">sel</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Material: &#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\epsilon_\mathrm</span><span class="si">{eq}</span><span class="s1">$ (%)&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
-        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma^\mathrm{ J2}_\mathrm</span><span class="si">{eq}</span><span class="s1">$ (MPa)&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma^\mathrm</span><span class="si">{J2}</span><span class="s1">_\mathrm</span><span class="si">{eq}</span><span class="s1">$ (MPa)&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">fontsize</span><span class="o">-</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">fontsize</span><span class="o">-</span><span class="mi">4</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">legend</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;lower right&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="n">fontsize</span><span class="p">)</span>

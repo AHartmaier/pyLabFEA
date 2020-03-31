@@ -5,7 +5,7 @@ module pyLabFEM.
 
 uses NumPy, MatPlotLib, sklearn and pyLabFEM
 
-Version: 1.0 (2020-03-06)
+Version: 1.1 (2020-03-31)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -177,7 +177,7 @@ class Material(object):
         if seq<0.01 and ld is None:
             yf = seq - 0.85*self.sy
         else:
-            if (seq>=0.01): #(ld is None) or
+            if (seq>=0.01): 
                 ld = sp*self.sy/seq
             x0 = 1.
             if ld[0]*ld[1] < 0.:
@@ -197,8 +197,11 @@ class Material(object):
         return yf
     
     def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1, 
-                     plot=False, cyl=False):
-        '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function
+                     plot=False, cyl=False, inherit=None):
+        '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
+        data (features) are accepted as either 3D principle stresses or cylindrical stresses. ML yield functions can also be inherited 
+        from other materials with a ML yield function. Graphical output on the trained SVC yield function is possible.
+        
         
         Parameters
         ----------
@@ -218,6 +221,8 @@ class Material(object):
             Parameter for kernel function of SVC (optional, default: 1)
         fs  : float
             Parameters for size of periodic continuation of training data (optional, default:0.1)
+        inherit : object of class ``Material`` 
+            Material from which trained ML function is inherited 
         plot : Boolean
             Indicates if plot of decision function should be generated (optional, default: False)
             
@@ -296,7 +301,10 @@ class Material(object):
         return train_sc, test_sc
     
     def calc_fgrad(self, sig, seq=None, ana=False):
-        '''Calculate gradient to yield surface
+        '''Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield 
+        function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield 
+        function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function 
+        (activated if ML_grad=True and ana=False)
         
         Parameters
         ----------
@@ -542,6 +550,26 @@ class Material(object):
         self.drucker = drucker   # Drucker-Prager parameter: weight of hydrostatic stress
         self.Tresca = Tresca
     
+    def microstructure(self, texture_param=None, grain_size=None, grain_shape=None, porosity=None):
+        '''Define microstructural parameters of the material: crstallographic texture, grain size, grain shape
+        and porosity.
+        
+        Paramaters
+        ----------
+        text_param : array-like
+            Parameters describing texture (optional)
+        grain_size : float
+            Average grain size of material (optional)
+        grain_shape : (3,) array
+            Lengths of the three main axes of ellipsoid describing grain shape (optional)
+        porosity : float
+            Porosity of the material
+        '''
+        self.texture_param = texture_param
+        self.grain_size = grain_size
+        self.grain_shape = grain_shape
+        self.porosity = porosity
+        
     def epl_dot(self, sig, epl, Cel, deps):
         '''Calculate plastic strain increment relaxing stress back to yield locus; 
         Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures, 
@@ -608,6 +636,64 @@ class Material(object):
         Ct = Cel - np.kron(ca, ca).reshape(6,6)/hh
         return Ct
     
+    def create_sig_data(self, N=None, syc=None, Nseq=12, offs = 0.01, extend=False, rand=False):
+        '''Function to create consistent data sets on the deviatoric stress plane
+        for training or testing of ML yield function. Data is created in form of cylindrical stresses
+        
+        Parameters
+        ----------
+        N    : int
+            Number of load cases (polar angles) to be created (optional,
+            either N or theta must be provided)
+        theta: (N,) array
+            List of polar angles from which training data in deviatoric stress plane is created 
+            (optional, either theta or N must be provided)
+        Nseq : int
+            Number of equiv. stresses generated up to yield strength (optional, default: 12)
+        offs : float
+            Start of range for equiv. stress (optional, default: 0.01)
+        extend : Boolean
+            Create additional data in plastic regime (optional, default: False)
+        rand   : Boolean
+            Chose random load cases (polar angles) (optional, default: False)
+            
+        Returns
+        -------
+        st : (M,3) array
+            Cylindrical training stresses, M = N (2 Nseq + Nextend)
+        '''
+        if syc is None:
+            if N is None:
+                print('Warning in create_sig_data: Neither N not theta provided.')
+                print('Continuing with N=36')
+                N = 36
+            if not rand:
+                theta = np.linspace(-np.pi, np.pi, N)
+            else:
+                theta = 2.*(np.random.rand(N)-0.5)*np.pi
+        else:
+            N = len(syc)
+            sc    = syc[:,0]
+            theta = syc[:,1]
+        seq = np.linspace(offs, 2*self.sy, 2*Nseq)
+        if extend:
+            # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
+            seq = np.append(seq, np.array([2.4, 3., 4., 5.])*self.sy)
+        Nd = len(seq)
+        st = np.zeros((N*Nd,3))
+        if syc is None:
+            yt = None
+        else:
+            yt = np.zeros(N*Nd)
+        for i in range(Nd):
+            j0 = i*N
+            j1 = (i+1)*N
+            st[j0:j1, 0] = seq[i]
+            st[j0:j1, 1] = theta
+            if syc is not None:
+                yt[j0:j1] = np.sign(seq[i]*np.ones(N) - sc)
+        return st, yt
+        
     def find_yloc(self, x, sp, ana=False):
         '''Function to expand unit stresses by factor and calculate yield function;
         used by search algorithm to find zeros of yield function.
@@ -660,9 +746,9 @@ class Material(object):
             Data for field plot
         axs : handle
             Axes where plot is added
-        xx  : array
+        xx  : meshgrid
             x-coordinates 
-        yy  : array
+        yy  : meshgrid
             y-coordinates
         field : Boolean
             Decide if field is plotted (optional, default: True)
@@ -844,7 +930,7 @@ class Material(object):
                 hl = ax.plot(x0,y0,'-b')
                 lines.extend(hl)
                 labels.extend(['isotropic J2'])
-            'plot data is provided'
+            'plot data if provided'
             if (data is not None):
                 # select data from 3D stress space within range [xstart, xend] and to fit to slice
                 dat = np.array(data)/self.sy
@@ -971,7 +1057,7 @@ class Material(object):
             legend.append(self.prop[sel]['name'])
         plt.title('Material: '+self.name,fontsize=fontsize)
         plt.xlabel(r'$\epsilon_\mathrm{eq}$ (%)',fontsize=fontsize)
-        plt.ylabel(r'$\sigma^\mathrm{ J2}_\mathrm{eq}$ (MPa)',fontsize=fontsize)
+        plt.ylabel(r'$\sigma^\mathrm{J2}_\mathrm{eq}$ (MPa)',fontsize=fontsize)
         plt.tick_params(axis="x", labelsize=fontsize-4)
         plt.tick_params(axis="y", labelsize=fontsize-4)
         plt.legend(legend, loc='lower right',fontsize=fontsize)

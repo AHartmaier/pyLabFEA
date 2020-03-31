@@ -44,8 +44,8 @@ analyzed with respect to the mechanical behavior.
 .. raw:: html
    :file: _static/pyLabFEA_Homogenization.html
    
-Application 1: Machine Learning Flow Rule for Hill-like plastcity
------------------------------------------------------------------
+Application 1: Machine Learning Flow Rule for Hill-like plasticity
+------------------------------------------------------------------
 
 In this application, a machine learning algorithm is trained with 
 data from an anisotropic Hill-like yield criterion to
@@ -59,7 +59,7 @@ Application 2: Machine Learning Flow Rule for Tresca plasticity
 
 In this application, a machine learning algorithm is trained with 
 data from a Tresca yield criterion to
-be used as constitutive model for anisotropic plasticity of metals.
+be used as constitutive model for isotropic plasticity of metals.
 
 .. raw:: html
    :file: _static/pyLabFEA_ML-FlowRule-Tresca.html

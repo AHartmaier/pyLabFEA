@@ -38,7 +38,7 @@
 
 <span class="sd">uses NumPy, SciPy, MatPlotLib and pyLabMaterial</span>
 
-<span class="sd">Version: 1.0 (2020-03-06)</span>
+<span class="sd">Version: 1.1 (2020-03-31)</span>
 <span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020</span>
 <span class="sd">Email: alexander.hartmaier@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
@@ -434,17 +434,17 @@
 <span class="sd">    noinner : list</span>
 <span class="sd">        List of inner nodes (defined in ``mesh``)</span>
 <span class="sd">    element : list</span>
-<span class="sd">        List of objects of class Element, dimension Nel (defined in ``mesh``)</span>
-<span class="sd">    u    : 1d-array</span>
+<span class="sd">        List of objects of class ``Element``, dimension Nel (defined in ``mesh``)</span>
+<span class="sd">    u    : (Ndof,) array</span>
 <span class="sd">        List of nodal displacements (defined in ``solve``)</span>
-<span class="sd">    f    : 1d-array</span>
+<span class="sd">    f    : (Ndof,) array</span>
 <span class="sd">        List of nodal forces (defined in ``solve``)</span>
-<span class="sd">    sgl  : 1d-array</span>
-<span class="sd">        Time evolution of global stress (defined in ``solve``)</span>
-<span class="sd">    egl  : 1d-array</span>
-<span class="sd">        Time evolution of global total strain (defined in ``solve``)</span>
-<span class="sd">    epgl : 1d-array</span>
-<span class="sd">        Time evolution of global plastic strain (defined in ``solve``)</span>
+<span class="sd">    sgl  : (N,6) array</span>
+<span class="sd">        Time evolution of global stress tensor with incremental load steps (defined in ``solve``)</span>
+<span class="sd">    egl  : (N,6) array</span>
+<span class="sd">        Time evolution of global total strain tensor with incremental load steps (defined in ``solve``)</span>
+<span class="sd">    epgl : (N,6) array</span>
+<span class="sd">        Time evolution of global plastic strain tensor with incremental load steps (defined in ``solve``)</span>
 <span class="sd">    glob : python dictionary</span>
 <span class="sd">        Global values homogenized from BC or element solutions, contains the elements: </span>
 <span class="sd">        &#39;ebc1&#39;, &#39;ebc2&#39;, &#39;sbc1&#39;, &#39;sbc2&#39; : global strain and stress from BC (type: float)</span>
@@ -496,7 +496,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        model  : object of class ``Model``</span>
-<span class="sd">            Refers to parent class ``Mode`` to inherit all attributes</span>
+<span class="sd">            Refers to parent class ``Model`` to inherit all attributes</span>
 <span class="sd">        nodes  : list </span>
 <span class="sd">            List of nodes belonging to element</span>
 <span class="sd">        lx     : float</span>
@@ -797,7 +797,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">thick</span> <span class="o">=</span> <span class="n">LZ</span></div>
         
 <div class="viewcode-block" id="Model.assign"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.assign">[docs]</a>    <span class="k">def</span> <span class="nf">assign</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mats</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Assign each section to an object of class ``Material``</span>
+        <span class="sd">&#39;&#39;&#39;Assigns an object of class ``Material`` to each section.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -877,8 +877,12 @@
             <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">()</span></div>
             
 <div class="viewcode-block" id="Model.mesh"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.mesh">[docs]</a>    <span class="k">def</span> <span class="nf">mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">NX</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">NY</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">SF</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Generate mesh based on nodal positions model.npos, depending on degree of shape function; </span>
-<span class="sd">        List of elements is initialized with method Model.Element</span>
+        <span class="sd">&#39;&#39;&#39;Generate structured mesh with quadrilateral elements (2d models). First,</span>
+<span class="sd">        nodal positions ``Model.npos`` are defined such that nodes lie at </span>
+<span class="sd">        corners (linear shape function) and edges (quadratic shape function) of elements. </span>
+<span class="sd">        Then, elements are initialized as object of class ``Model.Element``, which requires the list of </span>
+<span class="sd">        nodes associated with the element, the dimensions of the element, and the material of</span>
+<span class="sd">        the section in which the element is situated to be passed.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -974,7 +978,7 @@
             <span class="n">jstart</span> <span class="o">=</span> <span class="mi">1</span></div>
 
 <div class="viewcode-block" id="Model.setupK"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.setupK">[docs]</a>    <span class="k">def</span> <span class="nf">setupK</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Calculate and assemble system stiffness matrix based on element stiffness matrices</span>
+        <span class="sd">&#39;&#39;&#39;Calculate and assemble system stiffness matrix based on element stiffness matrices.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -999,9 +1003,22 @@
         <span class="k">return</span> <span class="n">K</span></div>
      
 <div class="viewcode-block" id="Model.solve"><a class="viewcode-back" href="../pyLabFEA.html#pyLabFEM.Model.solve">[docs]</a>    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">min_step</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Solve linear system of equations f = K^-1 . u for mechanical equiliibrium;</span>
-<span class="sd">        total force on internal nodes is zero;</span>
-<span class="sd">        stores solution in u, f, element attributes</span>
+        <span class="sd">&#39;&#39;&#39;Solve linear system of equations K.u = f with respect to u, to obtain distortions</span>
+<span class="sd">        of the system under the applied boundary conditions for mechanical equilibrium, i.e.,</span>
+<span class="sd">        when the total force on internal nodes is zero. In the first step, the stiffness </span>
+<span class="sd">        matrix K, the nodal displacements u and the nodal forces f are modified to conform</span>
+<span class="sd">        with the boundary conditions (``calc_BC``), then an elastic predictor step is calculated,</span>
+<span class="sd">        which is already the final solution for linear problems. For non-linear problems, i.e. for </span>
+<span class="sd">        plastic materials, the load step must be controlled and subdivided to fulfill </span>
+<span class="sd">        the side conditions of plastic materials, i.e. the equivalent stress must remain </span>
+<span class="sd">        smaller than the yield strength, or the flow stress during plastic yielding. This is </span>
+<span class="sd">        ensured in a self.consistency loop for non-linear models. The system of </span>
+<span class="sd">        equations is solved by invoking the subroutine numpy.linalg.solve. The method yields</span>
+<span class="sd">        the final solution </span>
+<span class="sd">        for nodal displacements u and nodal forces f as attributes of </span>
+<span class="sd">        class ``Model``; global stress, global total strain and global plastic strain are </span>
+<span class="sd">        evaluated and stored as attributes, too. Element solutions for stresses and strains </span>
+<span class="sd">        are stored as attributes of class ``Element``, see documentation of this class.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1009,6 +1026,25 @@
 <span class="sd">            Minimum number of load steps (optional)</span>
 <span class="sd">        verb     : Boolean</span>
 <span class="sd">            Be verbose in text output (optional, default: False)</span>
+<span class="sd">            </span>
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        Model.u     : (Model.Ndof,) array</span>
+<span class="sd">            Nodal displacements</span>
+<span class="sd">        Model.f     : (Model.Ndof,) array</span>
+<span class="sd">            Nodel forces</span>
+<span class="sd">        Model.sgl   : (N,6) array</span>
+<span class="sd">            Global stress as as Voigt tensor for each incremental load step (homogenized element solution)</span>
+<span class="sd">        Model.egl   : (N,6) array</span>
+<span class="sd">            Global total strain as as Voigt tensor for each incremental load step (homogenized element solution)</span>
+<span class="sd">        Model.epgl  : (N,6) array</span>
+<span class="sd">            Global plastic strain as as Voigt tensor for each incremental load step (homogenized element solution)</span>
+<span class="sd">        Element.sig : (6,) array</span>
+<span class="sd">            Element solution for stress tensor</span>
+<span class="sd">        Element.eps : (6,) array</span>
+<span class="sd">            Element solution for total strain tensor</span>
+<span class="sd">        Element.epl : (6,) array</span>
+<span class="sd">            Element solution for plastic strain tensor</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="s1">&#39;calculate reduced stiffness matrix according to BC&#39;</span>
         <span class="k">def</span> <span class="nf">Kred</span><span class="p">(</span><span class="n">ind</span><span class="p">):</span>
@@ -1326,6 +1362,14 @@
         <span class="sd">&#39;&#39;&#39;Calculate global quantities and store in Model.glob;</span>
 <span class="sd">        homogenization done by averaging residual forces (sbc1/2) and displacements (ebc1/2) at boundary nodes </span>
 <span class="sd">        or by averaging element quantities (sig, eps, epl)</span>
+<span class="sd">        </span>
+<span class="sd">        Yields</span>
+<span class="sd">        ------</span>
+<span class="sd">        Model.glob : dictionary</span>
+<span class="sd">            Values for stress (&#39;sig&#39;), total strain (&#39;eps&#39;) and plastic strain (&#39;epl&#39;)</span>
+<span class="sd">            as homogenized element solutions (Voigt tensors); values for (11)- and </span>
+<span class="sd">            (22)-components of stress (&#39;sbc1&#39;,&#39;scb2&#39;) and total strain (&#39;ebc1&#39;, &#39;ebc2&#39;)</span>
+<span class="sd">            as homogenized values of boundary nodes.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="s1">&#39;calculate global values from BC&#39;</span>
         <span class="n">uxl</span><span class="p">,</span> <span class="n">uyl</span><span class="p">,</span> <span class="n">fxl</span><span class="p">,</span> <span class="n">fyl</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bcval</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">noleft</span><span class="p">)</span>

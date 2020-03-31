@@ -5,7 +5,7 @@ module pyLabMaterial.
 
 uses NumPy, SciPy, MatPlotLib and pyLabMaterial
 
-Version: 1.0 (2020-03-06)
+Version: 1.1 (2020-03-31)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -179,13 +179,13 @@ def eps_eq(eps):
     sh = np.shape(eps)
     N = len(eps)
     if sh==(6,):
-        eeq = np.sqrt(2.*(np.dot(eps[0:3],eps[0:3])+2*np.dot(eps[3:6],eps[3:6]))/3.)
+        eeq = np.sqrt(np.dot(eps[0:3],eps[0:3])+2*np.dot(eps[3:6],eps[3:6]))
     elif sh==(3,):
-        eeq = np.sqrt(2.*np.sum(eps*eps)/3.)
+        eeq = np.sqrt(np.sum(eps*eps))
     elif sh==(N,3):
-        eeq = np.sqrt(2.*np.sum(eps*eps,axis=1)/3.)
+        eeq = np.sqrt(np.sum(eps*eps,axis=1))
     elif sh==(N,6):
-        eeq = np.sqrt(2.*(np.sum(eps[:,0:3]*eps[:,0:3],axis=1)+2*np.sum(eps[:,3:6]*eps[:,3:6],axis=1))/3.)
+        eeq = np.sqrt(np.sum(eps[:,0:3]*eps[:,0:3],axis=1)+2*np.sum(eps[:,3:6]*eps[:,3:6],axis=1))
     else:
         print('*** eps_eq (N,sh): ',N,sh,sys._getframe().f_back.f_code.co_name)
         sys.exit('Error in eps_eq: Format not supported')
@@ -401,17 +401,17 @@ class Model(object):
     noinner : list
         List of inner nodes (defined in ``mesh``)
     element : list
-        List of objects of class Element, dimension Nel (defined in ``mesh``)
-    u    : 1d-array
+        List of objects of class ``Element``, dimension Nel (defined in ``mesh``)
+    u    : (Ndof,) array
         List of nodal displacements (defined in ``solve``)
-    f    : 1d-array
+    f    : (Ndof,) array
         List of nodal forces (defined in ``solve``)
-    sgl  : 1d-array
-        Time evolution of global stress (defined in ``solve``)
-    egl  : 1d-array
-        Time evolution of global total strain (defined in ``solve``)
-    epgl : 1d-array
-        Time evolution of global plastic strain (defined in ``solve``)
+    sgl  : (N,6) array
+        Time evolution of global stress tensor with incremental load steps (defined in ``solve``)
+    egl  : (N,6) array
+        Time evolution of global total strain tensor with incremental load steps (defined in ``solve``)
+    epgl : (N,6) array
+        Time evolution of global plastic strain tensor with incremental load steps (defined in ``solve``)
     glob : python dictionary
         Global values homogenized from BC or element solutions, contains the elements: 
         'ebc1', 'ebc2', 'sbc1', 'sbc2' : global strain and stress from BC (type: float)
@@ -463,7 +463,7 @@ class Model(object):
         Parameters
         ----------
         model  : object of class ``Model``
-            Refers to parent class ``Mode`` to inherit all attributes
+            Refers to parent class ``Model`` to inherit all attributes
         nodes  : list 
             List of nodes belonging to element
         lx     : float
@@ -764,7 +764,7 @@ class Model(object):
         self.thick = LZ
         
     def assign(self, mats):
-        '''Assign each section to an object of class ``Material``
+        '''Assigns an object of class ``Material`` to each section.
         
         Parameters
         ----------
@@ -844,8 +844,12 @@ class Model(object):
             sys.exit()
             
     def mesh(self, NX=10, NY=1, SF=1):
-        '''Generate mesh based on nodal positions model.npos, depending on degree of shape function; 
-        List of elements is initialized with method Model.Element
+        '''Generate structured mesh with quadrilateral elements (2d models). First,
+        nodal positions ``Model.npos`` are defined such that nodes lie at 
+        corners (linear shape function) and edges (quadratic shape function) of elements. 
+        Then, elements are initialized as object of class ``Model.Element``, which requires the list of 
+        nodes associated with the element, the dimensions of the element, and the material of
+        the section in which the element is situated to be passed.
         
         Parameters
         ----------
@@ -941,7 +945,7 @@ class Model(object):
             jstart = 1
 
     def setupK(self):
-        '''Calculate and assemble system stiffness matrix based on element stiffness matrices
+        '''Calculate and assemble system stiffness matrix based on element stiffness matrices.
         
         Returns
         -------
@@ -966,9 +970,22 @@ class Model(object):
         return K
      
     def solve(self, min_step=None, verb=False):
-        '''Solve linear system of equations f = K^-1 . u for mechanical equiliibrium;
-        total force on internal nodes is zero;
-        stores solution in u, f, element attributes
+        '''Solve linear system of equations K.u = f with respect to u, to obtain distortions
+        of the system under the applied boundary conditions for mechanical equilibrium, i.e.,
+        when the total force on internal nodes is zero. In the first step, the stiffness 
+        matrix K, the nodal displacements u and the nodal forces f are modified to conform
+        with the boundary conditions (``calc_BC``), then an elastic predictor step is calculated,
+        which is already the final solution for linear problems. For non-linear problems, i.e. for 
+        plastic materials, the load step must be controlled and subdivided to fulfill 
+        the side conditions of plastic materials, i.e. the equivalent stress must remain 
+        smaller than the yield strength, or the flow stress during plastic yielding. This is 
+        ensured in a self.consistency loop for non-linear models. The system of 
+        equations is solved by invoking the subroutine numpy.linalg.solve. The method yields
+        the final solution 
+        for nodal displacements u and nodal forces f as attributes of 
+        class ``Model``; global stress, global total strain and global plastic strain are 
+        evaluated and stored as attributes, too. Element solutions for stresses and strains 
+        are stored as attributes of class ``Element``, see documentation of this class.
         
         Parameters
         ----------
@@ -976,6 +993,25 @@ class Model(object):
             Minimum number of load steps (optional)
         verb     : Boolean
             Be verbose in text output (optional, default: False)
+            
+        Yields
+        ------
+        Model.u     : (Model.Ndof,) array
+            Nodal displacements
+        Model.f     : (Model.Ndof,) array
+            Nodel forces
+        Model.sgl   : (N,6) array
+            Global stress as as Voigt tensor for each incremental load step (homogenized element solution)
+        Model.egl   : (N,6) array
+            Global total strain as as Voigt tensor for each incremental load step (homogenized element solution)
+        Model.epgl  : (N,6) array
+            Global plastic strain as as Voigt tensor for each incremental load step (homogenized element solution)
+        Element.sig : (6,) array
+            Element solution for stress tensor
+        Element.eps : (6,) array
+            Element solution for total strain tensor
+        Element.epl : (6,) array
+            Element solution for plastic strain tensor
         '''
         'calculate reduced stiffness matrix according to BC'
         def Kred(ind):
@@ -1293,6 +1329,14 @@ class Model(object):
         '''Calculate global quantities and store in Model.glob;
         homogenization done by averaging residual forces (sbc1/2) and displacements (ebc1/2) at boundary nodes 
         or by averaging element quantities (sig, eps, epl)
+        
+        Yields
+        ------
+        Model.glob : dictionary
+            Values for stress ('sig'), total strain ('eps') and plastic strain ('epl')
+            as homogenized element solutions (Voigt tensors); values for (11)- and 
+            (22)-components of stress ('sbc1','scb2') and total strain ('ebc1', 'ebc2')
+            as homogenized values of boundary nodes.
         '''
         'calculate global values from BC'
         uxl, uyl, fxl, fyl = self.bcval(self.noleft)
@@ -1318,7 +1362,7 @@ class Model(object):
         self.glob['epl'] = epl/Vm
 
     def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True,
-            vmin=None, vmax=None, annot=True):
+            vmin=None, vmax=None, annot=True, file=None):
         '''Produce graphical output: draw elements in deformed shape with color 
         according to field variable 'fsel'; uses matplotlib
         
@@ -1336,8 +1380,10 @@ class Model(object):
             Set/unset plotting of nodes (optional, default: True)
         colormap : str
             Name of colormap to be used (optional, default: viridis)
-        annot: Boolean
+        annot : Boolean
             Show annotations for x and y-axis (optional, default: True)
+        file  : str
+            If a filename is provided, plot is exported as PDF (optional, default: None)
             
         Keyword Arguments
         -----------------
@@ -1364,7 +1410,7 @@ class Model(object):
         ux       : 
             horizontal displacement
         uy       : 
-            vertical displacement  
+            vertical displacement
         '''
         fig, ax = plt.subplots(1)
         cmap = mpl.cm.get_cmap(colormap, cdepth)
@@ -1502,4 +1548,7 @@ class Model(object):
         if annot:
             ax.set_xlabel('x (mm)')
             ax.set_ylabel('y (mm)')
+        'save plot to file if filename is provided'
+        if file is not None:
+            fig.savefig(file+'.pdf', format='pdf', dpi=300)
         plt.show()
