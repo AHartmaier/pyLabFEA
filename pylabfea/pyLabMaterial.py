@@ -77,7 +77,7 @@ class Material(object):
         self.sy = None  # Elasticity will be considered unless sy is set
         self.ML_yf = False # use conventional plasticity unless trained ML functions exists
         self.ML_grad = False # use conventional gradient unless ML function exists
-        self.Trseca = False  # use J2 or Hill equivalent stress unless defined otherwise
+        self.Tresca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.name = name
         self.msg = {
             'yield_fct' : None,
