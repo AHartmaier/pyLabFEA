@@ -6,7 +6,7 @@ __author__ = """Alexander Hartmaier"""
 __email__ = 'alexander.hartmaier@rub.de'
 __version__ = '1.1'
 
-import pylabfea.pylabfem as pylabfem
-import pylabfea.pylabfem as pyLabFEM
-import pylabfea.pylabmaterial as pylabmaterial
-import pylabfea.pylabmaterial as pyLabMaterial
+import pylabfea.pyLabFEM as pylabfem
+#import pylabfea.pylabfem as pyLabFEM
+import pylabfea.pyLabMaterial as pylabmaterial
+#import pylabfea.pylabmaterial as pyLabMaterial

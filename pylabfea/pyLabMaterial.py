@@ -10,7 +10,7 @@ Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 import numpy as np
-import pylabfea.pylabfem as FE
+import pylabfea.pyLabFEM as FE
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from sklearn import svm
