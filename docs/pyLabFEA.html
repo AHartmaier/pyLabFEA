@@ -39,7 +39,7 @@
 contains that attributes and methods needed in FEA. Materials are defined in
 module pyLabMaterial.</p>
 <p>uses NumPy, SciPy, MatPlotLib and pyLabMaterial</p>
-<p>Version: 1.1 (2020-03-31)
+<p>Version: 2.0 (2020-03-31)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
@@ -1228,7 +1228,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 needed for elastic-plastic material definitions in FEA. The module Model is defined in
 module pyLabFEM.</p>
 <p>uses NumPy, MatPlotLib, sklearn and pyLabFEM</p>
-<p>Version: 1.1 (2020-03-31)
+<p>Version: 2.0 (2020-03-31)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
@@ -1623,7 +1623,7 @@ used by search algorithm to find zeros of yield function.</p>
 
 <dl class="method">
 <dt id="pyLabMaterial.Material.microstructure">
-<code class="sig-name descname">microstructure</code><span class="sig-paren">(</span><em class="sig-param">texture_param=None</em>, <em class="sig-param">grain_size=None</em>, <em class="sig-param">grain_shape=None</em>, <em class="sig-param">porosity=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.microstructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.microstructure" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">microstructure</code><span class="sig-paren">(</span><em class="sig-param">texture=None</em>, <em class="sig-param">grain_size=None</em>, <em class="sig-param">grain_shape=None</em>, <em class="sig-param">porosity=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.microstructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.microstructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define microstructural parameters of the material: crstallographic texture, grain size, grain shape
 and porosity.</p>
 <dl class="simple">
@@ -1777,6 +1777,268 @@ from other materials with a ML yield function. Graphical output on the trained S
 </dd></dl>
 
 </div>
+<div class="section" id="module-pyLabData">
+<span id="module-data"></span><h2>Module Data<a class="headerlink" href="#module-pyLabData" title="Permalink to this headline">¶</a></h2>
+<p>Introduces a class for data resulting from virtual or physical mechanical tests
+for use in pyLabFEA package.</p>
+<p>uses NumPy, SciPy, MatPlotLib</p>
+<p>Version: 2.0 (2020-03-31)
+Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
+Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
+distributed under GNU General Public License (GPLv3)</p>
+<dl class="class">
+<dt id="pyLabData.Data">
+<em class="property">class </em><code class="sig-prename descclassname">pyLabData.</code><code class="sig-name descname">Data</code><span class="sig-paren">(</span><em class="sig-param">msl</em>, <em class="sig-param">path_data</em>, <em class="sig-param">path_json=None</em>, <em class="sig-param">name='Dataset'</em>, <em class="sig-param">nth=1</em>, <em class="sig-param">epl_crit=0.002</em>, <em class="sig-param">d_ep=0.0005</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Define class for handling data from virtual mechanical tests in micromechanical
+simulations and data from physical mechanical tests on materials with various
+microstructures</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>msl</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – List with names of JOSN files with metadata for all microstructures</p></li>
+<li><p><strong>path_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Trunc of pathname for data files</p></li>
+<li><p><strong>path_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Trunc of pathname for JSON metadata files (Optional, default: path_data)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Name of Dataset (optional, default: ‘Dataset’)</p></li>
+<li><p><strong>nth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Read only every nth lines of input file (optional, default: 1)</p></li>
+<li><p><strong>epl_crit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Critical plastic strain at which yield strength is defined (optional, default: 2.e-3)</p></li>
+<li><p><strong>d_ep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Range around critical value of plastic strain in which flow stresses are
+evaluated (optional, default: 5.e-4)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="pyLabData.Data.msl">
+<code class="sig-name descname">msl</code><a class="headerlink" href="#pyLabData.Data.msl" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Nset">
+<code class="sig-name descname">Nset</code><a class="headerlink" href="#pyLabData.Data.Nset" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#pyLabData.Data.name" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.pd">
+<code class="sig-name descname">pd</code><a class="headerlink" href="#pyLabData.Data.pd" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.pj">
+<code class="sig-name descname">pj</code><a class="headerlink" href="#pyLabData.Data.pj" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.epc">
+<code class="sig-name descname">epc</code><a class="headerlink" href="#pyLabData.Data.epc" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.dep">
+<code class="sig-name descname">dep</code><a class="headerlink" href="#pyLabData.Data.dep" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.set">
+<code class="sig-name descname">set</code><a class="headerlink" href="#pyLabData.Data.set" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)">list</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="pyLabData.Data.Set">
+<em class="property">class </em><code class="sig-name descname">Set</code><span class="sig-paren">(</span><em class="sig-param">db</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data.Set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data.Set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Define class for handling of a dataset for one individual material</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db</strong> (object of type <code class="docutils literal notranslate"><span class="pre">Data</span></code>) – Parent database from which properties are inherited</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Name of JSON file with metadata for microstructure to be stored in this dataset</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.db">
+<code class="sig-name descname">db</code><a class="headerlink" href="#pyLabData.Data.Set.db" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>object of class <code class="docutils literal notranslate"><span class="pre">Data</span></code></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#pyLabData.Data.Set.name" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.N">
+<code class="sig-name descname">N</code><a class="headerlink" href="#pyLabData.Data.Set.N" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">eps, epl, eel, sig, ang</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>(N,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.Ndat">
+<code class="sig-name descname">Ndat</code><a class="headerlink" href="#pyLabData.Data.Set.Ndat" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">sfc, sfpr, peeq</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>(Ndat,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.f_yld">
+<code class="sig-name descname">f_yld</code><a class="headerlink" href="#pyLabData.Data.Set.f_yld" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>(Ndat,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">C11, C12</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="sig-name descname">E, nu</code></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLabData.Data.Set.augment_data">
+<code class="sig-name descname">augment_data</code><span class="sig-paren">(</span><em class="sig-param">graph=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data.Set.augment_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data.Set.augment_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raw data is distributed over entire deviatoric plane to create a suited
+data set for training of SVC, graphical output of raw data together with
+augmented data can be created.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.i_pl_">
+<code class="sig-name descname">i_pl_</code><em class="property"> = None</em><a class="headerlink" href="#pyLabData.Data.Set.i_pl_" title="Permalink to this definition">¶</a></dt>
+<dd><p>filter load cases of mirrored raw data</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLabData.Data.Set.plot_flow_stress">
+<code class="sig-name descname">plot_flow_stress</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data.Set.plot_flow_stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data.Set.plot_flow_stress" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLabData.Data.Set.plot_seq">
+<code class="sig-name descname">plot_seq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data.Set.plot_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data.Set.plot_seq" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pyLabData.Data.Set.plot_theta">
+<code class="sig-name descname">plot_theta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data.Set.plot_theta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data.Set.plot_theta" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="pyLabData.Data.Set.texture_param">
+<code class="sig-name descname">texture_param</code><em class="property"> = None</em><a class="headerlink" href="#pyLabData.Data.Set.texture_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>select data points close to yield point =&gt; raw data</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="method">
+<dt id="pyLabData.Data.train_SVC">
+<code class="sig-name descname">train_SVC</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabData.html#Data.train_SVC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabData.Data.train_SVC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train SVC for all yield functions of the microstructures provided in the list <code class="docutils literal notranslate"><span class="pre">Data.msl</span></code>. In First step, the
+training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
+yield function (“-1”: elastic, “+1”: plastic). Furthermore, axes in different dimensions for microstructural
+features are introduced that describe the relation between the different sets.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
 </div>
 
 
@@ -1803,6 +2065,7 @@ from other materials with a ML yield function. Graphical output on the trained S
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyLabFEM">Module FEM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#module-pyLabMaterial">Module Material</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-pyLabData">Module Data</a></li>
 </ul>
 </li>
 </ul>

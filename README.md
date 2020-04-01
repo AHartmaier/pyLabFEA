@@ -13,6 +13,21 @@ elastic-plastic materials, which is fully written in Python. Due to
 its simplicity, it is well-suited for teaching, and its flexibility in
 constitutive modeling of materials makes it a useful research tool.
 
+## Installation
+
+The pyLabFEA package is installed with the following command
+
+```
+$ python setup.py install --user
+```
+
+After this, the package can by imported into python scripts by
+
+```python
+import pylabfea.model as FE
+from pylabfea.material import Material
+```
+
 ## Jupyter notebooks
 
 pyLabFEA is conveniently used with Jupyter notebooks. 

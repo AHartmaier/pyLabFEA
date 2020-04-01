@@ -17,3 +17,11 @@ Module Material
    :undoc-members:
    :show-inheritance:
 
+Module Data
+-----------
+
+.. automodule:: pyLabData
+   :members:
+   :undoc-members:
+   :show-inheritance:
+

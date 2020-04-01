@@ -38,7 +38,7 @@
 
 <span class="sd">uses NumPy, MatPlotLib, sklearn and pyLabFEM</span>
 
-<span class="sd">Version: 1.1 (2020-03-31)</span>
+<span class="sd">Version: 2.0 (2020-03-31)</span>
 <span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020</span>
 <span class="sd">Email: alexander.hartmaier@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
@@ -583,7 +583,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">drucker</span> <span class="o">=</span> <span class="n">drucker</span>   <span class="c1"># Drucker-Prager parameter: weight of hydrostatic stress</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">Tresca</span> <span class="o">=</span> <span class="n">Tresca</span></div>
     
-<div class="viewcode-block" id="Material.microstructure"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.microstructure">[docs]</a>    <span class="k">def</span> <span class="nf">microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texture_param</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grain_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grain_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">porosity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Material.microstructure"><a class="viewcode-back" href="../pyLabFEA.html#pyLabMaterial.Material.microstructure">[docs]</a>    <span class="k">def</span> <span class="nf">microstructure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">texture</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grain_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">grain_shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">porosity</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Define microstructural parameters of the material: crstallographic texture, grain size, grain shape</span>
 <span class="sd">        and porosity.</span>
 <span class="sd">        </span>
@@ -598,7 +598,7 @@
 <span class="sd">        porosity : float</span>
 <span class="sd">            Porosity of the material</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">texture_param</span> <span class="o">=</span> <span class="n">texture_param</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">texture</span> <span class="o">=</span> <span class="n">texture</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grain_size</span> <span class="o">=</span> <span class="n">grain_size</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">grain_shape</span> <span class="o">=</span> <span class="n">grain_shape</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">porosity</span> <span class="o">=</span> <span class="n">porosity</span></div>

@@ -13079,6 +13079,7 @@ div#notebook {
 <div class="text_cell_render border-box-sizing rendered_html">
 <h1 id="Machine-Learning-flow-rule">Machine Learning flow rule<a class="anchor-link" href="#Machine-Learning-flow-rule">&#182;</a></h1><p>Machine Learning (ML) algorithms provide a great flexibility to describe aribitrary mathematical functions. At the same time they offer the possibility to handle large data sets and multi-dimensional features as input. Hence, using ML algorithms as constitutive rules for plastic material behavior offers the possibility to explicitly take into account microstructural information of the material in the constitutive modeling. Furthermore, data resulting from experiment and micromechanical simulations can be hybridized to generate training data sets. The present example is using Support Vector Classification (SVC) as yield function. The SVC algorithm is trained by using deviatoric stresses as input data and the information whether a given stress state leads to purely elastic or rather to elastic-plastic deformation of the material as result data. In this way, a ML yield function is obtained, which can determine whether a given stress state lies inside or outside of the elastic regime of the material. Furthermore, the yield locus, i.e., the hyperplane in stress space on which plastic deformation occurs, can be reconstructed from the SVC, and the gradient on this yield locus can be conveniently calculated. Therefore, the standard formulations of continuum plasticity, as the return mapping algorithm, can be applied in Finite Element Analysis (FEA) in the usual way. Thus, it is demonstrated that the new ML yield function can replace conventional FEA yield functions. In a next step, microstructural information will be considered directly as feature. Machine learning algorithms have been adopted from the scikit-learn platform (<a href="https://scikit-learn.org/stable/">https://scikit-learn.org/stable/</a>).</p>
 <p>This package demonstrates the training and application of ML flow rules in FEA in form of a simple example with data synthetically produced from standard flow rules, like isotropic J2 (von Mises) and Hill-type anisotropic plasticity. It uses the pyLabFEM module. This notebook uses the matplotlib (<a href="https://matplotlib.org/">https://matplotlib.org/</a>) library for the visualization of results, and NumPy (<a href="http://www.numpy.org">http://www.numpy.org</a>) for mathematical operations with arrays.</p>
+<p>The scientific background of this work is desribed in mode detail in the article A. Hartmaier (2020) "Data-Oriented Constitutive Modeling of Plasticity in Metals" which is accepted for publications in <em>Materials</em>. The preprint is available <a rel="preprint" href="https://www.preprints.org/manuscript/202003.0164/v2">here</a>.</p>
 <p>Author: Alexander Hartmaier, ICAMS, Ruhr-Universtität Bochum, Germany, March 2020</p>
 <p>This work is licensed under a Creative 
 Commons Attribution-NonCommercial-ShareAlike 4.0 International License
@@ -13104,12 +13105,8 @@ Two identical materials are defined,<code>mat_t</code> will be used to define th
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="k">if</span> <span class="p">(</span><span class="s2">&quot;../source&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;../source&quot;</span><span class="p">)</span>
-
-<span class="kn">import</span> <span class="nn">pyLabFEM</span> <span class="k">as</span> <span class="nn">FE</span>
-<span class="kn">from</span> <span class="nn">pyLabMaterial</span> <span class="kn">import</span> <span class="n">Material</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea.pyLabFEM</span> <span class="k">as</span> <span class="nn">FE</span>
+<span class="kn">from</span> <span class="nn">pylabfea.pyLabMaterial</span> <span class="kn">import</span> <span class="n">Material</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">from</span> <span class="nn">scipy.optimize</span> <span class="kn">import</span> <span class="n">fsolve</span>
@@ -13308,7 +13305,7 @@ For the data and the trained ML yield function are plotted in the cylindrical st
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma_</span><span class="si">{eq}</span><span class="s1">$ (MPa)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;SVM-yield-fct_Tresca.pdf&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="c1">#fig.savefig(&#39;SVM-yield-fct_Tresca.pdf&#39;, format=&#39;pdf&#39;, dpi=300)</span>
 </pre></div>
 
     </div>
@@ -13443,7 +13440,7 @@ Plot of trained SVM classification with test data in 2D cylindrical stress space
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[8]:</div>
+<div class="prompt input_prompt">In&nbsp;[3]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">fem</span><span class="o">=</span><span class="n">FE</span><span class="o">.</span><span class="n">Model</span><span class="p">(</span><span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span><span class="n">planestress</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -13553,7 +13550,7 @@ Material 2 (right block):  {&#39;yield_fct&#39;: &#39;ML_yf-decision-fct&#39;, &
 </div>
 <div class="cell border-box-sizing code_cell rendered">
 <div class="input">
-<div class="prompt input_prompt">In&nbsp;[10]:</div>
+<div class="prompt input_prompt">In&nbsp;[4]:</div>
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">====== Stress-Strain-Curves ======&#39;</span><span class="p">)</span>
