@@ -21,12 +21,25 @@ The pyLabFEA package is installed with the following command
 $ python setup.py install --user
 ```
 
-After this, the package can by imported into python scripts by
+After this, the package can by imported with
+
+```python
+import pylabfea as fea
+```
+
+An alternative way is to import the modules modules 'model' and 'material' individually with
 
 ```python
 import pylabfea.model as FE
 from pylabfea.material import Material
 ```
+as it is done in the Jupyter notebooks of this distribution.
+
+## Documentation
+
+Online documentation for pyLabFEA can be found under https://ahartmaier.github.io/pyLabFEA/.
+For offline use, open pyLabFEA/docs/index.html to browse through the contents.
+The documentation is generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 ## Jupyter notebooks
 
@@ -39,11 +52,6 @@ overview on the contents of the notebooks is available [here](https://ahartmaier
 The Jupyter notebooks of the pyLabFEA tutorials are also available on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
-## Documentation
-
-Online documentation for pyLabFEA can be found under https://ahartmaier.github.io/pyLabFEA/.
-For offline use, open pyLabFEA/docs/index.html to browse through the contents.
-The documentation is generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 ## Contributions
 

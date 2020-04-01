@@ -4,7 +4,7 @@ Modules
 Module Model
 ------------
 
-.. automodule:: pylabfea.model
+.. automodule:: model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,8 +12,10 @@ Module Model
 Module Material
 ---------------
 
-.. automodule:: pylabfea.material
+.. automodule:: material
    :members:
    :undoc-members:
    :show-inheritance:
+
+
 

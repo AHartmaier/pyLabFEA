@@ -1,11 +1,13 @@
-# Module Material
-'''Introduces class ``Material`` that contains that attributes and methods
-needed for elastic-plastic material definitions in FEA. The module Model is defined in
-module pyLabFEM.
+# Module pylabfea.material
+'''Module pylabfea.material introduces class ``Material`` that contains attributes and methods
+needed for elastic-plastic material definitions in FEA. It also enables the training of 
+machine learning algorithms as yield functions for plasticity.
+The module pylabfea.model is used to calculate mechanical properties of a defined material 
+under various loading conditions.
 
-uses NumPy, MatPlotLib, sklearn and pyLabFEM
+uses NumPy, MatPlotLib, sklearn and pyLabFEA.model
 
-Version: 1.1 (2020-03-31)
+Version: 2.0 (2020-04-01)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
