@@ -1,6 +1,6 @@
 # Module Material
-'''Introduces class ``Material`` that contains that attributes and methods 
-needed for elastic-plastic material definitions in FEA. The module Model is defined in 
+'''Introduces class ``Material`` that contains that attributes and methods
+needed for elastic-plastic material definitions in FEA. The module Model is defined in
 module pyLabFEM.
 
 uses NumPy, MatPlotLib, sklearn and pyLabFEM
@@ -10,24 +10,24 @@ Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 import numpy as np
-import pyLabFEM as FE
+import pylabfea.pyLabFEM as FE
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 from sklearn import svm
 import sys
-      
+
 '=========================='
 'define class for materials'
 '=========================='
 class Material(object):
-    '''Define class for Materials including material parameters (attributes), constitutive relations (methods) 
+    '''Define class for Materials including material parameters (attributes), constitutive relations (methods)
     and derived properties und various loading conditions (dictionary)
-    
+
     Parameters
     ----------
     name : str
         Name of material (optional, default: 'Material')
-        
+
     Attributes
     ----------
     name    : str
@@ -52,18 +52,18 @@ class Material(object):
         Anisotropic elastic constants
     E, nu : float
         Isotropic elastic constants, Young's modulus and Poisson's number
-    
+
     Keyword Arguments
     -----------------
     prop-propJ2 :
-        Store properties of material (Hill-formulation or J2 formulation) in sub-dictonaries: 
-        'stx' (tensile horiz. stress), 'sty' (tensile vert. stress), 
+        Store properties of material (Hill-formulation or J2 formulation) in sub-dictonaries:
+        'stx' (tensile horiz. stress), 'sty' (tensile vert. stress),
         'et2' (equibiaxial tensile strain), 'ect' (pure shear)
     stx-sty-et2-ect  : sub-dictionaries
-        Store data for 'ys' (float - yield strength), seq (array - eqiv. stress), 
+        Store data for 'ys' (float - yield strength), seq (array - eqiv. stress),
         'eeq' (array - equiv. total strain), 'peeq' (array - equiv. plastic strain),
         'sytel' (str - line style for plot), 'name' (str - name in legend)
-    sigeps : 
+    sigeps :
         Store tensorial stress strain data in sub-directories;
         Contains data for 'sig' (2d-array - stress), 'eps' (2d-array - strain),
         'epl' (2d-array - plastic strain)
@@ -72,31 +72,31 @@ class Material(object):
     #elasticity: define elastic material parameters C11, C12, C44
     #plasticity: define plastic material parameter sy, khard
     #epl_dot: calculate plastic strain rate
-    
+
     def __init__(self, name='Material'):
         self.sy = None  # Elasticity will be considered unless sy is set
         self.ML_yf = False # use conventional plasticity unless trained ML functions exists
         self.ML_grad = False # use conventional gradient unless ML function exists
-        self.Trseca = False  # use J2 or Hill equivalent stress unless defined otherwise
+        self.Tresca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.name = name
         self.msg = {
             'yield_fct' : None,
             'gradient'  : None
         }
         self.prop = {    # stores strength and stress-strain data along given load paths
-            'stx'   : {'ys':None,'seq':None,'eeq':None,'peeq':None,'style':None,'name':None},   
+            'stx'   : {'ys':None,'seq':None,'eeq':None,'peeq':None,'style':None,'name':None},
             'sty'   : {'ys':None,'seq':None,'eeq':None,'peeq':None,'style':None,'name':None},
             'et2'   : {'ys':None,'seq':None,'eeq':None,'peeq':None,'style':None,'name':None},
             'ect'   : {'ys':None,'seq':None,'eeq':None,'peeq':None,'style':None,'name':None}
         }
         self.propJ2 = {    # stores J2 equiv strain data along given load paths
-            'stx'   : {'ys':None,'seq':None,'eeq':None,'peeq':None},   
+            'stx'   : {'ys':None,'seq':None,'eeq':None,'peeq':None},
             'sty'   : {'ys':None,'seq':None,'eeq':None,'peeq':None},
             'et2'   : {'ys':None,'seq':None,'eeq':None,'peeq':None},
             'ect'   : {'ys':None,'seq':None,'eeq':None,'peeq':None}
         }
         self.sigeps = {    # calculates strength and stress strain data along given load paths
-            'stx'   : {'sig':None,'eps':None,'epl':None},   
+            'stx'   : {'sig':None,'eps':None,'epl':None},
             'sty'   : {'sig':None,'eps':None,'epl':None},
             'et2'   : {'sig':None,'eps':None,'epl':None},
             'ect'   : {'sig':None,'eps':None,'epl':None}
@@ -104,7 +104,7 @@ class Material(object):
 
     def calc_yf(self, sig, peeq=0., ana=False, pred=False):
         '''Calculate yield function
-        
+
         Parameters
         ----------
         sig  : (3,), (6,) or (3,N) array
@@ -115,7 +115,7 @@ class Material(object):
             Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)
         pred : Boolean
             Indicator if prediction value should be returned, rather then decision function (optional, default: False)
-            
+
         Returns
         -------
         f    : flot or 1d-array
@@ -154,10 +154,10 @@ class Material(object):
             f = seq - (self.sy + peeq*self.khard)
             self.msg['yield_fct'] = 'analytical'
         return f
-    
+
     def ML_full_yf(self, sig, ld=None, verb=False):
         '''Calculate full ML yield function as distance of given stress to yield locus in loading direction.
-        
+
         Parameters
         ----------
         sig : Voigt stress tensor
@@ -166,7 +166,7 @@ class Material(object):
             Vector of loading direction in princ. stress space (optional)
         verb : Boolean
             Indicate whether to be verbose in text output (optional, default: False)
-            
+
         Returns
         -------
         yf : float
@@ -177,7 +177,7 @@ class Material(object):
         if seq<0.01 and ld is None:
             yf = seq - 0.85*self.sy
         else:
-            if (seq>=0.01): 
+            if (seq>=0.01):
                 ld = sp*self.sy/seq
             x0 = 1.
             if ld[0]*ld[1] < 0.:
@@ -195,22 +195,22 @@ class Material(object):
                     print('*** detection not successful. yf=', yf,', seq=', seq)
                     print('*** optimization result (x1,y1,ier,msg):', x1, y1, ier, msg)
         return yf
-    
-    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1, 
+
+    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1,
                      plot=False, cyl=False, inherit=None):
         '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
-        data (features) are accepted as either 3D principle stresses or cylindrical stresses. ML yield functions can also be inherited 
+        data (features) are accepted as either 3D principle stresses or cylindrical stresses. ML yield functions can also be inherited
         from other materials with a ML yield function. Graphical output on the trained SVC yield function is possible.
-        
-        
+
+
         Parameters
         ----------
         x   :  (N,2) or (N,3) array
             Training data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2)
         cyl : Boolean
-            Indicator for cylindrical stresses if x is has shape (N,3) 
-        y_train : 1d-array 
-            Result vector for training data (same size as x) 
+            Indicator for cylindrical stresses if x is has shape (N,3)
+        y_train : 1d-array
+            Result vector for training data (same size as x)
         x_test  : (N,2) or (N,3) array
             Test data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2) (optional)
         y_test
@@ -221,11 +221,11 @@ class Material(object):
             Parameter for kernel function of SVC (optional, default: 1)
         fs  : float
             Parameters for size of periodic continuation of training data (optional, default:0.1)
-        inherit : object of class ``Material`` 
-            Material from which trained ML function is inherited 
+        inherit : object of class ``Material``
+            Material from which trained ML function is inherited
         plot : Boolean
             Indicates if plot of decision function should be generated (optional, default: False)
-            
+
         Returns
         -------
         train_sc : float
@@ -299,13 +299,13 @@ class Material(object):
             ax.set_ylabel('$\sigma_{eq}/\sigma_y$')
             plt.show()
         return train_sc, test_sc
-    
+
     def calc_fgrad(self, sig, seq=None, ana=False):
-        '''Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield 
-        function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield 
-        function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function 
+        '''Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield
+        function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield
+        function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function
         (activated if ML_grad=True and ana=False)
-        
+
         Parameters
         ----------
         sig : (3,) or (N,3) array
@@ -314,7 +314,7 @@ class Material(object):
             Equivalent stresses (optional)
         ana : Boolean
             Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)
-            
+
         Returns
         -------
         fgrad : (3,) or (N,3) array
@@ -372,7 +372,7 @@ class Material(object):
             for i in range(N):
                 dKdt = np.sum(dc*grad_rbf(x[i,:],sv))
                 fgrad[i,:] = Jac(sig[i,:])@np.array([1,dKdt,0])
-            self.msg['gradient'] = 'gradient to ML_yf'  
+            self.msg['gradient'] = 'gradient to ML_yf'
         else:
             h0 = self.hill[0]
             h1 = self.hill[1]
@@ -384,13 +384,13 @@ class Material(object):
             fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/seq + d3
             fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/seq + d3
             self.msg['gradient'] = 'analytical'
-        if sh==(3,): 
+        if sh==(3,):
             fgrad = fgrad[0,:]
         return fgrad
-    
+
     def setup_fgrad_SVM(self, X_grad_train, y_grad_train, C=10., gamma=0.1):
         '''Inititalize and train SVM for gradient evaluation
-        
+
         Parameters
         ----------
         X_grad_train : (N,3) array
@@ -420,18 +420,18 @@ class Material(object):
         self.svm_grad1.fit(X_grad_train, y_grad_train1)
         self.svm_grad2.fit(X_grad_train, y_grad_train2)
         self.ML_grad = True
-        
+
     def calc_seq(self, sprinc):
-        '''Calculate generalized equivalent stress from pricipal stresses; 
+        '''Calculate generalized equivalent stress from pricipal stresses;
         equivalent to J2 for isotropic flow behavior and tension compression invariance;
         Hill-type approach for anisotropic plastic yielding;
         Drucker-like approach for tension-compression assymetry
-        
+
         Parameters
         ----------
         sprinc : (3,), (N,3) or (N,6) array
             Principal stress values
-        
+
         Returns
         -------
         seq : float or (N,) array
@@ -469,25 +469,25 @@ class Material(object):
             # consider hydrostatic stresses for tension-compression assymetry
             I1  = np.sum(sprinc[:,0:3], axis=1)/3.
             seq  = np.sqrt(I2) + d0*I1   # generalized eqiv. stress
-        if sh==(3,): 
+        if sh==(3,):
             seq = seq[0]
         return seq
-    
+
     def elasticity(self, C11=None, C12=None, C44=None, # standard parameters for crystals with cubic symmetry
                    CV=None,                            # user specified Voigt matrix
                    E=None, nu=None):                   # parameters for isotropic material
         '''Define elastic material properties
-        
+
         Parameters
         ----------
         C11 : float
         C12 : float
-        C44 : float 
-            Anisoptropic elastic constants of material (optional, 
+        C44 : float
+            Anisoptropic elastic constants of material (optional,
             if (C11,C12,C44) not given, either (E,nu) or CV must be specified)
         E   : float
-        nu  : float 
-            Isotropic parameters Young's modulus and Poisson's number (optional, 
+        nu  : float
+            Isotropic parameters Young's modulus and Poisson's number (optional,
             if (E,nu) not given, either (C11,C12,C44) or CV must be specified)
         CV  : (6,6) array
             Voigt matrix of elastic constants (optional, if CV not given, either
@@ -523,12 +523,12 @@ class Material(object):
             self.E = 2*self.CV[3,3]*(1+self.nu) # only for isotropy
             #print('Warning: E and nu calculated from anisotropic elastic parameters')
         else:
-            sys.exit('Error: Inconsistent definition of material parameters')   
+            sys.exit('Error: Inconsistent definition of material parameters')
 
     def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0., Tresca=False):
         '''Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
-        
+
         Parameters
         ----------
         sy   : float
@@ -549,11 +549,11 @@ class Material(object):
         self.hill = np.array(hill)  # Hill anisotropic parameters
         self.drucker = drucker   # Drucker-Prager parameter: weight of hydrostatic stress
         self.Tresca = Tresca
-    
+
     def microstructure(self, texture_param=None, grain_size=None, grain_shape=None, porosity=None):
         '''Define microstructural parameters of the material: crstallographic texture, grain size, grain shape
         and porosity.
-        
+
         Paramaters
         ----------
         text_param : array-like
@@ -569,23 +569,23 @@ class Material(object):
         self.grain_size = grain_size
         self.grain_shape = grain_shape
         self.porosity = porosity
-        
+
     def epl_dot(self, sig, epl, Cel, deps):
-        '''Calculate plastic strain increment relaxing stress back to yield locus; 
-        Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures, 
+        '''Calculate plastic strain increment relaxing stress back to yield locus;
+        Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
         Chapter 6, Eqs. (6.4), (6.8) and (6.17)
-        
+
         Parameters
         ----------
         sig : Voigt tensor
-            Stress 
+            Stress
         epl : Voigt tensor
             Plastic strain
         Cel : (6,6) array
             Elastic stiffnes tensor
         deps: Voigt tensor
             Strain increment from predictor step
-            
+
         Returns
         -------
         pdot : Voigt tensor
@@ -611,19 +611,19 @@ class Material(object):
             lam_dot = a.T @ Cel @ deps / hh  # deps must not contain elastic strain components
             pdot = lam_dot * a
         return pdot
-    
+
     def C_tan(self, sig, Cel):
-        '''Calculate tangent stiffness relaxing stress back to yield locus; 
-        Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures, 
+        '''Calculate tangent stiffness relaxing stress back to yield locus;
+        Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
         Chapter 6, Eqs. (6.9) and (6.18)
-        
+
         Parameters
         ----------
         sig : Voigt tensor
-            Stress 
+            Stress
         Cel : (6,6) array
             Elastic stiffness tensor used for predictor step
-            
+
         Returns
         -------
         Ct : (6,6) array
@@ -635,18 +635,18 @@ class Material(object):
         ca = Cel @ a
         Ct = Cel - np.kron(ca, ca).reshape(6,6)/hh
         return Ct
-    
+
     def create_sig_data(self, N=None, syc=None, Nseq=12, offs = 0.01, extend=False, rand=False):
         '''Function to create consistent data sets on the deviatoric stress plane
         for training or testing of ML yield function. Data is created in form of cylindrical stresses
-        
+
         Parameters
         ----------
         N    : int
             Number of load cases (polar angles) to be created (optional,
             either N or theta must be provided)
         theta: (N,) array
-            List of polar angles from which training data in deviatoric stress plane is created 
+            List of polar angles from which training data in deviatoric stress plane is created
             (optional, either theta or N must be provided)
         Nseq : int
             Number of equiv. stresses generated up to yield strength (optional, default: 12)
@@ -656,7 +656,7 @@ class Material(object):
             Create additional data in plastic regime (optional, default: False)
         rand   : Boolean
             Chose random load cases (polar angles) (optional, default: False)
-            
+
         Returns
         -------
         st : (M,3) array
@@ -693,11 +693,11 @@ class Material(object):
             if syc is not None:
                 yt[j0:j1] = np.sign(seq[i]*np.ones(N) - sc)
         return st, yt
-        
+
     def find_yloc(self, x, sp, ana=False):
         '''Function to expand unit stresses by factor and calculate yield function;
         used by search algorithm to find zeros of yield function.
-        
+
         Parameters
         ----------
         x : 1d-array
@@ -714,10 +714,10 @@ class Material(object):
         y = np.array([x,x,x]).transpose()
         f = self.calc_yf(y*sp, ana=ana, pred=False)
         return f
-    
+
     def ellipsis(self, a=1., b=1./np.sqrt(3.), n=72):
         '''Create ellipsis with main axis along 45° axis, used for graphical representation of isotropic yield locus.
-        
+
         Parameters
         ----------
         a : float
@@ -726,7 +726,7 @@ class Material(object):
             Short half-axis of ellipsis (optional, default: 1/sqrt(3))
         n : int
             Number of points on ellipsis to be calculated
-            
+
         Returns
         -------
         x, y : (n,) arrayy
@@ -739,7 +739,7 @@ class Material(object):
 
     def plot_data(self, Z, axs, xx, yy, field=True, c='red'):
         '''Plotting data in stress space to visualize yield loci.
-        
+
         Parameters
         ----------
         Z   : array
@@ -747,14 +747,14 @@ class Material(object):
         axs : handle
             Axes where plot is added
         xx  : meshgrid
-            x-coordinates 
+            x-coordinates
         yy  : meshgrid
             y-coordinates
         field : Boolean
             Decide if field is plotted (optional, default: True)
         c   : str
             Color for contour line (optional, default: 'red')
-        
+
         Returns
         -------
         line : handle
@@ -768,7 +768,7 @@ class Material(object):
         else:
             Z[np.nonzero(Z<-zmax)] = -zmax
         Z = Z.reshape(xx.shape)
-    
+
         'display data'
         if field:
             im = axs.imshow(Z, interpolation='nearest',
@@ -780,11 +780,11 @@ class Material(object):
         line = contour.collections
         return line
 
-    def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2, 
+    def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2,
                          xstart=-2., xend=2., axis1=[0], axis2=[1], iso=False, ref_mat=None,
                          field=False, Nmesh=100, file=None, fontsize=20):
         '''Plot different cuts through yield locus in 3D principle stress space.
-        
+
         Parameters
         ----------
         fun   : function handle
@@ -815,7 +815,7 @@ class Material(object):
             File name for output of olot (optional)
         fontsize : int
             Fontsize for axis annotations (optional, default: 20)
-            
+
         Returns
         -------
         axs : pyplot axis handle
@@ -827,7 +827,7 @@ class Material(object):
         Nc = len(axis1)
         if len(axis2)!=Nc:
             sys.exit('Error in plot_yield_locus: mismatch in dimensions of ax1 and ax2')
-        
+
         if Nc==1:
             fs = (10, 8)
             fontsize *= 4/5
@@ -835,7 +835,7 @@ class Material(object):
             fs = (20, 5)
         fig, axs  = plt.subplots(nrows=1, ncols=Nc, figsize=fs)
         fig.subplots_adjust(hspace=0.3)
-        
+
         'loop over subplots in axis1 and axis2'
         for j in range(Nc):
             if Nc==1:
@@ -934,11 +934,11 @@ class Material(object):
             if (data is not None):
                 # select data from 3D stress space within range [xstart, xend] and to fit to slice
                 dat = np.array(data)/self.sy
-                dsel = np.nonzero(np.logical_and(np.abs(dat[:,si3])<trange, 
+                dsel = np.nonzero(np.logical_and(np.abs(dat[:,si3])<trange,
                     np.logical_and(dat[:,axis1[j]]>xstart, dat[:,axis1[j]]<xend)))
                 ir = dsel[0]
                 yf = np.sign(self.calc_yf(data[ir,:]))
-                h1 = ax.scatter(dat[ir,axis1[j]], dat[ir,axis2[j]], s=60, c=yf, 
+                h1 = ax.scatter(dat[ir,axis1[j]], dat[ir,axis2[j]], s=60, c=yf,
                                     cmap=plt.cm.Paired, edgecolors='k')
             ax.legend(lines,labels,loc='upper left',fontsize=fontsize-4)
             #ax.set_title(title,fontsize=fontsize)
@@ -951,10 +951,10 @@ class Material(object):
             fig.savefig(file+'.pdf', format='pdf', dpi=300)
         return axs
 
-    
+
     def calc_properties(self, size=2, Nel=2, verb=False, eps=0.005, min_step=None, sigeps=False):
         '''Use FE model to calculate material strength and stress-strain data along a given load path.
-        
+
         Parameters
         ----------
         size : int
@@ -1038,7 +1038,7 @@ class Material(object):
 
     def plot_stress_strain(self, Hill=False, file=None, fontsize=14):
         '''Plot stress-strain data and print values for strength.
-        
+
         Parameters
         ----------
         Hill : Boolean
@@ -1079,4 +1079,4 @@ class Material(object):
             if file is not None:
                 plt.savefig(file+'Hill.pdf', format='pdf', dpi=300)
             plt.show()
-        return 
+        return
