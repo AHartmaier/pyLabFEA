@@ -1,10 +1,10 @@
 Modules
 =======
 
-Module FEM
-----------
+Module Model
+------------
 
-.. automodule:: pyLabFEM
+.. automodule:: pylabfea.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,15 +12,7 @@ Module FEM
 Module Material
 ---------------
 
-.. automodule:: pyLabMaterial
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module Data
------------
-
-.. automodule:: pyLabData
+.. automodule:: pylabfea.material
    :members:
    :undoc-members:
    :show-inheritance:
