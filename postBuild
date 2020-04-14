@@ -1,1 +1,1 @@
-pip install .
+python -m pip install pylabfea
