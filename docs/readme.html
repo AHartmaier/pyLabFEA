@@ -57,20 +57,13 @@ research tool.</p>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
 <p>The pyLabFEA package is installed with the following command</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python setup.py install --user
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install .
 </pre></div>
 </div>
 <p>After this, the package can by imported into python scripts with</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea</span> <span class="k">as</span> <span class="nn">fea</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea</span> <span class="k">as</span> <span class="nn">FE</span>
 </pre></div>
 </div>
-<p>An alternative way is to import the modules modules ‘model’ and ‘material’
-individually with</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea.model</span> <span class="k">as</span> <span class="nn">FE</span>
-<span class="kn">from</span> <span class="nn">pylabfea.material</span> <span class="kn">import</span> <span class="n">Material</span>
-</pre></div>
-</div>
-<p>as it is done in the Jupyter notebooks of this distribution.</p>
 </div>
 <div class="section" id="jupyter-notebooks">
 <h2>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h2>
@@ -190,7 +183,7 @@ Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

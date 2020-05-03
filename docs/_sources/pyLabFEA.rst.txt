@@ -1,6 +1,14 @@
 Modules
 =======
 
+Module Basic
+------------
+.. automodule:: basic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 Module Model
 ------------
 

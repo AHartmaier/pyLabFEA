@@ -23,23 +23,14 @@ The pyLabFEA package is installed with the following command
 
 ::
 
-   $ python setup.py install --user
+   $ python -m pip install .
 
 After this, the package can by imported into python scripts with
 
 .. code:: python
 
-   import pylabfea as fea
-   
-An alternative way is to import the modules modules 'model' and 'material' 
-individually with
+   import pylabfea as FE
 
-.. code:: python
-
-   import pylabfea.model as FE
-   from pylabfea.material import Material
-   
-as it is done in the Jupyter notebooks of this distribution.
    
 Jupyter notebooks
 -----------------
