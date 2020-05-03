@@ -191,7 +191,6 @@ class Material(object):
         '''
         sp = Stress(sig).p
         seq = self.calc_seq(sp)
-        print('Full YF:seq, ld')
         if seq<0.01 and ld is None:
             yf = seq - 0.85*self.sflow
         else:
