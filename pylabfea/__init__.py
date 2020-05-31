@@ -12,5 +12,4 @@ __all__ = ['Strain', 'Stress', 'a_vec', 'b_vec', 'eps_eq', 'polar_ang', 'ptol',
 from pylabfea.basic import *
 from pylabfea.model import Model
 from pylabfea.material import Material
-from pylabfea.data import Data
 
