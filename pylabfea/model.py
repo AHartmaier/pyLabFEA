@@ -250,7 +250,7 @@ class Model(object):
                     self.Bmat[0] = self.calc_Bmat()
                 elif (DIM==2):
                     # integration for 2-d quadriliteral elements with lin shape fct
-                    # reduced integration with one Gauss point in middle of element
+                    # full integration with four Gauss points
                     cpos = np.sqrt(1./3.)   # position of Gauss points
                     self.Jac *= 4.
                     for i in range(self.ngp):
@@ -940,9 +940,8 @@ class Model(object):
                         el = self.element[0]
                         print('sig, disg, epl, depl, deps:',el.sig, el.dsig(), el.epl, el.depl(), el.deps())
                     if i>7 and not conv:
-                        print('Warning: No convergence achieved, abandoning')
-                        print('conv,i,f,ptol,dbcr,dbct',conv,i,f,ptol,dbcr,dbct)
-                        conv = True
+                        print('\n conv,i,f,ptol,dbcr,dbct',conv,i,f,ptol,dbcr,dbct)
+                        sys.exit('Error: No convergence achieved in plasticity routine')
                     if not conv:
                         dbcr *= 0.25
                         dbct *= 0.25
@@ -1055,6 +1054,10 @@ class Model(object):
             Field selector for library field, see Keyword Arguments for possible values
         mag    : float
             Magnification factor for displacements (optional, default: 10)
+        vmin   : float
+            Start value for range of plotted values
+        vmax   : float
+            End value for range of plotted values
         cdepth : int
             Number of colors in colormap (optional, default: 20)
         showmesh : Boolean

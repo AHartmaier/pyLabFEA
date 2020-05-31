@@ -25,5 +25,3 @@ Module Material
    :undoc-members:
    :show-inheritance:
 
-
-

@@ -283,7 +283,7 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">Bmat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_Bmat</span><span class="p">()</span>
                 <span class="k">elif</span> <span class="p">(</span><span class="n">DIM</span><span class="o">==</span><span class="mi">2</span><span class="p">):</span>
                     <span class="c1"># integration for 2-d quadriliteral elements with lin shape fct</span>
-                    <span class="c1"># reduced integration with one Gauss point in middle of element</span>
+                    <span class="c1"># full integration with four Gauss points</span>
                     <span class="n">cpos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>   <span class="c1"># position of Gauss points</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">Jac</span> <span class="o">*=</span> <span class="mf">4.</span>
                     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ngp</span><span class="p">):</span>
@@ -973,9 +973,8 @@
                         <span class="n">el</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
                         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;sig, disg, epl, depl, deps:&#39;</span><span class="p">,</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">dsig</span><span class="p">(),</span> <span class="n">el</span><span class="o">.</span><span class="n">epl</span><span class="p">,</span> <span class="n">el</span><span class="o">.</span><span class="n">depl</span><span class="p">(),</span> <span class="n">el</span><span class="o">.</span><span class="n">deps</span><span class="p">())</span>
                     <span class="k">if</span> <span class="n">i</span><span class="o">&gt;</span><span class="mi">7</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">conv</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: No convergence achieved, abandoning&#39;</span><span class="p">)</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;conv,i,f,ptol,dbcr,dbct&#39;</span><span class="p">,</span><span class="n">conv</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">ptol</span><span class="p">,</span><span class="n">dbcr</span><span class="p">,</span><span class="n">dbct</span><span class="p">)</span>
-                        <span class="n">conv</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> conv,i,f,ptol,dbcr,dbct&#39;</span><span class="p">,</span><span class="n">conv</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">f</span><span class="p">,</span><span class="n">ptol</span><span class="p">,</span><span class="n">dbcr</span><span class="p">,</span><span class="n">dbct</span><span class="p">)</span>
+                        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="s1">&#39;Error: No convergence achieved in plasticity routine&#39;</span><span class="p">)</span>
                     <span class="k">if</span> <span class="ow">not</span> <span class="n">conv</span><span class="p">:</span>
                         <span class="n">dbcr</span> <span class="o">*=</span> <span class="mf">0.25</span>
                         <span class="n">dbct</span> <span class="o">*=</span> <span class="mf">0.25</span>
@@ -1088,6 +1087,10 @@
 <span class="sd">            Field selector for library field, see Keyword Arguments for possible values</span>
 <span class="sd">        mag    : float</span>
 <span class="sd">            Magnification factor for displacements (optional, default: 10)</span>
+<span class="sd">        vmin   : float</span>
+<span class="sd">            Start value for range of plotted values</span>
+<span class="sd">        vmax   : float</span>
+<span class="sd">            End value for range of plotted values</span>
 <span class="sd">        cdepth : int</span>
 <span class="sd">            Number of colors in colormap (optional, default: 20)</span>
 <span class="sd">        showmesh : Boolean</span>

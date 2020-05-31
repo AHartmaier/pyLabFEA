@@ -57,6 +57,10 @@ class Material(object):
         Isotropic elastic constants, Young modulus and Poisson number
     msparam : ditionary
         Dicitionary with microstructural parameters assigned to this material
+    whdat   : Boolean
+        Indicates existence of a data-based work hardening model
+    txdat   : Boolean
+        Indicates existance of texture data for yield stress
     Ndof   : int
         degress of freedom for yield function, mandatory: 1:seq, 2:theta; optional: 3:work_hard, 4:texture)
         
@@ -89,7 +93,9 @@ class Material(object):
         self.ML_grad = False # use conventional gradient unless ML function exists
         self.Tresca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.name = name
-        self.msparam = None
+        self.msparam = None  # parameters for primary microstructure
+        self.whdat = False
+        self.txdat = False
         self.Ndof = 2
         self.msg = {
             'yield_fct' : None,
@@ -146,10 +152,13 @@ class Material(object):
             x = np.zeros((N,self.Ndof))
             x[:,0] = seq_J2(sig)/self.scale_seq - 1.
             x[:,1] = polar_ang(sig)/np.pi
-            if self.Ndof>=3:
+            if self.whdat:
                 x[:,2] = self.wh_cur/self.scale_wh - 1.
-            if self.Ndof==4:
-                x[:,3] = self.ms_cur/self.scale_text - 1.
+            if self.txdat:
+                ih = 3 if self.whdat else 2
+                for i in range(self.Nset):
+                    x[:,ih+i] = self.tx_cur[i]/self.scale_text[i]-1.
+                    
             if pred:
                 # use prediction, returns either -1 or +1
                 f = self.svm_yf.predict(x)
@@ -258,9 +267,13 @@ class Material(object):
             self.scale_seq = self.sy
         else:
             'calculate scaling factors need for SVC training from microstructure parameters'
-            self.scale_seq  = np.average(self.msparam['flow_seq_av'])
-            self.scale_wh   = np.average(self.msparam['work_hard'])
-            self.scale_text = np.average(self.msparam['texture'])
+            self.scale_seq = 0.
+            self.scale_wh  = 0.
+            self.scale_text = np.zeros(self.Nset)
+            for i in range(self.Nset):
+                self.scale_seq += np.average(self.msparam[i]['flow_seq_av'])/self.Nset
+                self.scale_wh  += np.average(self.msparam[i]['work_hard'])/self.Nset
+                self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
         sh = np.shape(x)
         X_train = np.zeros((N,self.Ndof))
@@ -274,13 +287,16 @@ class Material(object):
             X_train[:,0] = x[:,0]/self.scale_seq - 1.
             X_train[:,1] = x[:,1]/np.pi
             print('Using cyclindrical stresses for training')
-        if self.Ndof>=3:
+        if self.whdat:
             X_train[:,2] = x[:,2]/self.scale_wh - 1.
-            print('Using work hardening data for training: %i data sets up to PEEQ=%6.3f' % (self.msparam['Npl'], self.msparam['peeq_max']))
-        if self.Ndof==4:
-            X_train[:,3] = x[:,3]/self.scale_text - 1.
-            print('Using texture data for training: %i data sets with texture_parameters in range [%4.2f,%4.2f]' 
-                  % (self.msparam['Ntext'], self.msparam['texture'][0], self.msparam['texture'][-1]))
+            print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f' 
+                  % (self.msparam[i]['ms_type'], self.msparam[0]['Npl'], self.msparam[0]['peeq_max']))
+        if self.txdat:
+            ih = 3 if self.whdat else 2
+            for i in range(self.Nset):
+                X_train[:,ih+i] = x[:,ih+i]/self.scale_text[i] - 1.
+                print('Using texture data "%s" for training: %i data sets with texture_parameters in range [%4.2f,%4.2f]' 
+                      % (self.msparam[i]['ms_type'], self.msparam[i]['Ntext'], self.msparam[i]['texture'][0], self.msparam[i]['texture'][-1]))
         'copy left and right borders to enforce periodicity in theta'
         indr = np.nonzero(X_train[:,1]>1.-fs)
         indl = np.nonzero(X_train[:,1]<fs-1.)
@@ -302,10 +318,12 @@ class Material(object):
             else:
                 X_test[:,0] = x_test[:,0]/self.scale_seq - 1.
                 X_test[:,1] = x_test[:,1]/np.pi
-            if self.Ndof>=3 :
+            if self.whdat:
                 X_test[:,2] = x_test[:,2]/self.scale_wh - 1.
-            if self.Ndof==4:
-                X_test[:,3] = x_test[:,3]/self.scale_text - 1.
+            if self.txdat:
+                ih = 3 if self.whdat else 2
+                for i in range(self.Nset):
+                    X_test[:,ih+i] = x_test[:,ih+i]/self.scale_text[i] - 1.
         'define and fit SVC'
         self.svm_yf = svm.SVC(kernel='rbf',C=C,gamma=gamma)
         self.svm_yf.fit(X_train, y_train)
@@ -339,7 +357,7 @@ class Material(object):
             plt.show()
         return train_sc, test_sc
     
-    def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, extend=True, plot=False, fontsize=16):
+    def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=True, plot=False, fontsize=16):
         '''Train SVC for all yield functions of the microstructures provided in msparam and for flow stresses to capture 
         work hardening. In first step, the 
         training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
@@ -358,6 +376,8 @@ class Material(object):
         Nseq  : int
             Number of training as test data values to be generated in elastic regime, same number will be produced in plastic regime
             (optional, default: 25)
+        fs : float
+            Parameter to ensure peridicity of yield function wrt. theta
         extend : Boolean
             Indicate whether training data should be extended further into plastic regime (optional, default: True)
         plot  : Boolean
@@ -372,43 +392,47 @@ class Material(object):
         if self.msparam is None:
             Npl = 1
             Ntext = 1
+            xt, yt = self.create_sig_data(N=Nlc, Nseq=Nseq, extend=extend)
         else:
-            Nlc   = self.msparam['Nlc']
-            Npl   = self.msparam['Npl']
-            Ntext = self.msparam['Ntext']
-        if extend:
-            Ne = 4
-        else:
-            Ne = 0
-        N0 = Nlc*(2*Nseq+Ne) # total number of training data points per level of PEEQ for each microstructure
-        Nt = Ntext*Npl*N0    # total numberof training data points
-        xt = np.zeros((Nt,self.Ndof))
-        yt = np.zeros(Nt)
-        for k in range(Ntext):    # loop over all textures
-            for j in range(Npl):  # loop over work hardening levels for each texture
-                'create training data in entire deviatoric stress plane from raw data'
-                if self.msparam is None:
-                    sc_train, yf_train = self.create_sig_data(N=Nlc, Nseq=Nseq, extend=extend)
-                else:
-                    sc_train, yf_train = self.create_sig_data(syc=self.msparam['flow_stress'][k,j,:,:], 
-                                                            sflow=self.msparam['flow_seq_av'][k,j], Nseq=Nseq, extend=True)
-                #sc_test, yf_test   = self.create_sig_data(syc=self.msparam['flow_stress'][k,j,::12,:], Nseq=15, rand=False)
-                i0 = (j + k*Npl)*N0
-                i1 = i0 + N0
-                xt[i0:i1,0:2] = sc_train
-                if self.Ndof>=3:
-                    xt[i0:i1,2] = self.msparam['work_hard'][j]
-                if self.Ndof==4:
-                    xt[i0:i1,3] = self.msparam['texture'][k]
-                yt[i0:i1] = yf_train
+            Nlc   = self.msparam[0]['Nlc']
+            Npl   = self.msparam[0]['Npl']
+            Ntext = self.msparam[0]['Ntext']
+            if extend:
+                Ne = 4
+            else:
+                Ne = 0
+            N0 = Nlc*(2*Nseq+Ne)        # total number of training data points per level of PEEQ for each microstructure
+            if self.txdat:
+                Nt = self.Nset*Ntext*Npl*N0 # total number of training data points
+            else:
+                Nt = Ntext*Npl*N0
+            xt = np.zeros((Nt,self.Ndof))
+            yt = np.zeros(Nt)
+            m = 0
+            for ms in self.msparam:
+                for k in range(Ntext):    # loop over all textures
+                    for j in range(Npl):  # loop over work hardening levels for each texture
+                        'create training data in entire deviatoric stress plane from raw data'
+                        sc_train, yf_train = self.create_sig_data(syc=ms['flow_stress'][k,j,:,:], 
+                                             sflow=ms['flow_seq_av'][k,j], Nseq=Nseq, extend=True)
+                        #sc_test, yf_test   = self.create_sig_data(syc=self.msparam['flow_stress'][k,j,::12,:], Nseq=15, rand=False)
+                        i0 = (j + k*Npl + m*Ntext)*N0
+                        i1 = i0 + N0
+                        xt[i0:i1,0:2] = sc_train
+                        if self.whdat:
+                            xt[i0:i1,2] = ms['work_hard'][j]
+                        if self.txdat:
+                            ih = 3 if self.whdat else 2
+                            xt[i0:i1,ih+m] = ms['texture'][k]
+                        yt[i0:i1] = yf_train
+                m += 1
         '''nth = int(N0/18)
         x_test = xt[::nth,0:2]
         y_test = yt[::nth]'''
 
-        print('%i training data sets created from %i microstructures, with %i flow stresses in %i load cases' % (Nt, Ntext, Npl, Nlc))
+        print('%i training data sets created from %i microstructures, with %i load cases each' % (Nt, self.Nset, Nlc))
         if np.any(np.abs(yt)<=0.99):
             print('Warning: result vector for yield function contains more categories than "-1" and "+1". Will result in higher dimensional SVC.')
-            
         'Train SVC with data from all microstructures in data'
         train_sc, test_sc = self.setup_yf_SVM(xt, yt, cyl=True, C=C, gamma=gamma, fs=0.3, plot=False)   
 
@@ -418,12 +442,12 @@ class Material(object):
         if plot:
             'plot ML yield loci with reference and test data'
             print('Plot ML yield loci with reference curve and test data')
-            if self.Ndof>=3:
+            if self.whdat:
                 print('Initial yield locus plotted together with flow stresses for PEEQ in range [%6.3f,%6.3f]' 
-                      % (self.msparam['work_hard'][0], self.msparam['work_hard'][-1]))
-            if self.Ndof==4:
+                      % (self.msparam[0]['work_hard'][0], self.msparam[0]['work_hard'][-1]))
+            if self.txdat:
                 print('Initial yield locus plotted for texture parameter in range [%6.3f,%6.3f]' 
-                      % (self.msparam['texture'][0], self.msparam['texture'][-1]))
+                      % (self.msparam[0]['texture'][0], self.msparam[0]['texture'][-1]))
                 Npl = 1  # only plot initial yield surface
 
             ncol = 2
@@ -432,13 +456,13 @@ class Material(object):
             plt.subplots_adjust(hspace=0.3)
             theta = np.linspace(-np.pi,np.pi,36)
             for k in range(Ntext):
-                self.set_microstructure('texture', self.msparam['texture'][k], verb=False)
+                self.set_texture(self.msparam[0]['texture'][k], verb=False)
                 for j in range(0,Npl,np.maximum(1,int(Npl/5))):
                     'Warning: x_test and y_test should be setup properly above!!!'
                     ind = list(range((j+k*Npl)*N0,(j+k*Npl+1)*N0,int(0.5*N0/Nlc)))
                     y_test = yt[ind]
                     x_test = xt[ind,:]
-                    peeq = self.msparam['work_hard'][j] - self.msparam['epc']
+                    peeq = self.msparam[0]['work_hard'][j] - self.msparam[0]['epc']
                     self.set_workhard(peeq)
                     iel = np.nonzero(y_test<0.)[0]
                     ipl = np.nonzero(np.logical_and(y_test>=0., x_test[:,0]<self.sflow*1.5))[0]
@@ -446,7 +470,7 @@ class Material(object):
                     plt.polar(x_test[ipl,1], x_test[ipl,0], 'r.', label='test data above yield point')
                     plt.polar(x_test[iel,1], x_test[iel,0], 'b.', label='test data below yield point')
                     if self.msparam is not None:
-                        syc = self.msparam['flow_stress'][k,j,:,:]
+                        syc = self.msparam[0]['flow_stress'][k,j,:,:]
                         plt.polar(syc[:,1], syc[:,0], '-c', label='reference yield locus')
                     'ML yield fct: find norm of princ. stess vector lying on yield surface'
                     snorm = sp_cart(np.array([self.sflow*np.ones(36)*np.sqrt(1.5), theta]).T)
@@ -457,8 +481,8 @@ class Material(object):
                     if self.msparam is None:
                         plt.title=self.name
                     else:
-                        plt.title('Flow stress, PEEQ='+str(self.msparam['work_hard'][j].round(decimals=4))+', TP='
-                                  +str(self.msparam['texture'][k].round(decimals=2)), fontsize=fontsize)
+                        plt.title('Flow stress, PEEQ='+str(self.msparam[0]['work_hard'][j].round(decimals=4))+', TP='
+                                  +str(self.msparam[0]['texture'][k].round(decimals=2)), fontsize=fontsize)
                     #plt.xlabel(r'$\theta$ (rad)', fontsize=fontsize-2)
                     #plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize-2)
                     plt.legend(loc=(.95,0.85),fontsize=fontsize-2)
@@ -534,10 +558,11 @@ class Material(object):
             x = np.zeros((N,self.Ndof))
             x[:,0] = seq_J2(sig)/self.scale_seq - 1.
             x[:,1] = polar_ang(sig)/np.pi
-            if self.Ndof>=3:
-                x[:,2] = (peeq+self.msparam['epc'])/self.scale_wh - 1.
-            if self.Ndof==4:
-                x[:,3] = self.ms_cur/self.scale_text - 1.
+            if self.whdat:
+                x[:,2] = (peeq+self.epc)/self.scale_wh - 1.
+            if self.txdat:
+                ih = 3 if self.whdat else 2
+                x[:,ih:ih+self.Nset] = [self.tx_cur[i]/self.scale_text[i] - 1. for i in range(self.Nset)]
             dc = self.svm_yf.dual_coef_[0,:]
             sv = self.svm_yf.support_vectors_
             for i in range(N):
@@ -713,7 +738,8 @@ class Material(object):
         Tresca : Boolean
             Indicate if Tresca equivalent stress should be used (optional, default: False)
         '''
-        self.sy = sy   # yield strength
+        self.sy0 = sy  # store initial yield strength of material
+        self.sy = sy   # current yield strength (may be modified by texture)
         self.sflow = sy # initialize flow stress (will be increase with work hardening)
         self.khard = khard  # work hardening rate (linear w.h.)
         self.Hpr = khard/(1.-khard/self.E)  # constant for w.h.
@@ -727,69 +753,110 @@ class Material(object):
 
         Parameters
         ----------
-        data : Object of class ``Data``
-            Assign data to microstructure of material
-        grain_size : float
+        param : List of objects of class ``Data``
+            Container for data of different microstructures of material
+        grain_size : float or list
             Average grain size of material (optional)
-        grain_shape : (3,) array
+        grain_shape : list of (3,) arrays
             Lengths of the three main axes of ellipsoid describing grain shape (optional)
-        porosity : float
+        porosity : float or list
             Porosity of the material
         '''
 
-        'import dictionary will all microstructure parameters resulting from data module'
-        self.msparam = param 
-        if param['Npl']>1 and self.Ndof<3:
-            self.Ndof = 3   # add dof for work hardening
-        if param['Ntext']>1 and self.Ndof<4:
-            self.Ndof = 4   # add dof for texture
+        'import dictionaries will all microstructure parameters resulting from data module'
+        self.msparam = np.array(param, ndmin=1)
+        self.Nset = len(self.msparam)  # number of microstructures in material definition
+        Nlc   = self.msparam[0]['Nlc']
+        Npl   = self.msparam[0]['Npl']
+        Ntext = self.msparam[0]['Ntext']
+        self.epc = self.msparam[0]['epc']
+        for i in range(1,self.Nset):
+            h1 = self.msparam[i]['Nlc'] != Nlc
+            h2 = self.msparam[i]['Npl'] != Npl
+            h3 = self.msparam[i]['Ntext'] != Ntext
+            if h1 or h2 or h3:
+                print('Error: Structure of data set #',i,' is inconsistent:', Nlc, Npl, Ntext, h1, h2, h3)
+                sys.exit()
+                'Conditions can be relaxed by modifying train_SVC'
+            if self.msparam[i]['epc'] != self.epc:
+                print('Warning in microscture: Inconsistent definition of yield onset in texture',i,'. Using eps_cr=',self.epc)
+        self.whdat=False if Npl==1 else True    # work hardening data exists
+        self.txdat=False if Ntext==1 else True  # texture variations exist
+        self.Ndof=3 if self.whdat else 2        # add dof for work hardening parameter if data exists
+        self.Ndof+=self.Nset if self.txdat else 0  # add dof for each texture variation
         'add additional microstructure information'
-        self.msparam['grain_size'] = grain_size  # add further microstructure parameters
-        self.msparam['grain_shape'] = grain_shape
-        self.msparam['porosity'] =  porosity        
-        
-    def set_microstructure(self, active, current, verb=True):
-        '''Set current microstrcuture of material if material has variable microstructure
+        #self.msparam['grain_size'] = grain_size  # add further microstructure parameters
+        #self.msparam['grain_shape'] = grain_shape
+        #self.msparam['porosity'] =  porosity        
+     
+
+    def set_texture(self, current, verb=False):
+        '''Set parameters for current crystallographic texture of material as defined in microstructure.
         
         Parameters
         ----------
-        active  : str
-            Active microstructure component from dictionary ``msparam``
-        current : float
-            Value of currently active microstructure parameter
+        current : float or list
+            Mixture parameter for microstructures in range [0,1] for each defined microstructure, indicates the 
+            intensity of the given microstructure. The sum of all mixture parameters must be <=1, the rest will be set 
+            to random texture. Must have same dimension as material.msparam.
         verb : Boolean
             Be verbose 
             
         Yields
         ------
-        Material.ms_act : str
-            Keyword of active microstructure component, e.g. 'texture'
-        Material.ms_cur : float
-            Current value of microstructural parameter for active microstructure
+        Material.tx_cur : list
+            Current value of microstructural micture parameter for active microstructure. Has same dimension as material.msparam
         Material.sy  : float
             Yield stength is redefined accoring to texture parameter
         Material.khard, Material.Hpr : float
             Work hardening parameters are redefined according to texture parameter
+        Material.epc : float
+            Critical PEEQ for which onset of plastic deformation is definied in data
         '''
-        self.ms_act = active
-        self.ms_cur = current
-        hh = self.msparam[active] - current
-        self.ms_index = np.argmin(np.abs(hh))
-        'redefine plasticity parameters according to texture parameter'
-        #print(active, current, self.msparam[active],self.msparam['flow_seq_av'][self.ms_index,0])
-        self.sy = np.interp(current, self.msparam[active],self.msparam['flow_seq_av'][:,0])
-        if self.msparam['Npl'] > 1:
-            'set strain hardening parameters to initial value for selected texture'
-            ds = self.msparam['flow_seq_av'][self.ms_index,1] - self.msparam['flow_seq_av'][self.ms_index,0] # assuming isotropic hardening
-            de = self.msparam['work_hard'][1] - self.msparam['work_hard'][0]
-            self.Hpr =  ds/de # linear work hardening rate b/w values for w.h. in data
-            self.khard = self.Hpr/(1.+self.Hpr/self.E)  # constant for w.h.
+        self.tx_cur = np.array(current, ndmin=1)
+        sm = np.sum(self.tx_cur) # sum of mixture parameters
+        if sm>1. or sm<0.:
+            print('Error: Microstructure parameters out of range:',sm, current)
+            sys.exit()
+        if len(self.tx_cur) != self.Nset:
+            print('Error: Microstructure parametershave wrong dimension:',current, self.Nset)
+            sys.exit()
+        'calculate weight factor for each texture based on its mixture parameter'
+        if sm<1.e-3:
+            wght=np.ones(self.Nset)/self.Nset
+        else:
+            wght = self.tx_cur/sm
+        self.sy = 0.
+        self.Hpr = 0.
+        self.khard = 0.
+        self.epc = 0.
+        index = []
+        i=0
+        for ms in self.msparam:
+            hh = ms['texture'] - self.tx_cur[i]
+            index.append(np.argmin(np.abs(hh)))
+            'redefine plasticity parameters according to texture parameter'
+            sy = np.interp(self.tx_cur[i], ms['texture'], ms['flow_seq_av'][:,0])
+            self.sy  += sy*wght[i]
+            if self.whdat:
+                'set strain hardening parameters to initial value for selected texture'
+                ds = ms['flow_seq_av'][index[-1],1] - ms['flow_seq_av'][index[-1],0] # assuming isotropic hardening
+                de = ms['work_hard'][1] - ms['work_hard'][0]
+                Hpr   =  ds/de # linear work hardening rate b/w values for w.h. in data
+                khard = self.Hpr/(1.+self.Hpr/self.E)  # constant for w.h.
+                self.Hpr   += Hpr*wght[i]
+                self.khard += khard*wght[i]
+            i+=1
+        self.sflow = self.sy
         if verb:
-            print('New microstructure selected: ',self.msparam['ms_name'][self.ms_index],
-                  '(Norm parameter:', self.msparam[active][self.ms_index],')')
-            print('Actual microstructure parameter:', current)
+            print('New texture parameters: ',self.tx_cur)
+            print('Texture mixing: ')
+            [print(self.msparam[i]['ms_type'],'with mixture parameter',self.tx_cur[i]) for i in range(self.Nset)]
             print('Yield strength:',self.sy,'MPa')
-            print('Work hardening modulus:',self.khard,'MPa')
+            if self.whdat:
+                print('Work hardening modulus:',khard,'MPa')
+        self.ms_index = index
+            
         
     def set_workhard(self, peeq, verb=False):
         '''Set current status of work hardening.
@@ -806,24 +873,38 @@ class Material(object):
             strain, which is the mechanical peeq plus the critical value for yield onset.
         Material.sflow : float
             Flow stress associated with work hardening parameter
+        Material.Hpr, Material.khard : float
+            Hardening parameter
         '''
-        self.wh_cur = peeq + self.msparam['epc']
-        self.sflow  = np.interp(self.wh_cur, self.msparam['work_hard'], 
-                                self.msparam['flow_seq_av'][self.ms_index,:])
-        hh = self.msparam['work_hard'] - self.wh_cur
-        if self.msparam['Npl'] > 1:
-            ind = np.nonzero(hh<=0.)[0]
-            i0 = ind[-1]  # index of w.h. parameter with value just below peeq
-            i1 = i0 + 1
-            if i1<self.msparam['Npl']:
-                ds = self.msparam['flow_seq_av'][self.ms_index,i1] - self.msparam['flow_seq_av'][self.ms_index,i0] # assuming isotropic hardening
-                de = self.msparam['work_hard'][i1] - self.msparam['work_hard'][i0]
-                self.Hpr =  ds/de # linear work hardening rate b/w values for w.h. in data
-                self.khard = self.Hpr/(1.+self.Hpr/self.E)  # constant for w.h.
-            else:
-                'assume ideal plasticity after last data point'
-                self.khard = 0.
-                self.Hpr = 0.
+        self.wh_cur = peeq + self.epc
+        self.sflow = 0.
+        self.Hpr = 0.
+        self.khard = 0.
+        sm = np.sum(self.tx_cur)
+        if sm<1.e-3:
+            wght=np.ones(self.Nset)/self.Nset
+        else:
+            wght = self.tx_cur/sm
+        i = 0
+        for ms in self.msparam:
+            self.sflow += np.interp(self.wh_cur, ms['work_hard'], ms['flow_seq_av'][self.ms_index[i],:])*wght[i]
+            hh = ms['work_hard'] - self.wh_cur
+            if ms['Npl'] > 1:
+                ind = np.nonzero(hh<=0.)[0]
+                if len(ind)>0:
+                    i0 = ind[-1]  # index of w.h. parameter with value just below peeq
+                else:
+                    i0 = 0
+                i1 = i0 + 1
+                if i1<ms['Npl']:
+                    'assuming isotropic hardening and ideal plasticity after last data point'
+                    ds = ms['flow_seq_av'][self.ms_index[i],i1] - ms['flow_seq_av'][self.ms_index[i],i0] 
+                    de = ms['work_hard'][i1] - ms['work_hard'][i0]
+                    Hpr =  ds/de # linear work hardening rate b/w values for w.h. in data
+                    khard = self.Hpr/(1.+self.Hpr/self.E)  # constant for w.h.
+                    self.Hpr += Hpr*wght[i]
+                    self.khard += khard*wght[i]
+            i+=1
         if verb:
             print('Currect work hardening parameter:', self.wh_cur)
             print('Current flow stress (MPa): ', self.sflow)
@@ -964,6 +1045,8 @@ class Material(object):
                 yt[j0:j1] = np.sign(mat_ref.calc_yf(sp_cart(st[j0:j1,:])))
             else:
                 yt[j0:j1] = np.sign(seq[i] - sc)
+        ind = np.nonzero(np.abs(yt)<0.99)[0]
+        yt[ind] = 1.  # set points on yield surface to +1
         return st, yt
 
     def find_yloc(self, x, sp):
@@ -1052,8 +1135,8 @@ class Material(object):
         return line
 
     def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2,
-                         xstart=-2., xend=2., axis1=[0], axis2=[1], iso=False, ref_mat=None,
-                         field=False, Nmesh=100, file=None, fontsize=20):
+                         xstart=None, xend=None, axis1=[0], axis2=[1], iso=False, ref_mat=None,
+                         field=False, Nmesh=100, file=None, fontsize=20, scaling=True):
         '''Plot different cuts through yield locus in 3D principle stress space.
 
         Parameters
@@ -1086,12 +1169,24 @@ class Material(object):
             File name for output of olot (optional)
         fontsize : int
             Fontsize for axis annotations (optional, default: 20)
+        scaling  : Boolean
+            Scale stress with yield strength (optional, default: True)
 
         Returns
         -------
         axs : pyplot axis handle
             Axis of the plot
         '''
+        if xstart is None:
+            if scaling:
+                xstart=-2.
+            else:
+                xstart=-2.*self.sy
+        if xend is None:
+            if scaling:
+                xend=2.
+            else:
+                xend=2.*self.sy
         xx, yy = np.meshgrid(np.linspace(xstart, xend, Nmesh),
                          np.linspace(xstart, xend, Nmesh))
         Nm2 = Nmesh*Nmesh
@@ -1102,7 +1197,7 @@ class Material(object):
         if Nc==1:
             fs = (10, 8)
             fontsize *= 4/5
-            plt.subplots_adjust(wspace=0.2)
+            plt.subplots_adjust(wspace=0.3)
         else:
             fs = (20, 5)
         fig, axs  = plt.subplots(nrows=1, ncols=Nc, figsize=fs)
@@ -1124,50 +1219,80 @@ class Material(object):
             if axis1[j]==0:
                 s1 = xx.ravel()
                 title = '$\sigma_1$'
-                xlab = '$\sigma_1 / \sigma_y$'
+                if scaling:
+                    xlab = '$\sigma_1 / \sigma_y$'
+                else:
+                    xlab = '$\sigma_1$ (MPa)'
             elif axis1[j]==1:
                 s2 = xx.ravel()
                 title = '$\sigma_2$'
-                xlab = '$\sigma_2 / \sigma_y$'
+                if scaling:
+                    xlab = '$\sigma_2 / \sigma_y$'
+                else:
+                    xlab = '$\sigma_2$ (MPa)'
             elif axis1[j]==2:
                 s3 = xx.ravel()
                 title = '$\sigma_3$'
-                xlab = '$\sigma_3 / \sigma_y$'
+                if scaling:
+                    xlab = '$\sigma_3 / \sigma_y$'
+                else:
+                    xlab = '$\sigma_3$ (MPa)'
             elif axis1[j]==3:
                 s1 = xx.ravel()
                 s2 = xx.ravel()
                 title = '$p=\sigma_1=\sigma_2$'
-                xlab = '$p / \sigma_y$'
+                if scaling:
+                    xlab = '$p / \sigma_y$'
+                else:
+                    xlab = '$p$ (MPa)'
                 ref = False
                 axis1[j] = 0
             else:
                 print('Warning in plot_yield_locus: axis1 not defined properly, set to sig_1', axis1, j)
                 s1 = xx.ravel()
                 title = '$\sigma_1$'
-                xlab = '$\sigma_1 / \sigma_y$'
+                if scaling:
+                    xlab = '$\sigma_1 / \sigma_y$'
+                else:
+                    xlab = '$\sigma_1$ (MPa)'
             'second axis'
             if axis2[j]==0:
                 s1 = yy.ravel()
                 title += '-$\sigma_1$ slice'
-                ylab = '$\sigma_1 / \sigma_y$'
+                if scaling:
+                    ylab = '$\sigma_1 / \sigma_y$'
+                else:
+                    ylab = '$\sigma_1$ (MPa)'
             elif axis2[j]==1:
                 s2 = yy.ravel()
                 title += '-$\sigma_2$ slice'
-                ylab = '$\sigma_2 / \sigma_y$'
+                if scaling:
+                    ylab = '$\sigma_2 / \sigma_y$'
+                else:
+                    ylab = '$\sigma_2$ (MPa)'
             elif axis2[j]==2:
                 s3 = yy.ravel()
                 title += '-$\sigma_3$ slice'
-                ylab = '$\sigma_3 / \sigma_y$'
+                if scaling:
+                    ylab = '$\sigma_3 / \sigma_y$'
+                else:
+                    ylab = '$\sigma_3$ (MPa)'
             elif axis2[j]==3:
                 s3 = yy.ravel()
                 title += '-$\sigma_3$ slice'
-                ylab = '$\sigma_3 / \sigma_y$'
+                if scaling:
+                    ylab = '$\sigma_3 / \sigma_y$'
+                else:
+                    ylab = '$\sigma_3$ (MPa)'
                 axis2[j]=2
             else:
                 print('Warning in plot_yield_locus: axis2 not defined properly, set to sig_2', axis2, j)
                 s2 = yy.ravel()
                 title += '-$\sigma_2$ slice'
-                ylab = '$\sigma_2 / \sigma_y$'
+                if scaling:
+                    ylab = '$\sigma_2 / \sigma_y$'
+                else:
+                    ylab = '$\sigma_2$ (MPa)'
             si3 = 1  # slice for data
             if s1 is None:
                 s1 = np.zeros(Nm2)
@@ -1181,10 +1306,15 @@ class Material(object):
             sig = np.c_[s1, s2, s3]  # set stresses for yield locus calculation
 
             'evaluate yield function to be plotted'
-            if fun is None:
-                Z = self.calc_yf(sig*self.sy, pred=True)/self.sy
+            if scaling:
+                sf = 1./self.sy
+                sig*=self.sy
             else:
-                Z = fun(sig*self.sy, pred=True)/self.sy
+                sf = 1.
+            if fun is None:
+                Z = self.calc_yf(sig, pred=True)*sf
+            else:
+                Z = fun(sig, pred=True)*sf
             if label is None:
                 label = self.name
             hl = self.plot_data(Z, ax, xx, yy, field=field)
@@ -1192,20 +1322,23 @@ class Material(object):
             labels.extend([label])
             'plot reference function if provided'
             if ref_mat is not None:
-                Z = ref_mat.calc_yf(sig*ref_mat.sy, pred=True)/ref_mat.sy
+                Z = ref_mat.calc_yf(sig, pred=True)*sf
                 labels.extend([ref_mat.name])
                 hl = self.plot_data(Z, ax, xx, yy, field=False, c='black')
                 lines.extend(hl)
             'plot ellipsis as reference if requested'
             if iso:
                 x0, y0 = self.ellipsis()  # reference for isotropic material
+                if not scaling:
+                    x0*=self.sy
+                    y0*=self.sy
                 hl = ax.plot(x0,y0,'-b')
                 lines.extend(hl)
                 labels.extend(['isotropic J2'])
             'plot data if provided'
             if (data is not None):
                 # select data from 3D stress space within range [xstart, xend] and to fit to slice
-                dat = np.array(data)/self.sy
+                dat = np.array(data)*sf
                 dsel = np.nonzero(np.logical_and(np.abs(dat[:,si3])<trange,
                     np.logical_and(dat[:,axis1[j]]>xstart, dat[:,axis1[j]]<xend)))
                 ir = dsel[0]
@@ -1216,8 +1349,9 @@ class Material(object):
             #ax.set_title(title,fontsize=fontsize)
             ax.set_xlabel(xlab,fontsize=fontsize)
             ax.set_ylabel(ylab,fontsize=fontsize)
-            ax.tick_params(axis="x", labelsize=fontsize-6)
-            ax.tick_params(axis="y", labelsize=fontsize-6)
+            hh = 4 if Nc==1 else 7
+            ax.tick_params(axis="x", labelsize=fontsize-hh)
+            ax.tick_params(axis="y", labelsize=fontsize-hh)
         'save plot to file if filename is provided'
         if file is not None:
             fig.savefig(file+'.pdf', format='pdf', dpi=300)

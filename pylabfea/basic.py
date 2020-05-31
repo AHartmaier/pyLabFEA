@@ -194,7 +194,7 @@ def eps_eq(eps):
     return eeq
     
 '''def eps_eq(eps):
-    'Calculate equivalent strain 
+    Calculate equivalent strain 
     
     Parameters
     ----------
@@ -206,7 +206,7 @@ def eps_eq(eps):
     -------
     eeq : float or (N,) array
         equivalent strains
-    '
+    
     sh = np.shape(eps)
     N = len(eps)
     if sh==(6,) or sh==(3,):

@@ -80,11 +80,13 @@ pyLabFEA requires the following packages as imports:
   - Scipy_ for numerical solutions
   - scikit-learn_ for machine learning algorithms
   - MatPlotLib_ for graphical output
+  - pandas_ for data import
   
 .. _NumPy: http://numpy.scipy.org
 .. _Scipy: https://www.scipy.org/
 .. _scikit-learn: https://scikit-learn.org/stable/
 .. _MatPlotLib: https://matplotlib.org/
+.. _pandas: https://pandas.pydata.org/
 
 License
 -------

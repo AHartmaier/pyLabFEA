@@ -1149,6 +1149,8 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fsel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Field selector for library field, see Keyword Arguments for possible values</p></li>
 <li><p><strong>mag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Magnification factor for displacements (optional, default: 10)</p></li>
+<li><p><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Start value for range of plotted values</p></li>
+<li><p><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – End value for range of plotted values</p></li>
 <li><p><strong>cdepth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of colors in colormap (optional, default: 20)</p></li>
 <li><p><strong>showmesh</strong> (<em>Boolean</em>) – Set/unset plotting of lines for element edges (optional, default: True)</p></li>
 <li><p><strong>shownodes</strong> (<em>Boolean</em>) – Set/unset plotting of nodes (optional, default: True)</p></li>
@@ -1385,6 +1387,28 @@ and derived properties und various loading conditions (dictionary)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>ditionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.whdat">
+<code class="sig-name descname">whdat</code><a class="headerlink" href="#material.Material.whdat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates existence of a data-based work hardening model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.txdat">
+<code class="sig-name descname">txdat</code><a class="headerlink" href="#material.Material.txdat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates existance of texture data for yield stress</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1674,10 +1698,10 @@ and porosity.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (Object of class <code class="docutils literal notranslate"><span class="pre">Data</span></code>) – Assign data to microstructure of material</p></li>
-<li><p><strong>grain_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Average grain size of material (optional)</p></li>
-<li><p><strong>grain_shape</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Lengths of the three main axes of ellipsoid describing grain shape (optional)</p></li>
-<li><p><strong>porosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Porosity of the material</p></li>
+<li><p><strong>param</strong> (List of objects of class <code class="docutils literal notranslate"><span class="pre">Data</span></code>) – Container for data of different microstructures of material</p></li>
+<li><p><strong>grain_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – Average grain size of material (optional)</p></li>
+<li><p><strong>grain_shape</strong> (<em>list of</em><em> (</em><em>3</em><em>,</em><em>) </em><em>arrays</em>) – Lengths of the three main axes of ellipsoid describing grain shape (optional)</p></li>
+<li><p><strong>porosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – Porosity of the material</p></li>
 </ul>
 </dd>
 </dl>
@@ -1742,7 +1766,7 @@ behavior is supported</p>
 
 <dl class="py method">
 <dt id="material.Material.plot_yield_locus">
-<code class="sig-name descname">plot_yield_locus</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trange</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">xstart</span><span class="o">=</span><span class="default_value">- 2.0</span></em>, <em class="sig-param"><span class="n">xend</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">axis1</span><span class="o">=</span><span class="default_value">[0]</span></em>, <em class="sig-param"><span class="n">axis2</span><span class="o">=</span><span class="default_value">[1]</span></em>, <em class="sig-param"><span class="n">iso</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ref_mat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">field</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">Nmesh</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">20</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_yield_locus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plot_yield_locus" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_yield_locus</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trange</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">xstart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xend</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axis1</span><span class="o">=</span><span class="default_value">[0]</span></em>, <em class="sig-param"><span class="n">axis2</span><span class="o">=</span><span class="default_value">[1]</span></em>, <em class="sig-param"><span class="n">iso</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ref_mat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">field</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">Nmesh</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">scaling</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_yield_locus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plot_yield_locus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot different cuts through yield locus in 3D principle stress space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1761,6 +1785,7 @@ behavior is supported</p>
 <li><p><strong>Nmesh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of mesh points per axis on which yield function is evaluated (optional, default:100)</p></li>
 <li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File name for output of olot (optional)</p></li>
 <li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Fontsize for axis annotations (optional, default: 20)</p></li>
+<li><p><strong>scaling</strong> (<em>Boolean</em>) – Scale stress with yield strength (optional, default: True)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1773,23 +1798,24 @@ behavior is supported</p>
 </dd></dl>
 
 <dl class="py method">
-<dt id="material.Material.set_microstructure">
-<code class="sig-name descname">set_microstructure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">active</span></em>, <em class="sig-param"><span class="n">current</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.set_microstructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.set_microstructure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set current microstrcuture of material if material has variable microstructure</p>
+<dt id="material.Material.set_texture">
+<code class="sig-name descname">set_texture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.set_texture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.set_texture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set parameters for current crystallographic texture of material as defined in microstructure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>active</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Active microstructure component from dictionary <code class="docutils literal notranslate"><span class="pre">msparam</span></code></p></li>
-<li><p><strong>current</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Value of currently active microstructure parameter</p></li>
+<li><p><strong>current</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – Mixture parameter for microstructures in range [0,1] for each defined microstructure, indicates the
+intensity of the given microstructure. The sum of all mixture parameters must be &lt;=1, the rest will be set
+to random texture. Must have same dimension as material.msparam.</p></li>
 <li><p><strong>verb</strong> (<em>Boolean</em>) – Be verbose</p></li>
 </ul>
 </dd>
 <dt class="field-even">Yields</dt>
 <dd class="field-even"><ul class="simple">
-<li><p><strong>Material.ms_act</strong> (<em>str</em>) – Keyword of active microstructure component, e.g. ‘texture’</p></li>
-<li><p><strong>Material.ms_cur</strong> (<em>float</em>) – Current value of microstructural parameter for active microstructure</p></li>
+<li><p><strong>Material.tx_cur</strong> (<em>list</em>) – Current value of microstructural micture parameter for active microstructure. Has same dimension as material.msparam</p></li>
 <li><p><strong>Material.sy</strong> (<em>float</em>) – Yield stength is redefined accoring to texture parameter</p></li>
 <li><p><strong>Material.khard, Material.Hpr</strong> (<em>float</em>) – Work hardening parameters are redefined according to texture parameter</p></li>
+<li><p><strong>Material.epc</strong> (<em>float</em>) – Critical PEEQ for which onset of plastic deformation is definied in data</p></li>
 </ul>
 </dd>
 </dl>
@@ -1808,6 +1834,7 @@ behavior is supported</p>
 <li><p><strong>Material.wh_cur</strong> (<em>float</em>) – Work hardening parameter or microstructural value of equiv. plastic
 strain, which is the mechanical peeq plus the critical value for yield onset.</p></li>
 <li><p><strong>Material.sflow</strong> (<em>float</em>) – Flow stress associated with work hardening parameter</p></li>
+<li><p><strong>Material.Hpr, Material.khard</strong> (<em>float</em>) – Hardening parameter</p></li>
 </ul>
 </dd>
 </dl>
@@ -1862,7 +1889,7 @@ from other materials with a ML yield function. Graphical output on the trained S
 
 <dl class="py method">
 <dt id="material.Material.train_SVC">
-<code class="sig-name descname">train_SVC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">C</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">Nlc</span><span class="o">=</span><span class="default_value">36</span></em>, <em class="sig-param"><span class="n">Nseq</span><span class="o">=</span><span class="default_value">25</span></em>, <em class="sig-param"><span class="n">extend</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">16</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.train_SVC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.train_SVC" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">train_SVC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">C</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">Nlc</span><span class="o">=</span><span class="default_value">36</span></em>, <em class="sig-param"><span class="n">Nseq</span><span class="o">=</span><span class="default_value">25</span></em>, <em class="sig-param"><span class="n">fs</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">extend</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">16</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.train_SVC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.train_SVC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train SVC for all yield functions of the microstructures provided in msparam and for flow stresses to capture
 work hardening. In first step, the
 training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
@@ -1877,6 +1904,7 @@ support vectors, i.e., to more short ranged kernels (optional, default: 4)</p></
 <li><p><strong>Nlc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of load cases to be condidered, will be overwritten if material has microstructure information (optional, default: 36)</p></li>
 <li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of training as test data values to be generated in elastic regime, same number will be produced in plastic regime
 (optional, default: 25)</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Parameter to ensure peridicity of yield function wrt. theta</p></li>
 <li><p><strong>extend</strong> (<em>Boolean</em>) – Indicate whether training data should be extended further into plastic regime (optional, default: True)</p></li>
 <li><p><strong>plot</strong> (<em>Boolean</em>) – Indicate if graphical output should be performed (optional, default: False)</p></li>
 <li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Fontsize for graph annotations (optional, default: 16)</p></li>
