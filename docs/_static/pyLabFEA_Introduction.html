@@ -13088,7 +13088,7 @@ Commons Attribution-NonCommercial-ShareAlike 4.0 International License
 <p>The pyLabFEA package comes with ABSOLUTELY NO WARRANTY. This is free
 software, and you are welcome to redistribute it under the conditions of
 the GNU General Public License <a href="http://www.fsf.org/licensing/licenses/gpl.html">(GPLv3)</a></p>
-<h2 id="Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">Python Laboratory for Finite Element Analysis (pyLabFEA)<a class="anchor-link" href="#Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">&#182;</a></h2><p>In the first step, the pyLabFEA package, containing the modules pyLabFEM and pyLabMaterial, is imported.</p>
+<h2 id="Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">Python Laboratory for Finite Element Analysis (pyLabFEA)<a class="anchor-link" href="#Python-Laboratory-for-Finite-Element-Analysis-(pyLabFEA)">&#182;</a></h2><p>In the first step, the pyLabFEA package, containing the modules <code>model</code> and <code>material</code>, is imported.</p>
 
 </div>
 </div>
@@ -13098,11 +13098,8 @@ the GNU General Public License <a href="http://www.fsf.org/licensing/licenses/gp
 <div class="prompt input_prompt">In&nbsp;[1]:</div>
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">sys</span>
-<span class="k">if</span> <span class="p">(</span><span class="s2">&quot;../source&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">):</span>
-    <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;../source&quot;</span><span class="p">)</span>
-<span class="kn">import</span> <span class="nn">pyLabFEM</span> <span class="k">as</span> <span class="nn">FE</span>
-<span class="kn">from</span> <span class="nn">pyLabMaterial</span> <span class="kn">import</span> <span class="n">Material</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea.model</span> <span class="k">as</span> <span class="nn">FE</span>
+<span class="kn">from</span> <span class="nn">pylabfea.material</span> <span class="kn">import</span> <span class="n">Material</span>
 </pre></div>
 
     </div>
@@ -13264,7 +13261,7 @@ fem.mat: list with pointer to material for each section<br/></p>
 
 
 <div class="output_subarea output_stream output_stdout output_text">
-<pre>[&lt;pyLabMaterial.Material object at 0x1a164b3950&gt;, &lt;pyLabMaterial.Material object at 0x1a164b3990&gt;, &lt;pyLabMaterial.Material object at 0x1a164b3a90&gt;]
+<pre>[&lt;pylabfea.material.Material object at 0x1a1d742610&gt;, &lt;pylabfea.material.Material object at 0x1a1d742650&gt;, &lt;pylabfea.material.Material object at 0x1a1d742750&gt;]
 </pre>
 </div>
 </div>

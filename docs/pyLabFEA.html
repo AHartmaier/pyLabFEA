@@ -4,7 +4,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>Modules &#8212; pyLabFEA 0.0.1 documentation</title>
+    <title>Modules &#8212; pyLabFEA 2.0.53 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -33,19 +33,327 @@
             
   <div class="section" id="modules">
 <h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="module-pyLabFEM">
-<span id="module-fem"></span><h2>Module FEM<a class="headerlink" href="#module-pyLabFEM" title="Permalink to this headline">¶</a></h2>
-<p>Introduces global functions for mechanical quantities and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that
-contains that attributes and methods needed in FEA. Materials are defined in
-module pyLabMaterial.</p>
-<p>uses NumPy, SciPy, MatPlotLib and pyLabMaterial</p>
-<p>Version: 1.1 (2020-03-31)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
+<div class="section" id="module-0">
+<span id="module-basic"></span><h2>Module Basic<a class="headerlink" href="#module-0" title="Permalink to this headline">¶</a></h2>
+<p>Module pylabfea.basic introduces basic methods and attributes like calculation of
+equivalent stresses and strain, conversions of
+cylindrical to principal stresses and vice versa, and the classes <code class="docutils literal notranslate"><span class="pre">Stress</span></code> and <code class="docutils literal notranslate"><span class="pre">Strain</span></code>
+for efficient operations with these quantities.</p>
+<p>uses NumPy</p>
+<p>Version: 2.1 (2020-04-01)
+Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
-<dl class="class">
-<dt id="pyLabFEM.Model">
-<em class="property">class </em><code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param">dim=1</em>, <em class="sig-param">planestress=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt id="basic.Strain">
+<em class="property">class </em><code class="sig-prename descclassname">basic.</code><code class="sig-name descname">Strain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sv</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Strain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stores and converts Voigt strain tensors into different formats,
+calculates principle strain and equivalent strain.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sv</strong> (<em>list-like object</em><em>, </em><em>must be 1D with length 6</em>) – Voigt-strain components</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">voigt, v</code></dt>
+<dd><p>Strain tensor in Voigt notation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1d-array (size 6)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">tens, t</code></dt>
+<dd><p>Strain tensor in matrix notation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>3x3 array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">princ, p</code></dt>
+<dd><p>Principal strains</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1d-array (size 3)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="basic.Strain.eeq">
+<code class="sig-name descname">eeq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Strain.eeq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Strain.eeq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate equivalent strain</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>eeq</strong> – Equivalent strain</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="basic.Stress">
+<em class="property">class </em><code class="sig-prename descclassname">basic.</code><code class="sig-name descname">Stress</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sv</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Stores and converts Voigt stress tensors into different formats,
+calculates principle stresses, equivalent stresses and transforms into cylindrical coordinates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sv</strong> (<em>list-like object</em><em>, </em><em>must be 1D with length 6</em>) – Voigt-stress components</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">voigt, v</code></dt>
+<dd><p>Stress tensor in Voigt notation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1d-array (size 6)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">tens, t</code></dt>
+<dd><p>Stress tensor in matrix notation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>3x3 array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">princ, p</code></dt>
+<dd><p>Principal stresses</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>1d-array (size 3)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt>
+<code class="sig-name descname">hydrostatic, h</code></dt>
+<dd><p>Hydrostatic stress component</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="basic.Stress.lode_ang">
+<code class="sig-name descname">lode_ang</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress.lode_ang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress.lode_ang" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate Lode angle:
+Transforms principal stress space into hydrostatic stress, eqiv. stress, and Lode angle;
+definition of positive cosine for Lode angle is applied</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>X</strong> (either float or object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – if float: interpreted as equivalent stress
+if <code class="docutils literal notranslate"><span class="pre">Material</span></code>: used to invoke method of class <code class="docutils literal notranslate"><span class="pre">Material</span></code> to calculate equivalent stress</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>la</strong> – Lode angle</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="basic.Stress.sJ2">
+<code class="sig-name descname">sJ2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress.sJ2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress.sJ2" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate J2 principal stress</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>sJ2</strong> – equivalent stress</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="basic.Stress.seq">
+<code class="sig-name descname">seq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mat</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress.seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress.seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate Hill-type equivalent stress, invokes corresponding method of class <code class="docutils literal notranslate"><span class="pre">Material</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mat</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – containes Hill parameters and method needed for Hill-type equivalent stress</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>seq</strong> – equivalent stress of Hill-type</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="basic.Stress.theta">
+<code class="sig-name descname">theta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress.theta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress.theta" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate polar angle in deviatoric plane</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>ang</strong> – polar angle of stress in devitoric plane</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py data">
+<dt id="basic.a_vec">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">a_vec</code><em class="property"> = array([ 0.81649658, -0.40824829, -0.40824829])</em><a class="headerlink" href="#basic.a_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>First unit vector spanning deviatoric stress plane (real axis)</p>
+</dd></dl>
+
+<dl class="py data">
+<dt id="basic.b_vec">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">b_vec</code><em class="property"> = array([ 0.        ,  0.70710678, -0.70710678])</em><a class="headerlink" href="#basic.b_vec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Second unit vector spanning deviatoric stress plane (imaginary axis)</p>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.eps_eq">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">eps_eq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">eps</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#eps_eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.eps_eq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate equivalent strain</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>eps</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,) or (N,3): Principal strains;
+(6,) or (N,6): Voigt strains</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>eeq</strong> – equivalent strains</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.polar_ang">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">polar_ang</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#polar_ang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.polar_ang" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform principal stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>) </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,), (N,3): Principal stresses;
+(6,), (N,6): Voigt stress</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>theta</strong> – polar angles in deviatoric plane as positive angle between sprinc and a_vec in range [-pi,+p]</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py data">
+<dt id="basic.ptol">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">ptol</code><em class="property"> = 0.5</em><a class="headerlink" href="#basic.ptol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plastic yielding if yield function &gt; ptol</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Tolerance</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.s_cyl">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">s_cyl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sprinc</span></em>, <em class="sig-param"><span class="n">mat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#s_cyl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.s_cyl" title="Permalink to this definition">¶</a></dt>
+<dd><p>convert principal stress into cylindrical stress vector</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sprinc</strong> (<em>(</em><em>3</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – principal stresses</p></li>
+<li><p><strong>mat</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – Material for Hill-type principal stress (optional)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sc</strong> – stress in cylindrical coordinates (seq, theta, p)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(3,) or (N,3) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.seq_J2">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">seq_J2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#seq_J2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.seq_J2" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate J2 equivalent stress from principal stresses</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>) </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,), (N,3): Principal stress or list of principal stresses;
+(6,), (N,6): Voigt stress</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>seq</strong> – J2 equivalent stresses</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.sp_cart">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">sp_cart</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scyl</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#sp_cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.sp_cart" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert cylindrical stress into 3D Cartesian vector of deviatoric principle stresses</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>scyl</strong> (<em>(</em><em>2</em><em>,</em><em>)</em><em>, </em><em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Cylindrical stress in form (seq, theta, (optional: p))</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>sprinc</strong> – principle deviatoric stress</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-1">
+<span id="module-model"></span><h2>Module Model<a class="headerlink" href="#module-1" title="Permalink to this headline">¶</a></h2>
+<p>Module pylabefea.model introduces global functions for mechanical quantities and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that
+contains that attributes and methods needed in FEA. Materials are defined in
+module pylabfea.material</p>
+<p>uses NumPy, SciPy, MatPlotLib</p>
+<p>Version: 2.1 (2020-04-01)
+Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
+Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
+distributed under GNU General Public License (GPLv3)</p>
+<dl class="py class">
+<dt id="model.Model">
+<em class="property">class </em><code class="sig-prename descclassname">model.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">dim</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">planestress</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for finite element model. Defines necessary attributes and methods
 for pre-processing (defining geometry, material assignments, mesh and boundary conditions);
@@ -59,9 +367,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </ul>
 </dd>
 </dl>
-<dl class="attribute">
-<dt id="pyLabFEM.Model.dim">
-<code class="sig-name descname">dim</code><a class="headerlink" href="#pyLabFEM.Model.dim" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.dim">
+<code class="sig-name descname">dim</code><a class="headerlink" href="#model.Model.dim" title="Permalink to this definition">¶</a></dt>
 <dd><p>Dimensionality of model (1 and 2 are supported in this version)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -70,9 +378,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.planestress">
-<code class="sig-name descname">planestress</code><a class="headerlink" href="#pyLabFEM.Model.planestress" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.planestress">
+<code class="sig-name descname">planestress</code><a class="headerlink" href="#model.Model.planestress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets plane-stress condition</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -81,9 +389,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Nsec">
-<code class="sig-name descname">Nsec</code><a class="headerlink" href="#pyLabFEM.Model.Nsec" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Nsec">
+<code class="sig-name descname">Nsec</code><a class="headerlink" href="#model.Model.Nsec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of sections (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -92,9 +400,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.LS">
-<code class="sig-name descname">LS</code><a class="headerlink" href="#pyLabFEM.Model.LS" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.LS">
+<code class="sig-name descname">LS</code><a class="headerlink" href="#model.Model.LS" title="Permalink to this definition">¶</a></dt>
 <dd><p>Absolute lengths of sections (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -103,9 +411,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.lenx">
-<code class="sig-name descname">lenx</code><a class="headerlink" href="#pyLabFEM.Model.lenx" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.lenx">
+<code class="sig-name descname">lenx</code><a class="headerlink" href="#model.Model.lenx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of model in x-direction (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -114,9 +422,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.leny">
-<code class="sig-name descname">leny</code><a class="headerlink" href="#pyLabFEM.Model.leny" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.leny">
+<code class="sig-name descname">leny</code><a class="headerlink" href="#model.Model.leny" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of model in y-direction (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>, default leny=1)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -125,9 +433,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.thick">
-<code class="sig-name descname">thick</code><a class="headerlink" href="#pyLabFEM.Model.thick" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.thick">
+<code class="sig-name descname">thick</code><a class="headerlink" href="#model.Model.thick" title="Permalink to this definition">¶</a></dt>
 <dd><p>Thickness of 2d-model (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>, default thick=1)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -136,9 +444,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.nonlin">
-<code class="sig-name descname">nonlin</code><a class="headerlink" href="#pyLabFEM.Model.nonlin" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.nonlin">
+<code class="sig-name descname">nonlin</code><a class="headerlink" href="#model.Model.nonlin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicates non-linearity of model (defined in <code class="docutils literal notranslate"><span class="pre">assign</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -147,9 +455,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.mat">
-<code class="sig-name descname">mat</code><a class="headerlink" href="#pyLabFEM.Model.mat" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.mat">
+<code class="sig-name descname">mat</code><a class="headerlink" href="#model.Model.mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of materials assigned to sections of model, same dimensions as LS (defined in <code class="docutils literal notranslate"><span class="pre">assign</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -158,9 +466,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.ubot">
-<code class="sig-name descname">ubot</code><a class="headerlink" href="#pyLabFEM.Model.ubot" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.ubot">
+<code class="sig-name descname">ubot</code><a class="headerlink" href="#model.Model.ubot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nodal displacements in x-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcbot</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -169,9 +477,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.uleft">
-<code class="sig-name descname">uleft</code><a class="headerlink" href="#pyLabFEM.Model.uleft" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.uleft">
+<code class="sig-name descname">uleft</code><a class="headerlink" href="#model.Model.uleft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nodal displacement in x-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcleft</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -180,9 +488,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.ubcright">
-<code class="sig-name descname">ubcright</code><a class="headerlink" href="#pyLabFEM.Model.ubcright" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.ubcright">
+<code class="sig-name descname">ubcright</code><a class="headerlink" href="#model.Model.ubcright" title="Permalink to this definition">¶</a></dt>
 <dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -191,9 +499,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.bcr">
-<code class="sig-name descname">bcr</code><a class="headerlink" href="#pyLabFEM.Model.bcr" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.bcr">
+<code class="sig-name descname">bcr</code><a class="headerlink" href="#model.Model.bcr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nodal displacements/forces in x-direction for rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -202,9 +510,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.ubctop">
-<code class="sig-name descname">ubctop</code><a class="headerlink" href="#pyLabFEM.Model.ubctop" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.ubctop">
+<code class="sig-name descname">ubctop</code><a class="headerlink" href="#model.Model.ubctop" title="Permalink to this definition">¶</a></dt>
 <dd><p>True: displacement BC on top nodes; False: force BC on top nodes (defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -213,9 +521,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.bct">
-<code class="sig-name descname">bct</code><a class="headerlink" href="#pyLabFEM.Model.bct" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.bct">
+<code class="sig-name descname">bct</code><a class="headerlink" href="#model.Model.bct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nodal displacements/forces in y-direction for top nodes (defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -224,9 +532,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Nnode">
-<code class="sig-name descname">Nnode</code><a class="headerlink" href="#pyLabFEM.Model.Nnode" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Nnode">
+<code class="sig-name descname">Nnode</code><a class="headerlink" href="#model.Model.Nnode" title="Permalink to this definition">¶</a></dt>
 <dd><p>Total number of nodes in Model (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -235,7 +543,7 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt>
 <code class="sig-name descname">NnodeX, NnodeY</code></dt>
 <dd><p>Numbers of nodes in x and y-direction (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
@@ -246,9 +554,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Nel">
-<code class="sig-name descname">Nel</code><a class="headerlink" href="#pyLabFEM.Model.Nel" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Nel">
+<code class="sig-name descname">Nel</code><a class="headerlink" href="#model.Model.Nel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of elements (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -257,9 +565,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Ndof">
-<code class="sig-name descname">Ndof</code><a class="headerlink" href="#pyLabFEM.Model.Ndof" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Ndof">
+<code class="sig-name descname">Ndof</code><a class="headerlink" href="#model.Model.Ndof" title="Permalink to this definition">¶</a></dt>
 <dd><p>Number of degrees of freedom (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -268,9 +576,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.npos">
-<code class="sig-name descname">npos</code><a class="headerlink" href="#pyLabFEM.Model.npos" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.npos">
+<code class="sig-name descname">npos</code><a class="headerlink" href="#model.Model.npos" title="Permalink to this definition">¶</a></dt>
 <dd><p>Nodal positions, dimension Ndof, same structure as u,f-arrays: (x1, y1, x2, y1, …) (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -279,7 +587,7 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt>
 <code class="sig-name descname">noleft, noright, nobot, notop</code></dt>
 <dd><p>Lists of nodes on boundaries (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
@@ -290,9 +598,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.noinner">
-<code class="sig-name descname">noinner</code><a class="headerlink" href="#pyLabFEM.Model.noinner" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.noinner">
+<code class="sig-name descname">noinner</code><a class="headerlink" href="#model.Model.noinner" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of inner nodes (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -301,9 +609,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.element">
-<code class="sig-name descname">element</code><a class="headerlink" href="#pyLabFEM.Model.element" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.element">
+<code class="sig-name descname">element</code><a class="headerlink" href="#model.Model.element" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of objects of class <code class="docutils literal notranslate"><span class="pre">Element</span></code>, dimension Nel (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -312,9 +620,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.u">
-<code class="sig-name descname">u</code><a class="headerlink" href="#pyLabFEM.Model.u" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.u">
+<code class="sig-name descname">u</code><a class="headerlink" href="#model.Model.u" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of nodal displacements (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -323,9 +631,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.f">
-<code class="sig-name descname">f</code><a class="headerlink" href="#pyLabFEM.Model.f" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.f">
+<code class="sig-name descname">f</code><a class="headerlink" href="#model.Model.f" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of nodal forces (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -334,9 +642,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.sgl">
-<code class="sig-name descname">sgl</code><a class="headerlink" href="#pyLabFEM.Model.sgl" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.sgl">
+<code class="sig-name descname">sgl</code><a class="headerlink" href="#model.Model.sgl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time evolution of global stress tensor with incremental load steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -345,9 +653,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.egl">
-<code class="sig-name descname">egl</code><a class="headerlink" href="#pyLabFEM.Model.egl" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.egl">
+<code class="sig-name descname">egl</code><a class="headerlink" href="#model.Model.egl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time evolution of global total strain tensor with incremental load steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -356,9 +664,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.epgl">
-<code class="sig-name descname">epgl</code><a class="headerlink" href="#pyLabFEM.Model.epgl" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.epgl">
+<code class="sig-name descname">epgl</code><a class="headerlink" href="#model.Model.epgl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Time evolution of global plastic strain tensor with incremental load steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -367,9 +675,9 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.glob">
-<code class="sig-name descname">glob</code><a class="headerlink" href="#pyLabFEM.Model.glob" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.glob">
+<code class="sig-name descname">glob</code><a class="headerlink" href="#model.Model.glob" title="Permalink to this definition">¶</a></dt>
 <dd><p>Global values homogenized from BC or element solutions, contains the elements:
 ‘ebc1’, ‘ebc2’, ‘sbc1’, ‘sbc2’ : global strain and stress from BC (type: float)
 ‘eps’, ‘epl’, ‘sig’,  : global strain, plastic strain, and stress tensors homogenized
@@ -381,9 +689,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="class">
-<dt id="pyLabFEM.Model.Element">
-<em class="property">class </em><code class="sig-name descname">Element</code><span class="sig-paren">(</span><em class="sig-param">model</em>, <em class="sig-param">nodes</em>, <em class="sig-param">lx</em>, <em class="sig-param">ly</em>, <em class="sig-param">sect</em>, <em class="sig-param">mat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt id="model.Model.Element">
+<em class="property">class </em><code class="sig-name descname">Element</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">model</span></em>, <em class="sig-param"><span class="n">nodes</span></em>, <em class="sig-param"><span class="n">lx</span></em>, <em class="sig-param"><span class="n">ly</span></em>, <em class="sig-param"><span class="n">sect</span></em>, <em class="sig-param"><span class="n">mat</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for isoparametric elements; supports
 1-d elements with linear or quadratic shape function and full integration;
@@ -400,9 +708,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </ul>
 </dd>
 </dl>
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Model">
-<code class="sig-name descname">Model</code><a class="headerlink" href="#pyLabFEM.Model.Element.Model" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Model">
+<code class="sig-name descname">Model</code><a class="headerlink" href="#model.Model.Element.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Refers to parent object (FE model)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -411,9 +719,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.nodes">
-<code class="sig-name descname">nodes</code><a class="headerlink" href="#pyLabFEM.Model.Element.nodes" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.nodes">
+<code class="sig-name descname">nodes</code><a class="headerlink" href="#model.Model.Element.nodes" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of nodes of this element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -422,9 +730,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Lelx">
-<code class="sig-name descname">Lelx</code><a class="headerlink" href="#pyLabFEM.Model.Element.Lelx" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Lelx">
+<code class="sig-name descname">Lelx</code><a class="headerlink" href="#model.Model.Element.Lelx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of element in x-direction</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -433,9 +741,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Lely">
-<code class="sig-name descname">Lely</code><a class="headerlink" href="#pyLabFEM.Model.Element.Lely" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Lely">
+<code class="sig-name descname">Lely</code><a class="headerlink" href="#model.Model.Element.Lely" title="Permalink to this definition">¶</a></dt>
 <dd><p>Size of element in y-direction</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -444,9 +752,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.ngp">
-<code class="sig-name descname">ngp</code><a class="headerlink" href="#pyLabFEM.Model.Element.ngp" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.ngp">
+<code class="sig-name descname">ngp</code><a class="headerlink" href="#model.Model.Element.ngp" title="Permalink to this definition">¶</a></dt>
 <dd><p>number of Gauss points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -455,9 +763,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.gpx">
-<code class="sig-name descname">gpx</code><a class="headerlink" href="#pyLabFEM.Model.Element.gpx" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.gpx">
+<code class="sig-name descname">gpx</code><a class="headerlink" href="#model.Model.Element.gpx" title="Permalink to this definition">¶</a></dt>
 <dd><p>x-locations of Gauss points in element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -466,9 +774,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.gpy">
-<code class="sig-name descname">gpy</code><a class="headerlink" href="#pyLabFEM.Model.Element.gpy" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.gpy">
+<code class="sig-name descname">gpy</code><a class="headerlink" href="#model.Model.Element.gpy" title="Permalink to this definition">¶</a></dt>
 <dd><p>y-locations of Gauss points in element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -477,9 +785,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Bmat">
-<code class="sig-name descname">Bmat</code><a class="headerlink" href="#pyLabFEM.Model.Element.Bmat" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Bmat">
+<code class="sig-name descname">Bmat</code><a class="headerlink" href="#model.Model.Element.Bmat" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of B-matrices at Gauss points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -488,9 +796,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.wght">
-<code class="sig-name descname">wght</code><a class="headerlink" href="#pyLabFEM.Model.Element.wght" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.wght">
+<code class="sig-name descname">wght</code><a class="headerlink" href="#model.Model.Element.wght" title="Permalink to this definition">¶</a></dt>
 <dd><p>List of weight of each Gauss point in integration</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -499,9 +807,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Vel">
-<code class="sig-name descname">Vel</code><a class="headerlink" href="#pyLabFEM.Model.Element.Vel" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Vel">
+<code class="sig-name descname">Vel</code><a class="headerlink" href="#model.Model.Element.Vel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Volume of element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -510,9 +818,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Jac">
-<code class="sig-name descname">Jac</code><a class="headerlink" href="#pyLabFEM.Model.Element.Jac" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Jac">
+<code class="sig-name descname">Jac</code><a class="headerlink" href="#model.Model.Element.Jac" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determinant of Jacobian of iso-parametric formulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -521,9 +829,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.CV">
-<code class="sig-name descname">CV</code><a class="headerlink" href="#pyLabFEM.Model.Element.CV" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.CV">
+<code class="sig-name descname">CV</code><a class="headerlink" href="#model.Model.Element.CV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Voigt stiffness matrix of element material</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -532,9 +840,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.elstiff">
-<code class="sig-name descname">elstiff</code><a class="headerlink" href="#pyLabFEM.Model.Element.elstiff" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.elstiff">
+<code class="sig-name descname">elstiff</code><a class="headerlink" href="#model.Model.Element.elstiff" title="Permalink to this definition">¶</a></dt>
 <dd><p>Tangent stiffness tensor of element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -543,9 +851,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Kel">
-<code class="sig-name descname">Kel</code><a class="headerlink" href="#pyLabFEM.Model.Element.Kel" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Kel">
+<code class="sig-name descname">Kel</code><a class="headerlink" href="#model.Model.Element.Kel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Element stiffness matrix</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -554,9 +862,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Sect">
-<code class="sig-name descname">Sect</code><a class="headerlink" href="#pyLabFEM.Model.Element.Sect" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Sect">
+<code class="sig-name descname">Sect</code><a class="headerlink" href="#model.Model.Element.Sect" title="Permalink to this definition">¶</a></dt>
 <dd><p>Section of model in which element is located</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -565,9 +873,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.Mat">
-<code class="sig-name descname">Mat</code><a class="headerlink" href="#pyLabFEM.Model.Element.Mat" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.Mat">
+<code class="sig-name descname">Mat</code><a class="headerlink" href="#model.Model.Element.Mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Material model to be applied</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -576,9 +884,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.eps">
-<code class="sig-name descname">eps</code><a class="headerlink" href="#pyLabFEM.Model.Element.eps" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.eps">
+<code class="sig-name descname">eps</code><a class="headerlink" href="#model.Model.Element.eps" title="Permalink to this definition">¶</a></dt>
 <dd><p>average (total) element strain (defined in <code class="docutils literal notranslate"><span class="pre">Model.solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -587,9 +895,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.sig">
-<code class="sig-name descname">sig</code><a class="headerlink" href="#pyLabFEM.Model.Element.sig" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.sig">
+<code class="sig-name descname">sig</code><a class="headerlink" href="#model.Model.Element.sig" title="Permalink to this definition">¶</a></dt>
 <dd><p>average element stress (defined in <code class="docutils literal notranslate"><span class="pre">Model.solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -598,9 +906,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabFEM.Model.Element.epl">
-<code class="sig-name descname">epl</code><a class="headerlink" href="#pyLabFEM.Model.Element.epl" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="model.Model.Element.epl">
+<code class="sig-name descname">epl</code><a class="headerlink" href="#model.Model.Element.epl" title="Permalink to this definition">¶</a></dt>
 <dd><p>average plastic element strain (defined in <code class="docutils literal notranslate"><span class="pre">Model.solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -609,9 +917,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.calc_Bmat">
-<code class="sig-name descname">calc_Bmat</code><span class="sig-paren">(</span><em class="sig-param">x=0.0</em>, <em class="sig-param">y=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.calc_Bmat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.calc_Bmat" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.calc_Bmat">
+<code class="sig-name descname">calc_Bmat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">y</span><span class="o">=</span><span class="default_value">0.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.calc_Bmat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.calc_Bmat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate B matrix at position x in element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -629,15 +937,15 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.calc_Kel">
-<code class="sig-name descname">calc_Kel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.calc_Kel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.calc_Kel" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.calc_Kel">
+<code class="sig-name descname">calc_Kel</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.calc_Kel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.calc_Kel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate element stiffness matrix by Gaussian integration</p>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.depl">
-<code class="sig-name descname">depl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.depl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.depl" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.depl">
+<code class="sig-name descname">depl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.depl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.depl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate plastic strain increment</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -649,9 +957,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.deps">
-<code class="sig-name descname">deps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.deps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.deps" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.deps">
+<code class="sig-name descname">deps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.deps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.deps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate strain increment in element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -663,9 +971,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.dsig">
-<code class="sig-name descname">dsig</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.dsig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.dsig" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.dsig">
+<code class="sig-name descname">dsig</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.dsig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.dsig" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate stress increment</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -677,9 +985,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.eps_t">
-<code class="sig-name descname">eps_t</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.eps_t"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.eps_t" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.eps_t">
+<code class="sig-name descname">eps_t</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.eps_t"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.eps_t" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate total strain in element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -691,9 +999,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.Element.node_num">
-<code class="sig-name descname">node_num</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.Element.node_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.Element.node_num" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.Element.node_num">
+<code class="sig-name descname">node_num</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element.node_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.Element.node_num" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate indices of DOF associated with element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -707,9 +1015,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.assign">
-<code class="sig-name descname">assign</code><span class="sig-paren">(</span><em class="sig-param">mats</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.assign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.assign" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.assign">
+<code class="sig-name descname">assign</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">mats</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.assign"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.assign" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assigns an object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code> to each section.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -718,9 +1026,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.bcbot">
-<code class="sig-name descname">bcbot</code><span class="sig-paren">(</span><em class="sig-param">u0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.bcbot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.bcbot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.bcbot">
+<code class="sig-name descname">bcbot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcbot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.bcbot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on bottom nodes, always displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -729,9 +1037,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.bcleft">
-<code class="sig-name descname">bcleft</code><span class="sig-paren">(</span><em class="sig-param">u0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.bcleft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.bcleft" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.bcleft">
+<code class="sig-name descname">bcleft</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">u0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcleft"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.bcleft" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on lhs nodes, always displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -740,9 +1048,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.bcright">
-<code class="sig-name descname">bcright</code><span class="sig-paren">(</span><em class="sig-param">h1</em>, <em class="sig-param">bctype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.bcright"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.bcright" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.bcright">
+<code class="sig-name descname">bcright</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h1</span></em>, <em class="sig-param"><span class="n">bctype</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcright"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.bcright" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on rhs nodes, either force or displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -754,9 +1062,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.bctop">
-<code class="sig-name descname">bctop</code><span class="sig-paren">(</span><em class="sig-param">h1</em>, <em class="sig-param">bctype</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.bctop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.bctop" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.bctop">
+<code class="sig-name descname">bctop</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">h1</span></em>, <em class="sig-param"><span class="n">bctype</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bctop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.bctop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on top nodes, either force or displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -768,9 +1076,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.bcval">
-<code class="sig-name descname">bcval</code><span class="sig-paren">(</span><em class="sig-param">nodes</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.bcval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.bcval" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.bcval">
+<code class="sig-name descname">bcval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">nodes</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.bcval" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate average displacement and total force at (boundary) nodes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -779,9 +1087,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.calc_global">
-<code class="sig-name descname">calc_global</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.calc_global"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.calc_global" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.calc_global">
+<code class="sig-name descname">calc_global</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.calc_global"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.calc_global" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate global quantities and store in Model.glob;
 homogenization done by averaging residual forces (sbc1/2) and displacements (ebc1/2) at boundary nodes
 or by averaging element quantities (sig, eps, epl)</p>
@@ -795,9 +1103,9 @@ as homogenized values of boundary nodes.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.geom">
-<code class="sig-name descname">geom</code><span class="sig-paren">(</span><em class="sig-param">sect</em>, <em class="sig-param">LY=1.0</em>, <em class="sig-param">LZ=1.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.geom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.geom" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.geom">
+<code class="sig-name descname">geom</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sect</span></em>, <em class="sig-param"><span class="n">LY</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">LZ</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.geom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.geom" title="Permalink to this definition">¶</a></dt>
 <dd><p>Specify geometry of FE model and its subdivision into sections;
 for 2-d model a laminate structure normal to x-direction is created; adds attributes to class <code class="docutils literal notranslate"><span class="pre">Model</span></code></p>
 <dl class="field-list simple">
@@ -811,9 +1119,9 @@ for 2-d model a laminate structure normal to x-direction is created; adds attrib
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.mesh">
-<code class="sig-name descname">mesh</code><span class="sig-paren">(</span><em class="sig-param">NX=10</em>, <em class="sig-param">NY=1</em>, <em class="sig-param">SF=1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.mesh" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.mesh">
+<code class="sig-name descname">mesh</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">NX</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">NY</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">SF</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.mesh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.mesh" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate structured mesh with quadrilateral elements (2d models). First,
 nodal positions <code class="docutils literal notranslate"><span class="pre">Model.npos</span></code> are defined such that nodes lie at
 corners (linear shape function) and edges (quadratic shape function) of elements.
@@ -831,9 +1139,9 @@ the section in which the element is situated to be passed.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.plot">
-<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param">fsel</em>, <em class="sig-param">mag=10</em>, <em class="sig-param">colormap='viridis'</em>, <em class="sig-param">cdepth=20</em>, <em class="sig-param">showmesh=True</em>, <em class="sig-param">shownodes=True</em>, <em class="sig-param">vmin=None</em>, <em class="sig-param">vmax=None</em>, <em class="sig-param">annot=True</em>, <em class="sig-param">file=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.plot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.plot">
+<code class="sig-name descname">plot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fsel</span></em>, <em class="sig-param"><span class="n">mag</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">colormap</span><span class="o">=</span><span class="default_value">'viridis'</span></em>, <em class="sig-param"><span class="n">cdepth</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">showmesh</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">shownodes</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">vmin</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">vmax</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">annot</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.plot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Produce graphical output: draw elements in deformed shape with color
 according to field variable ‘fsel’; uses matplotlib</p>
 <dl class="field-list simple">
@@ -841,6 +1149,8 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fsel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Field selector for library field, see Keyword Arguments for possible values</p></li>
 <li><p><strong>mag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Magnification factor for displacements (optional, default: 10)</p></li>
+<li><p><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Start value for range of plotted values</p></li>
+<li><p><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – End value for range of plotted values</p></li>
 <li><p><strong>cdepth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of colors in colormap (optional, default: 20)</p></li>
 <li><p><strong>showmesh</strong> (<em>Boolean</em>) – Set/unset plotting of lines for element edges (optional, default: True)</p></li>
 <li><p><strong>shownodes</strong> (<em>Boolean</em>) – Set/unset plotting of nodes (optional, default: True)</p></li>
@@ -868,9 +1178,9 @@ according to field variable ‘fsel’; uses matplotlib</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.setupK">
-<code class="sig-name descname">setupK</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.setupK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.setupK" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.setupK">
+<code class="sig-name descname">setupK</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.setupK"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.setupK" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate and assemble system stiffness matrix based on element stiffness matrices.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
@@ -882,9 +1192,9 @@ according to field variable ‘fsel’; uses matplotlib</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabFEM.Model.solve">
-<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param">min_step=None</em>, <em class="sig-param">verb=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Model.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Model.solve" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="model.Model.solve">
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">min_step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.solve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#model.Model.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Solve linear system of equations K.u = f with respect to u, to obtain distortions
 of the system under the applied boundary conditions for mechanical equilibrium, i.e.,
 when the total force on internal nodes is zero. In the first step, the stiffness
@@ -925,316 +1235,22 @@ are stored as attributes of class <code class="docutils literal notranslate"><sp
 
 </dd></dl>
 
-<dl class="class">
-<dt id="pyLabFEM.Strain">
-<em class="property">class </em><code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">Strain</code><span class="sig-paren">(</span><em class="sig-param">sv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Strain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Stores and converts Voigt strain tensors into different formats,
-calculates principle strain and equivalent strain.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sv</strong> (<em>list-like object</em><em>, </em><em>must be 1D with length 6</em>) – Voigt-strain components</p>
-</dd>
-</dl>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">voigt, v</code></dt>
-<dd><p>Strain tensor in Voigt notation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>1d-array (size 6)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">tens, t</code></dt>
-<dd><p>Strain tensor in matrix notation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>3x3 array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">princ, p</code></dt>
-<dd><p>Principal strains</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>1d-array (size 3)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyLabFEM.Strain.eeq">
-<code class="sig-name descname">eeq</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Strain.eeq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Strain.eeq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate equivalent strain</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>eeq</strong> – Equivalent strain</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="class">
-<dt id="pyLabFEM.Stress">
-<em class="property">class </em><code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">Stress</code><span class="sig-paren">(</span><em class="sig-param">sv</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Stress"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Stress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Stores and converts Voigt stress tensors into different formats,
-calculates principle stresses, equivalent stresses and transforms into cylindrical coordinates.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sv</strong> (<em>list-like object</em><em>, </em><em>must be 1D with length 6</em>) – Voigt-stress components</p>
-</dd>
-</dl>
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">voigt, v</code></dt>
-<dd><p>Stress tensor in Voigt notation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>1d-array (size 6)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">tens, t</code></dt>
-<dd><p>Stress tensor in matrix notation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>3x3 array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">princ, p</code></dt>
-<dd><p>Principal stresses</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>1d-array (size 3)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="attribute">
-<dt>
-<code class="sig-name descname">hydrostatic, h</code></dt>
-<dd><p>Hydrostatic stress component</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyLabFEM.Stress.lode_ang">
-<code class="sig-name descname">lode_ang</code><span class="sig-paren">(</span><em class="sig-param">X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Stress.lode_ang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Stress.lode_ang" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate Lode angle:
-Transforms principal stress space into hydrostatic stress, eqiv. stress, and Lode angle;
-definition of positive cosine for Lode angle is applied</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>X</strong> (either float or object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – if float: interpreted as equivalent stress
-if <code class="docutils literal notranslate"><span class="pre">Material</span></code>: used to invoke method of class <code class="docutils literal notranslate"><span class="pre">Material</span></code> to calculate equivalent stress</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>la</strong> – Lode angle</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyLabFEM.Stress.sJ2">
-<code class="sig-name descname">sJ2</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Stress.sJ2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Stress.sJ2" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate J2 principal stress</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>sJ2</strong> – equivalent stress</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyLabFEM.Stress.seq">
-<code class="sig-name descname">seq</code><span class="sig-paren">(</span><em class="sig-param">mat</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Stress.seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Stress.seq" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate Hill-type equivalent stress, invokes corresponding method of class <code class="docutils literal notranslate"><span class="pre">Material</span></code></p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mat</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – containes Hill parameters and method needed for Hill-type equivalent stress</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>seq</strong> – equivalent stress of Hill-type</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pyLabFEM.Stress.theta">
-<code class="sig-name descname">theta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#Stress.theta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.Stress.theta" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate polar angle in deviatoric plane</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>ang</strong> – polar angle of stress in devitoric plane</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="data">
-<dt id="pyLabFEM.a_vec">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">a_vec</code><em class="property"> = array([ 0.81649658, -0.40824829, -0.40824829])</em><a class="headerlink" href="#pyLabFEM.a_vec" title="Permalink to this definition">¶</a></dt>
-<dd><p>First unit vector spanning deviatoric stress plane (real axis)</p>
-</dd></dl>
-
-<dl class="data">
-<dt id="pyLabFEM.b_vec">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">b_vec</code><em class="property"> = array([ 0.        ,  0.70710678, -0.70710678])</em><a class="headerlink" href="#pyLabFEM.b_vec" title="Permalink to this definition">¶</a></dt>
-<dd><p>Second unit vector spanning deviatoric stress plane (imaginary axis)</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyLabFEM.eps_eq">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">eps_eq</code><span class="sig-paren">(</span><em class="sig-param">eps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#eps_eq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.eps_eq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate equivalent strain</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>eps</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,) or (N,3): Principal strains;
-(6,) or (N,6): Voigt strains</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>eeq</strong> – equivalent strains</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyLabFEM.polar_ang">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">polar_ang</code><span class="sig-paren">(</span><em class="sig-param">sig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#polar_ang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.polar_ang" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform principal stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>) </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,), (N,3): Principal stresses;
-(6,), (N,6): Voigt stress</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>theta</strong> – polar angles in deviatoric plane as positive angle between sprinc and a_vec in range [-pi,+p]</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="data">
-<dt id="pyLabFEM.ptol">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">ptol</code><em class="property"> = 0.5</em><a class="headerlink" href="#pyLabFEM.ptol" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plastic yielding if yield function &gt; ptol</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Tolerance</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyLabFEM.s_cyl">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">s_cyl</code><span class="sig-paren">(</span><em class="sig-param">sprinc</em>, <em class="sig-param">mat=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#s_cyl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.s_cyl" title="Permalink to this definition">¶</a></dt>
-<dd><p>convert principal stress into cylindrical stress vector</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>sprinc</strong> (<em>(</em><em>3</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – principal stresses</p></li>
-<li><p><strong>mat</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – Material for Hill-type principal stress (optional)</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>sc</strong> – stress in cylindrical coordinates (seq, theta, p)</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>(3,) or (N,3) array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyLabFEM.seq_J2">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">seq_J2</code><span class="sig-paren">(</span><em class="sig-param">sig</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#seq_J2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.seq_J2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate J2 equivalent stress from principal stresses</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>) </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,), (N,3): Principal stress or list of principal stresses;
-(6,), (N,6): Voigt stress</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>seq</strong> – J2 equivalent stresses</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="function">
-<dt id="pyLabFEM.sp_cart">
-<code class="sig-prename descclassname">pyLabFEM.</code><code class="sig-name descname">sp_cart</code><span class="sig-paren">(</span><em class="sig-param">scyl</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabFEM.html#sp_cart"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabFEM.sp_cart" title="Permalink to this definition">¶</a></dt>
-<dd><p>convert cylindrical stress into 3D Cartesian vector of deviatoric principle stresses</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>scyl</strong> (<em>(</em><em>2</em><em>,</em><em>)</em><em>, </em><em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Cylindrical stress in form (seq, theta, (optional: p))</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>sprinc</strong> – principle deviatoric stress</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a> or (N,) array</p>
-</dd>
-</dl>
-</dd></dl>
-
 </div>
-<div class="section" id="module-pyLabMaterial">
-<span id="module-material"></span><h2>Module Material<a class="headerlink" href="#module-pyLabMaterial" title="Permalink to this headline">¶</a></h2>
-<p>Introduces class <code class="docutils literal notranslate"><span class="pre">Material</span></code> that contains that attributes and methods
-needed for elastic-plastic material definitions in FEA. The module Model is defined in
-module pyLabFEM.</p>
-<p>uses NumPy, MatPlotLib, sklearn and pyLabFEM</p>
-<p>Version: 1.1 (2020-03-31)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, March 2020
+<div class="section" id="module-2">
+<span id="module-material"></span><h2>Module Material<a class="headerlink" href="#module-2" title="Permalink to this headline">¶</a></h2>
+<p>Module pylabfea.material introduces class <code class="docutils literal notranslate"><span class="pre">Material</span></code> that contains attributes and methods
+needed for elastic-plastic material definitions in FEA. It also enables the training of
+machine learning algorithms as yield functions for plasticity.
+The module pylabfea.model is used to calculate mechanical properties of a defined material
+under various loading conditions.</p>
+<p>uses NumPy, MatPlotLib, sklearn and pyLabFEA.model</p>
+<p>Version: 2.1 (2020-04-01)
+Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
-<dl class="class">
-<dt id="pyLabMaterial.Material">
-<em class="property">class </em><code class="sig-prename descclassname">pyLabMaterial.</code><code class="sig-name descname">Material</code><span class="sig-paren">(</span><em class="sig-param">name='Material'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material" title="Permalink to this definition">¶</a></dt>
+<dl class="py class">
+<dt id="material.Material">
+<em class="property">class </em><code class="sig-prename descclassname">material.</code><code class="sig-name descname">Material</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'Material'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for Materials including material parameters (attributes), constitutive relations (methods)
 and derived properties und various loading conditions (dictionary)</p>
@@ -1243,9 +1259,9 @@ and derived properties und various loading conditions (dictionary)</p>
 <dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – Name of material (optional, default: ‘Material’)</p>
 </dd>
 </dl>
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.name">
-<code class="sig-name descname">name</code><a class="headerlink" href="#pyLabMaterial.Material.name" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.name">
+<code class="sig-name descname">name</code><a class="headerlink" href="#material.Material.name" title="Permalink to this definition">¶</a></dt>
 <dd><p>Name of material</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1254,9 +1270,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.sy">
-<code class="sig-name descname">sy</code><a class="headerlink" href="#pyLabMaterial.Material.sy" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.sy">
+<code class="sig-name descname">sy</code><a class="headerlink" href="#material.Material.sy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Yield strength</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1265,9 +1281,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.ML_yf">
-<code class="sig-name descname">ML_yf</code><a class="headerlink" href="#pyLabMaterial.Material.ML_yf" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.ML_yf">
+<code class="sig-name descname">ML_yf</code><a class="headerlink" href="#material.Material.ML_yf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Existence of trained machine learning (ML) yield function (default: False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1276,9 +1292,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.ML_grad">
-<code class="sig-name descname">ML_grad</code><a class="headerlink" href="#pyLabMaterial.Material.ML_grad" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.ML_grad">
+<code class="sig-name descname">ML_grad</code><a class="headerlink" href="#material.Material.ML_grad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Existence of trained ML gradient (default: False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1287,9 +1303,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.Tresca">
-<code class="sig-name descname">Tresca</code><a class="headerlink" href="#pyLabMaterial.Material.Tresca" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.Tresca">
+<code class="sig-name descname">Tresca</code><a class="headerlink" href="#material.Material.Tresca" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicate if Tresca equivalent stress should be used (default: False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1298,9 +1314,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.msg">
-<code class="sig-name descname">msg</code><a class="headerlink" href="#pyLabMaterial.Material.msg" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.msg">
+<code class="sig-name descname">msg</code><a class="headerlink" href="#material.Material.msg" title="Permalink to this definition">¶</a></dt>
 <dd><p>Messages returned</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1309,9 +1325,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.prop">
-<code class="sig-name descname">prop</code><a class="headerlink" href="#pyLabMaterial.Material.prop" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.prop">
+<code class="sig-name descname">prop</code><a class="headerlink" href="#material.Material.prop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derived properties under defined load paths</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1320,9 +1336,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.propJ2">
-<code class="sig-name descname">propJ2</code><a class="headerlink" href="#pyLabMaterial.Material.propJ2" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.propJ2">
+<code class="sig-name descname">propJ2</code><a class="headerlink" href="#material.Material.propJ2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Derived properties in form of J2 equivalent stress</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1331,9 +1347,9 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
-<dt id="pyLabMaterial.Material.sigeps">
-<code class="sig-name descname">sigeps</code><a class="headerlink" href="#pyLabMaterial.Material.sigeps" title="Permalink to this definition">¶</a></dt>
+<dl class="py attribute">
+<dt id="material.Material.sigeps">
+<code class="sig-name descname">sigeps</code><a class="headerlink" href="#material.Material.sigeps" title="Permalink to this definition">¶</a></dt>
 <dd><p>Data of stress-strain curves under defined load paths</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -1342,7 +1358,7 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt>
 <code class="sig-name descname">C11, C12, C44</code></dt>
 <dd><p>Anisotropic elastic constants</p>
@@ -1353,13 +1369,57 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
-<dl class="attribute">
+<dl class="py attribute">
 <dt>
 <code class="sig-name descname">E, nu</code></dt>
-<dd><p>Isotropic elastic constants, Young’s modulus and Poisson’s number</p>
+<dd><p>Isotropic elastic constants, Young modulus and Poisson number</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.msparam">
+<code class="sig-name descname">msparam</code><a class="headerlink" href="#material.Material.msparam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dicitionary with microstructural parameters assigned to this material</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>ditionary</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.whdat">
+<code class="sig-name descname">whdat</code><a class="headerlink" href="#material.Material.whdat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates existence of a data-based work hardening model</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.txdat">
+<code class="sig-name descname">txdat</code><a class="headerlink" href="#material.Material.txdat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates existance of texture data for yield stress</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.Ndof">
+<code class="sig-name descname">Ndof</code><a class="headerlink" href="#material.Material.Ndof" title="Permalink to this definition">¶</a></dt>
+<dd><p>degress of freedom for yield function, mandatory: 1:seq, 2:theta; optional: 3:work_hard, 4:texture)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1376,12 +1436,14 @@ and derived properties und various loading conditions (dictionary)</p>
 <li><p><strong>sigeps</strong> – Store tensorial stress strain data in sub-directories;
 Contains data for ‘sig’ (2d-array - stress), ‘eps’ (2d-array - strain),
 ‘epl’ (2d-array - plastic strain)</p></li>
+<li><p><strong>msparam</strong> – Store data on microstructure parameters: ‘Npl’, ‘Nlc, ‘Ntext’, ‘texture’, ‘peeq_max’, ‘work_hard’, ‘flow_stress’
+are obtained from data analysis module. Other parameters can be added.</p></li>
 </ul>
 </dd>
 </dl>
-<dl class="method">
-<dt id="pyLabMaterial.Material.C_tan">
-<code class="sig-name descname">C_tan</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">Cel</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.C_tan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.C_tan" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.C_tan">
+<code class="sig-name descname">C_tan</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">Cel</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.C_tan"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.C_tan" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate tangent stiffness relaxing stress back to yield locus;
 Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
 Chapter 6, Eqs. (6.9) and (6.18)</p>
@@ -1401,9 +1463,9 @@ Chapter 6, Eqs. (6.9) and (6.18)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.ML_full_yf">
-<code class="sig-name descname">ML_full_yf</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">ld=None</em>, <em class="sig-param">verb=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.ML_full_yf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.ML_full_yf" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.ML_full_yf">
+<code class="sig-name descname">ML_full_yf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">ld</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.ML_full_yf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.ML_full_yf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate full ML yield function as distance of given stress to yield locus in loading direction.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1422,9 +1484,9 @@ Chapter 6, Eqs. (6.9) and (6.18)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.calc_fgrad">
-<code class="sig-name descname">calc_fgrad</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">seq=None</em>, <em class="sig-param">ana=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.calc_fgrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.calc_fgrad" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.calc_fgrad">
+<code class="sig-name descname">calc_fgrad</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">peeq</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">seq</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">ana</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_fgrad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_fgrad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield
 function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield
 function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function
@@ -1446,10 +1508,10 @@ function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.calc_properties">
-<code class="sig-name descname">calc_properties</code><span class="sig-paren">(</span><em class="sig-param">size=2</em>, <em class="sig-param">Nel=2</em>, <em class="sig-param">verb=False</em>, <em class="sig-param">eps=0.005</em>, <em class="sig-param">min_step=None</em>, <em class="sig-param">sigeps=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.calc_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.calc_properties" title="Permalink to this definition">¶</a></dt>
-<dd><p>Use FE model to calculate material strength and stress-strain data along a given load path.</p>
+<dl class="py method">
+<dt id="material.Material.calc_properties">
+<code class="sig-name descname">calc_properties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">size</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">Nel</span><span class="o">=</span><span class="default_value">2</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">eps</span><span class="o">=</span><span class="default_value">0.005</span></em>, <em class="sig-param"><span class="n">min_step</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">sigeps</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_properties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use pylabfea.model to calculate material strength and stress-strain data along a given load path.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1464,9 +1526,9 @@ function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.calc_seq">
-<code class="sig-name descname">calc_seq</code><span class="sig-paren">(</span><em class="sig-param">sprinc</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.calc_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.calc_seq" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.calc_seq">
+<code class="sig-name descname">calc_seq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sprinc</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_seq" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate generalized equivalent stress from pricipal stresses;
 equivalent to J2 for isotropic flow behavior and tension compression invariance;
 Hill-type approach for anisotropic plastic yielding;
@@ -1484,9 +1546,9 @@ Drucker-like approach for tension-compression assymetry</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.calc_yf">
-<code class="sig-name descname">calc_yf</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">peeq=0.0</em>, <em class="sig-param">ana=False</em>, <em class="sig-param">pred=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.calc_yf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.calc_yf" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.calc_yf">
+<code class="sig-name descname">calc_yf</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">peeq</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">ana</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">pred</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_yf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_yf" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate yield function</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1506,36 +1568,44 @@ Drucker-like approach for tension-compression assymetry</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.create_sig_data">
-<code class="sig-name descname">create_sig_data</code><span class="sig-paren">(</span><em class="sig-param">N=None</em>, <em class="sig-param">syc=None</em>, <em class="sig-param">Nseq=12</em>, <em class="sig-param">offs=0.01</em>, <em class="sig-param">extend=False</em>, <em class="sig-param">rand=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.create_sig_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.create_sig_data" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.create_sig_data">
+<code class="sig-name descname">create_sig_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">N</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mat_ref</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">syc</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">Nseq</span><span class="o">=</span><span class="default_value">12</span></em>, <em class="sig-param"><span class="n">sflow</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offs</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">extend</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">rand</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.create_sig_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.create_sig_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to create consistent data sets on the deviatoric stress plane
-for training or testing of ML yield function. Data is created in form of cylindrical stresses</p>
+for training or testing of ML yield function. Either the number “N” of raw data points, i.e. load angles, to be
+generated and a reference material “mat_ref” has to be provided, or a list of raw data points “syc” with
+cylindrical stress tensors lying on the yield surface serves as input. Based on the raw data, stress tensors
+from the yield locus are distributed into the entire deviatoric space, by linear downscaling into the elastic
+region and upscaling into the plastic region. Data is created in form of cylindrical stresses that lie densly
+around the expected yield locus and more sparsely in the outer plastic region.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of load cases (polar angles) to be created (optional,
-either N or theta must be provided)</p></li>
-<li><p><strong>theta</strong> (<em>(</em><em>N</em><em>,</em><em>) </em><em>array</em>) – List of polar angles from which training data in deviatoric stress plane is created
-(optional, either theta or N must be provided)</p></li>
+either N and mat_ref or syc must be provided)</p></li>
+<li><p><strong>mat_ref</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – reference material needed to calculate yield function if only N is provided (optional, ignored if syc is given)</p></li>
+<li><p><strong>syc</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – List of cyl. stress tensors lying on yield locus from which training data in entire deviatoric stress plane is created
+(optional, either syc or N and mat_ref must be provided)</p></li>
 <li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of equiv. stresses generated up to yield strength (optional, default: 12)</p></li>
+<li><p><strong>sflow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Expected flow stress of data set (optional, default: self.sy)</p></li>
 <li><p><strong>offs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Start of range for equiv. stress (optional, default: 0.01)</p></li>
 <li><p><strong>extend</strong> (<em>Boolean</em>) – Create additional data in plastic regime (optional, default: False)</p></li>
 <li><p><strong>rand</strong> (<em>Boolean</em>) – Chose random load cases (polar angles) (optional, default: False)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>st</strong> – Cylindrical training stresses, M = N (2 Nseq + Nextend)</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>(M,3) array</p>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>st</strong> (<em>(M,3) array</em>) – Cylindrical training stresses, M = N (2 Nseq + Nextend)</p></li>
+<li><p><strong>yt</strong> (<em>(M,) array</em>) – Result vector of categorial yield function for supervised training</p></li>
+</ul>
+</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.elasticity">
-<code class="sig-name descname">elasticity</code><span class="sig-paren">(</span><em class="sig-param">C11=None</em>, <em class="sig-param">C12=None</em>, <em class="sig-param">C44=None</em>, <em class="sig-param">CV=None</em>, <em class="sig-param">E=None</em>, <em class="sig-param">nu=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.elasticity" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.elasticity">
+<code class="sig-name descname">elasticity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">C11</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">C12</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">C44</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">CV</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">E</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nu</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.elasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.elasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define elastic material properties</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1554,9 +1624,9 @@ if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.ellipsis">
-<code class="sig-name descname">ellipsis</code><span class="sig-paren">(</span><em class="sig-param">a=1.0</em>, <em class="sig-param">b=0.5773502691896258</em>, <em class="sig-param">n=72</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.ellipsis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.ellipsis" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.ellipsis">
+<code class="sig-name descname">ellipsis</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">b</span><span class="o">=</span><span class="default_value">0.5773502691896258</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">72</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.ellipsis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.ellipsis" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create ellipsis with main axis along 45° axis, used for graphical representation of isotropic yield locus.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1575,9 +1645,9 @@ if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</p></li>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.epl_dot">
-<code class="sig-name descname">epl_dot</code><span class="sig-paren">(</span><em class="sig-param">sig</em>, <em class="sig-param">epl</em>, <em class="sig-param">Cel</em>, <em class="sig-param">deps</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.epl_dot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.epl_dot" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.epl_dot">
+<code class="sig-name descname">epl_dot</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">epl</span></em>, <em class="sig-param"><span class="n">Cel</span></em>, <em class="sig-param"><span class="n">deps</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.epl_dot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.epl_dot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate plastic strain increment relaxing stress back to yield locus;
 Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
 Chapter 6, Eqs. (6.4), (6.8) and (6.17)</p>
@@ -1599,17 +1669,16 @@ Chapter 6, Eqs. (6.4), (6.8) and (6.17)</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.find_yloc">
-<code class="sig-name descname">find_yloc</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">sp</em>, <em class="sig-param">ana=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.find_yloc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.find_yloc" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.find_yloc">
+<code class="sig-name descname">find_yloc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">sp</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.find_yloc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.find_yloc" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to expand unit stresses by factor and calculate yield function;
 used by search algorithm to find zeros of yield function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>1d-array</em>) – Multiplyer for stress</p></li>
-<li><p><strong>sp</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Principal stress</p></li>
-<li><p><strong>ana</strong> (<em>Boolean</em>) – Decides if analytical yield function is evaluated (optional, default: False)</p></li>
+<li><p><strong>sp</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Principal stress</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1621,26 +1690,26 @@ used by search algorithm to find zeros of yield function.</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.microstructure">
-<code class="sig-name descname">microstructure</code><span class="sig-paren">(</span><em class="sig-param">texture_param=None</em>, <em class="sig-param">grain_size=None</em>, <em class="sig-param">grain_shape=None</em>, <em class="sig-param">porosity=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.microstructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.microstructure" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.microstructure">
+<code class="sig-name descname">microstructure</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">param</span></em>, <em class="sig-param"><span class="n">grain_size</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">grain_shape</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">porosity</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.microstructure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.microstructure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define microstructural parameters of the material: crstallographic texture, grain size, grain shape
 and porosity.</p>
-<dl class="simple">
-<dt>text_param<span class="classifier">array-like</span></dt><dd><p>Parameters describing texture (optional)</p>
-</dd>
-<dt>grain_size<span class="classifier">float</span></dt><dd><p>Average grain size of material (optional)</p>
-</dd>
-<dt>grain_shape<span class="classifier">(3,) array</span></dt><dd><p>Lengths of the three main axes of ellipsoid describing grain shape (optional)</p>
-</dd>
-<dt>porosity<span class="classifier">float</span></dt><dd><p>Porosity of the material</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>param</strong> (List of objects of class <code class="docutils literal notranslate"><span class="pre">Data</span></code>) – Container for data of different microstructures of material</p></li>
+<li><p><strong>grain_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – Average grain size of material (optional)</p></li>
+<li><p><strong>grain_shape</strong> (<em>list of</em><em> (</em><em>3</em><em>,</em><em>) </em><em>arrays</em>) – Lengths of the three main axes of ellipsoid describing grain shape (optional)</p></li>
+<li><p><strong>porosity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – Porosity of the material</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.plasticity">
-<code class="sig-name descname">plasticity</code><span class="sig-paren">(</span><em class="sig-param">sy=None, hill=[1.0, 1.0, 1.0], drucker=0.0, khard=0.0, Tresca=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.plasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.plasticity" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.plasticity">
+<code class="sig-name descname">plasticity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hill</span><span class="o">=</span><span class="default_value">[1.0, 1.0, 1.0]</span></em>, <em class="sig-param"><span class="n">drucker</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">khard</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">Tresca</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define plastic material parameters; anisotropic Hill-like and Drucker-like
 behavior is supported</p>
 <dl class="field-list simple">
@@ -1656,9 +1725,9 @@ behavior is supported</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.plot_data">
-<code class="sig-name descname">plot_data</code><span class="sig-paren">(</span><em class="sig-param">Z</em>, <em class="sig-param">axs</em>, <em class="sig-param">xx</em>, <em class="sig-param">yy</em>, <em class="sig-param">field=True</em>, <em class="sig-param">c='red'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.plot_data" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.plot_data">
+<code class="sig-name descname">plot_data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Z</span></em>, <em class="sig-param"><span class="n">axs</span></em>, <em class="sig-param"><span class="n">xx</span></em>, <em class="sig-param"><span class="n">yy</span></em>, <em class="sig-param"><span class="n">field</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">c</span><span class="o">=</span><span class="default_value">'red'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plot_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plotting data in stress space to visualize yield loci.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1680,9 +1749,9 @@ behavior is supported</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.plot_stress_strain">
-<code class="sig-name descname">plot_stress_strain</code><span class="sig-paren">(</span><em class="sig-param">Hill=False</em>, <em class="sig-param">file=None</em>, <em class="sig-param">fontsize=14</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.plot_stress_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.plot_stress_strain" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.plot_stress_strain">
+<code class="sig-name descname">plot_stress_strain</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Hill</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">14</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_stress_strain"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plot_stress_strain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot stress-strain data and print values for strength.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1695,9 +1764,9 @@ behavior is supported</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.plot_yield_locus">
-<code class="sig-name descname">plot_yield_locus</code><span class="sig-paren">(</span><em class="sig-param">fun=None, label=None, data=None, trange=0.01, xstart=-2.0, xend=2.0, axis1=[0], axis2=[1], iso=False, ref_mat=None, field=False, Nmesh=100, file=None, fontsize=20</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.plot_yield_locus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.plot_yield_locus" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.plot_yield_locus">
+<code class="sig-name descname">plot_yield_locus</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">fun</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">label</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">trange</span><span class="o">=</span><span class="default_value">0.01</span></em>, <em class="sig-param"><span class="n">xstart</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">xend</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">axis1</span><span class="o">=</span><span class="default_value">[0]</span></em>, <em class="sig-param"><span class="n">axis2</span><span class="o">=</span><span class="default_value">[1]</span></em>, <em class="sig-param"><span class="n">iso</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">ref_mat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">field</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">Nmesh</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">20</span></em>, <em class="sig-param"><span class="n">scaling</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_yield_locus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plot_yield_locus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot different cuts through yield locus in 3D principle stress space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -1716,6 +1785,7 @@ behavior is supported</p>
 <li><p><strong>Nmesh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of mesh points per axis on which yield function is evaluated (optional, default:100)</p></li>
 <li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – File name for output of olot (optional)</p></li>
 <li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Fontsize for axis annotations (optional, default: 20)</p></li>
+<li><p><strong>scaling</strong> (<em>Boolean</em>) – Scale stress with yield strength (optional, default: True)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1727,10 +1797,53 @@ behavior is supported</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.setup_fgrad_SVM">
-<code class="sig-name descname">setup_fgrad_SVM</code><span class="sig-paren">(</span><em class="sig-param">X_grad_train</em>, <em class="sig-param">y_grad_train</em>, <em class="sig-param">C=10.0</em>, <em class="sig-param">gamma=0.1</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.setup_fgrad_SVM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.setup_fgrad_SVM" title="Permalink to this definition">¶</a></dt>
-<dd><p>Inititalize and train SVM for gradient evaluation</p>
+<dl class="py method">
+<dt id="material.Material.set_texture">
+<code class="sig-name descname">set_texture</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">current</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.set_texture"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.set_texture" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set parameters for current crystallographic texture of material as defined in microstructure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.8)"><em>list</em></a>) – Mixture parameter for microstructures in range [0,1] for each defined microstructure, indicates the
+intensity of the given microstructure. The sum of all mixture parameters must be &lt;=1, the rest will be set
+to random texture. Must have same dimension as material.msparam.</p></li>
+<li><p><strong>verb</strong> (<em>Boolean</em>) – Be verbose</p></li>
+</ul>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>Material.tx_cur</strong> (<em>list</em>) – Current value of microstructural micture parameter for active microstructure. Has same dimension as material.msparam</p></li>
+<li><p><strong>Material.sy</strong> (<em>float</em>) – Yield stength is redefined accoring to texture parameter</p></li>
+<li><p><strong>Material.khard, Material.Hpr</strong> (<em>float</em>) – Work hardening parameters are redefined according to texture parameter</p></li>
+<li><p><strong>Material.epc</strong> (<em>float</em>) – Critical PEEQ for which onset of plastic deformation is definied in data</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="material.Material.set_workhard">
+<code class="sig-name descname">set_workhard</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">peeq</span></em>, <em class="sig-param"><span class="n">verb</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.set_workhard"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.set_workhard" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set current status of work hardening.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Current value of equivalent plastic strain</p>
+</dd>
+<dt class="field-even">Yields</dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>Material.wh_cur</strong> (<em>float</em>) – Work hardening parameter or microstructural value of equiv. plastic
+strain, which is the mechanical peeq plus the critical value for yield onset.</p></li>
+<li><p><strong>Material.sflow</strong> (<em>float</em>) – Flow stress associated with work hardening parameter</p></li>
+<li><p><strong>Material.Hpr, Material.khard</strong> (<em>float</em>) – Hardening parameter</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="material.Material.setup_fgrad_SVM">
+<code class="sig-name descname">setup_fgrad_SVM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X_grad_train</span></em>, <em class="sig-param"><span class="n">y_grad_train</span></em>, <em class="sig-param"><span class="n">C</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">0.1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.setup_fgrad_SVM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.setup_fgrad_SVM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Inititalize and train SVM regression for gradient evaluation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1743,9 +1856,9 @@ behavior is supported</p>
 </dl>
 </dd></dl>
 
-<dl class="method">
-<dt id="pyLabMaterial.Material.setup_yf_SVM">
-<code class="sig-name descname">setup_yf_SVM</code><span class="sig-paren">(</span><em class="sig-param">x</em>, <em class="sig-param">y_train</em>, <em class="sig-param">x_test=None</em>, <em class="sig-param">y_test=None</em>, <em class="sig-param">C=10.0</em>, <em class="sig-param">gamma=1.0</em>, <em class="sig-param">fs=0.1</em>, <em class="sig-param">plot=False</em>, <em class="sig-param">cyl=False</em>, <em class="sig-param">inherit=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyLabMaterial.html#Material.setup_yf_SVM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pyLabMaterial.Material.setup_yf_SVM" title="Permalink to this definition">¶</a></dt>
+<dl class="py method">
+<dt id="material.Material.setup_yf_SVM">
+<code class="sig-name descname">setup_yf_SVM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y_train</span></em>, <em class="sig-param"><span class="n">x_test</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">y_test</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">C</span><span class="o">=</span><span class="default_value">10.0</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">fs</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cyl</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">inherit</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.setup_yf_SVM"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.setup_yf_SVM" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
 data (features) are accepted as either 3D principle stresses or cylindrical stresses. ML yield functions can also be inherited
 from other materials with a ML yield function. Graphical output on the trained SVC yield function is possible.</p>
@@ -1770,6 +1883,32 @@ from other materials with a ML yield function. Graphical output on the trained S
 <li><p><strong>test_sc</strong> (<em>float</em>) – test score</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="material.Material.train_SVC">
+<code class="sig-name descname">train_SVC</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">C</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">gamma</span><span class="o">=</span><span class="default_value">4</span></em>, <em class="sig-param"><span class="n">Nlc</span><span class="o">=</span><span class="default_value">36</span></em>, <em class="sig-param"><span class="n">Nseq</span><span class="o">=</span><span class="default_value">25</span></em>, <em class="sig-param"><span class="n">fs</span><span class="o">=</span><span class="default_value">0.3</span></em>, <em class="sig-param"><span class="n">extend</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">16</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.train_SVC"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.train_SVC" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train SVC for all yield functions of the microstructures provided in msparam and for flow stresses to capture
+work hardening. In first step, the
+training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
+yield function (“-1”: elastic, “+1”: plastic). Furthermore, axes in different dimensions for microstructural
+features are introduced that describe the relation between the different sets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Parameter needed for training process, larger values lead to more flexibility (optional, default: 10)</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Parameter of Radial Basis Function of SVC kernel, larger values, lead to faster decay of influence of individual
+support vectors, i.e., to more short ranged kernels (optional, default: 4)</p></li>
+<li><p><strong>Nlc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of load cases to be condidered, will be overwritten if material has microstructure information (optional, default: 36)</p></li>
+<li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Number of training as test data values to be generated in elastic regime, same number will be produced in plastic regime
+(optional, default: 25)</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.8)"><em>float</em></a>) – Parameter to ensure peridicity of yield function wrt. theta</p></li>
+<li><p><strong>extend</strong> (<em>Boolean</em>) – Indicate whether training data should be extended further into plastic regime (optional, default: True)</p></li>
+<li><p><strong>plot</strong> (<em>Boolean</em>) – Indicate if graphical output should be performed (optional, default: False)</p></li>
+<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Fontsize for graph annotations (optional, default: 16)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -1801,8 +1940,9 @@ from other materials with a ML yield function. Graphical output on the trained S
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Notebooks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#module-pyLabFEM">Module FEM</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#module-pyLabMaterial">Module Material</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-0">Module Basic</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-1">Module Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-2">Module Material</a></li>
 </ul>
 </li>
 </ul>
@@ -1841,7 +1981,7 @@ from other materials with a ML yield function. Graphical output on the trained S
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 2.4.4</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

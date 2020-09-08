@@ -13,6 +13,27 @@ elastic-plastic materials, which is fully written in Python. Due to
 its simplicity, it is well-suited for teaching, and its flexibility in
 constitutive modeling of materials makes it a useful research tool.
 
+## Installation
+
+The pyLabFEA package is installed with the following command
+
+```
+$ python -m pip install .
+```
+
+After this, the package can by imported with
+
+```python
+import pylabfea as FE
+```
+
+
+## Documentation
+
+Online documentation for pyLabFEA can be found under https://ahartmaier.github.io/pyLabFEA/.
+For offline use, open pyLabFEA/docs/index.html to browse through the contents.
+The documentation is generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
+
 ## Jupyter notebooks
 
 pyLabFEA is conveniently used with Jupyter notebooks. 
@@ -24,11 +45,6 @@ overview on the contents of the notebooks is available [here](https://ahartmaier
 The Jupyter notebooks of the pyLabFEA tutorials are also available on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
-## Documentation
-
-Online documentation for pyLabFEA can be found under https://ahartmaier.github.io/pyLabFEA/.
-For offline use, open pyLabFEA/docs/index.html to browse through the contents.
-The documentation is generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 ## Contributions
 

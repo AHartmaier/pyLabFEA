@@ -15,6 +15,23 @@ fully written in Python. Due to its simplicity, it is well-suited for teaching, 
 its flexibility in constitutive modeling of materials makes it a useful 
 research tool.
 
+
+Installation
+------------
+
+The pyLabFEA package is installed with the following command
+
+::
+
+   $ python -m pip install .
+
+After this, the package can by imported into python scripts with
+
+.. code:: python
+
+   import pylabfea as FE
+
+   
 Jupyter notebooks
 -----------------
 
@@ -63,11 +80,13 @@ pyLabFEA requires the following packages as imports:
   - Scipy_ for numerical solutions
   - scikit-learn_ for machine learning algorithms
   - MatPlotLib_ for graphical output
+  - pandas_ for data import
   
 .. _NumPy: http://numpy.scipy.org
 .. _Scipy: https://www.scipy.org/
 .. _scikit-learn: https://scikit-learn.org/stable/
 .. _MatPlotLib: https://matplotlib.org/
+.. _pandas: https://pandas.pydata.org/
 
 License
 -------

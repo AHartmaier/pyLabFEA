@@ -4,9 +4,12 @@
 
 __author__ = """Alexander Hartmaier"""
 __email__ = 'alexander.hartmaier@rub.de'
-__version__ = '1.1'
+__version__ = '2.2'
 
-import pylabfea.pyLabFEM as pylabfem
-#import pylabfea.pylabfem as pyLabFEM
-import pylabfea.pyLabMaterial as pylabmaterial
-#import pylabfea.pylabmaterial as pyLabMaterial
+__all__ = ['Strain', 'Stress', 'a_vec', 'b_vec', 'eps_eq', 'polar_ang', 'ptol', 
+           's_cyl', 'seq_J2', 'sp_cart']
+           
+from pylabfea.basic import *
+from pylabfea.model import Model
+from pylabfea.material import Material
+

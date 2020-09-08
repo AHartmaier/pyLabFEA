@@ -1,10 +1,18 @@
 Modules
 =======
 
-Module FEM
-----------
+Module Basic
+------------
+.. automodule:: basic
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
-.. automodule:: pyLabFEM
+
+Module Model
+------------
+
+.. automodule:: model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -12,7 +20,7 @@ Module FEM
 Module Material
 ---------------
 
-.. automodule:: pyLabMaterial
+.. automodule:: material
    :members:
    :undoc-members:
    :show-inheritance:
