@@ -6,7 +6,7 @@ for efficient operations with these quantities.
 
 uses NumPy
 
-Version: 2.1 (2020-04-01)
+Version: 3.1 (2020-10-25)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -15,15 +15,16 @@ __all__ = ['Strain', 'Stress', 'a_vec', 'b_vec', 'eps_eq', 'polar_ang', 'ptol',
            's_cyl', 'seq_J2', 'sp_cart']
 
 import numpy as np
+import sys
 
-'==================================='
-'define global methods and variables'
-'==================================='
+#===================================
+#define global methods and variables
+#===================================
 a_vec = np.array([1., -0.5, -0.5])/np.sqrt(1.5)
 '''First unit vector spanning deviatoric stress plane (real axis)'''
 b_vec = np.array([0.,  0.5, -0.5])*np.sqrt(2)  
 '''Second unit vector spanning deviatoric stress plane (imaginary axis)'''
-ptol = 0.5
+ptol = 3.e-3
 '''Tolerance: Plastic yielding if yield function > ptol'''
 def seq_J2(sig):
     '''Calculate J2 equivalent stress from principal stresses
@@ -55,7 +56,7 @@ def seq_J2(sig):
         sprinc=np.array(sig)
     else:
         print('*** seq_J2: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
-        sys.exit('Error: Unknown format of stress in seq_J2')
+        raise TypeError('Error: Unknown format of stress in seq_J2')
     d12 = sprinc[:,0] - sprinc[:,1]
     d23 = sprinc[:,1] - sprinc[:,2]
     d31 = sprinc[:,2] - sprinc[:,0]
@@ -94,7 +95,7 @@ def polar_ang(sig):
         sprinc=np.array(sig)
     else:
         print('*** polar_angle: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
-        sys.exit('Error: Unknown format of stress in polar_angle')
+        raise FormatError('Error: Unknown format of stress in polar_angle')
     hyd = np.sum(sprinc,axis=1)/3.  # hydrostatic component
     dev = sprinc - np.array([hyd, hyd, hyd]).transpose() # deviatoric princ. stress
     vn  = np.linalg.norm(dev,axis=1)  #norms of stress vectors
@@ -179,51 +180,29 @@ def eps_eq(eps):
         equivalent strains
     '''
     sh = np.shape(eps)
-    N = len(eps)
-    if sh==(6,):
-        eeq = np.sqrt(np.dot(eps[0:3],eps[0:3])+2*np.dot(eps[3:6],eps[3:6]))
-    elif sh==(3,):
-        eeq = np.sqrt(np.sum(eps*eps))
-    elif sh==(N,3):
-        eeq = np.sqrt(np.sum(eps*eps,axis=1))
-    elif sh==(N,6):
-        eeq = np.sqrt(np.sum(eps[:,0:3]*eps[:,0:3],axis=1)+2*np.sum(eps[:,3:6]*eps[:,3:6],axis=1))
-    else:
-        print('*** eps_eq (N,sh): ',N,sh,sys._getframe().f_back.f_code.co_name)
-        sys.exit('Error in eps_eq: Format not supported')
-    return eeq
-    
-'''def eps_eq(eps):
-    Calculate equivalent strain 
-    
-    Parameters
-    ----------
-    eps : (3,), (6,), (N,3) or (N,6) array
-         (3,) or (N,3): Principal strains;
-         (6,) or (N,6): Voigt strains
-         
-    Returns
-    -------
-    eeq : float or (N,) array
-        equivalent strains
-    
-    sh = np.shape(eps)
-    N = len(eps)
     if sh==(6,) or sh==(3,):
         eps = np.array([eps])
         N = 1
-    ev = np.sum(eps[:,0:3],axis=1)
-    ed = eps[:,0:3] - np.array([ev,ev,ev]).T
-    eeq = np.sqrt(np.sum(ed*ed,axis=1)+ed[:,0]*ed[:,1]+ed[:,1]*ed[:,2]+ed[:,2]*ed[:,0])
-    #if sh==(N,6):
-    #    eeq = np.sqrt(np.sum(eps[:,0:3]*eps[:,0:3],axis=1)+eps[:,0]*eps[:,1]+eps[:,1]*eps[:,2]+eps[:,2]*eps[:,0]+2*np.sum(eps[:,3:6]*eps[:,3:6],axis=1))
+    else:
+        N = len(eps)
+    #ev = np.sum(eps[:,0:3],axis=1)
+    #ed = eps[:,0:3] - np.array([ev,ev,ev]).T
+    if sh==(6,) or sh==(N,6):
+        eeq = np.sqrt(2.*(np.sum(eps[:,0:3]*eps[:,0:3],axis=1)+0.5*np.sum(eps[:,3:6]*eps[:,3:6],axis=1))/3.)
+    elif sh==(3,) or sh==(N,3):
+        eeq = np.sqrt(2.*np.sum(eps[:,0:3]*eps[:,0:3],axis=1)/3.)
+    else:
+        print('*** eps_eq (N,sh): ',N,sh,sys._getframe().f_back.f_code.co_name)
+        raise FormatError('Error in eps_eq: Format not supported')
+
     if sh==(6,) or sh==(3,):
         eeq = eeq[0]
-    return eeq*2./np.sqrt(3.)'''
+    return eeq
+    
 
-'========================='
-'define class for stresses'
-'========================='
+#=========================
+#define class for stresses
+#=========================
 class Stress(object):
     '''Stores and converts Voigt stress tensors into different formats, 
     calculates principle stresses, equivalent stresses and transforms into cylindrical coordinates.
@@ -258,6 +237,7 @@ class Stress(object):
         self.princ, self.evec = np.linalg.eig(self.tens)
         self.p=self.princ
         self.h=self.hydrostatic = np.sum(self.p)/3.
+        self.d=self.dev = sv - np.array([self.h, self.h, self.h, 0., 0., 0.])
             
     def seq(self, mat):
         '''calculate Hill-type equivalent stress, invokes corresponding method of class ``Material``
@@ -323,9 +303,9 @@ class Stress(object):
         return la
 
     
-'======================='
-'define class for strain'
-'======================='
+#=======================
+#define class for strain
+#=======================
 class Strain(object):
     '''Stores and converts Voigt strain tensors into different formats, 
     calculates principle strain and equivalent strain.
@@ -368,4 +348,16 @@ class Strain(object):
         '''
         eeq=eps_eq(self.v)
         return eeq
+        
+    def inv(self):
+        '''Calculate inverse of strain tensor ignoring zeros.
+        
+        Returns
+        -------
+        inv : (6,) array
+        '''
+        inv = np.zeros(6)
+        for i in range(6):
+            if np.abs(self.voigt[i])>1.e-9 : inv[i] = 1./self.voigt[i]
+        return inv
  
