@@ -1,10 +1,10 @@
 
-
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Index &#8212; pyLabFEA 2.0.53 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -42,12 +42,14 @@
  | <a href="#E"><strong>E</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#J"><strong>J</strong></a>
  | <a href="#K"><strong>K</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
+ | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
@@ -71,6 +73,8 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#basic.b_vec">b_vec (in module basic)</a>
+</li>
+      <li><a href="pyLabFEA.html#material.Material.barlat">barlat (material.Material attribute)</a>
 </li>
       <li>
     basic
@@ -119,6 +123,8 @@
 </li>
       <li><a href="pyLabFEA.html#material.Material.calc_seq">calc_seq() (material.Material method)</a>
 </li>
+      <li><a href="pyLabFEA.html#material.Material.calc_seqB">calc_seqB() (material.Material method)</a>
+</li>
       <li><a href="pyLabFEA.html#material.Material.calc_yf">calc_yf() (material.Material method)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.create_sig_data">create_sig_data() (material.Material method)</a>
@@ -131,12 +137,27 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    data
+
+      <ul>
+        <li><a href="pyLabFEA.html#module-3">module</a>
+</li>
+      </ul></li>
+      <li><a href="pyLabFEA.html#data.Data">Data (class in data)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set">Data.Set (class in data)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set.db">db (data.Data.Set attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.dep">dep (data.Data attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.Element.depl">depl() (model.Model.Element method)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.deps">deps() (model.Model.Element method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#model.Model.dim">dim (model.Model attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.dsig">dsig() (model.Model.Element method)</a>
@@ -147,6 +168,8 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.E_av">E_av (data.Data attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#basic.Strain.eeq">eeq() (basic.Strain method)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.egl">egl (model.Model attribute)</a>
@@ -161,6 +184,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.epc">epc (data.Data attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.epgl">epgl (model.Model attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.epl">epl (model.Model.Element attribute)</a>
@@ -181,9 +206,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#model.Model.f">f (model.Model attribute)</a>
 </li>
+      <li><a href="pyLabFEA.html#data.Data.Set.f_yld_">f_yld_ (data.Data.Set attribute)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#material.Material.find_yloc">find_yloc() (material.Material method)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.flow_stress">flow_stress (data.Data attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -200,6 +229,20 @@
       <li><a href="pyLabFEA.html#model.Model.Element.gpx">gpx (model.Model.Element attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.gpy">gpy (model.Model.Element attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.Set.i_el_">i_el_ (data.Data.Set attribute)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.Set.i_pl_">i_pl_ (data.Data.Set attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#basic.Strain.inv">inv() (basic.Strain method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -223,6 +266,8 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.Set.lc_">lc_ (data.Data.Set attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.Element.Lelx">Lelx (model.Model.Element attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.Lely">Lely (model.Model.Element attribute)</a>
@@ -232,6 +277,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#model.Model.leny">leny (model.Model attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set.load_case">load_case (data.Data.Set attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#basic.Stress.lode_ang">lode_ang() (basic.Stress method)</a>
 </li>
@@ -246,6 +293,8 @@
       <li><a href="pyLabFEA.html#model.Model.mat">mat (model.Model attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.Mat">Mat (model.Model.Element attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.mat_param">mat_param (data.Data attribute)</a>
 </li>
       <li>
     material
@@ -266,8 +315,6 @@
 </li>
       <li><a href="pyLabFEA.html#material.Material.ML_yf">ML_yf (material.Material attribute)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li>
     model
 
@@ -275,6 +322,8 @@
         <li><a href="pyLabFEA.html#module-1">module</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#model.Model">Model (class in model)</a>
 
       <ul>
@@ -289,12 +338,16 @@
       <ul>
         <li><a href="pyLabFEA.html#module-0">basic</a>
 </li>
+        <li><a href="pyLabFEA.html#module-3">data</a>
+</li>
         <li><a href="pyLabFEA.html#module-2">material</a>
 </li>
         <li><a href="pyLabFEA.html#module-1">model</a>
 </li>
       </ul></li>
       <li><a href="pyLabFEA.html#material.Material.msg">msg (material.Material attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.msl">msl (data.Data attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.msparam">msparam (material.Material attribute)</a>
 </li>
@@ -304,7 +357,17 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyLabFEA.html#material.Material.name">name (material.Material attribute)</a>
+      <li><a href="pyLabFEA.html#data.Data.Set.N">N (data.Data.Set attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.name">name (data.Data attribute)</a>
+
+      <ul>
+        <li><a href="pyLabFEA.html#data.Data.Set.name">(data.Data.Set attribute)</a>
+</li>
+        <li><a href="pyLabFEA.html#material.Material.name">(material.Material attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="pyLabFEA.html#data.Data.Set.Ndat">Ndat (data.Data.Set attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.Ndof">Ndof (material.Material attribute)</a>
 
@@ -316,10 +379,12 @@
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.ngp">ngp (model.Model.Element attribute)</a>
 </li>
-      <li><a href="pyLabFEA.html#model.Model.Nnode">Nnode (model.Model attribute)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.Set.Nlc">Nlc (data.Data.Set attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#model.Model.Nnode">Nnode (model.Model attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.Element.node_num">node_num() (model.Model.Element method)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.Element.nodes">nodes (model.Model.Element attribute)</a>
@@ -332,12 +397,22 @@
 </li>
       <li><a href="pyLabFEA.html#model.Model.Nsec">Nsec (model.Model attribute)</a>
 </li>
+      <li><a href="pyLabFEA.html#data.Data.Nset">Nset (data.Data attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.nu_av">nu_av (data.Data attribute)</a>
+</li>
   </ul></td>
 </tr></table>
 
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.pd">pd (data.Data attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set.peeq_">peeq_ (data.Data.Set attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.pj">pj (data.Data attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.planestress">planestress (model.Model attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.plasticity">plasticity() (material.Material method)</a>
@@ -346,19 +421,35 @@
 </li>
       <li><a href="pyLabFEA.html#material.Material.plot_data">plot_data() (material.Material method)</a>
 </li>
-      <li><a href="pyLabFEA.html#material.Material.plot_stress_strain">plot_stress_strain() (material.Material method)</a>
+      <li><a href="pyLabFEA.html#data.Data.Set.plot_set">plot_set() (data.Data.Set method)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyLabFEA.html#material.Material.plot_yield_locus">plot_yield_locus() (material.Material method)</a>
+      <li><a href="pyLabFEA.html#material.Material.plot_stress_strain">plot_stress_strain() (material.Material method)</a>
 </li>
+      <li><a href="pyLabFEA.html#data.Data.plot_yield_locus">plot_yield_locus() (data.Data method)</a>
+
+      <ul>
+        <li><a href="pyLabFEA.html#material.Material.plot_yield_locus">(material.Material method)</a>
+</li>
+      </ul></li>
       <li><a href="pyLabFEA.html#basic.polar_ang">polar_ang() (in module basic)</a>
+</li>
+      <li><a href="pyLabFEA.html#material.Material.polar_plot_yl">polar_plot_yl() (material.Material method)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.prop">prop (material.Material attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.propJ2">propJ2 (material.Material attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#basic.ptol">ptol (in module basic)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="R">R</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#material.Material.response">response() (material.Material method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -374,6 +465,8 @@
 </li>
       <li><a href="pyLabFEA.html#basic.seq_J2">seq_J2() (in module basic)</a>
 </li>
+      <li><a href="pyLabFEA.html#data.Data.set">set (data.Data attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#material.Material.set_texture">set_texture() (material.Material method)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.set_workhard">set_workhard() (material.Material method)</a>
@@ -384,11 +477,15 @@
 </li>
       <li><a href="pyLabFEA.html#model.Model.setupK">setupK() (model.Model method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.Set.sfc_">sfc_ (data.Data.Set attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.sgl">sgl (model.Model attribute)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#model.Model.Element.sig">sig (model.Model.Element attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set.sig_">sig_ (data.Data.Set attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.sigeps">sigeps (material.Material attribute)</a>
 </li>
@@ -402,7 +499,15 @@
 </li>
       <li><a href="pyLabFEA.html#basic.Stress">Stress (class in basic)</a>
 </li>
-      <li><a href="pyLabFEA.html#material.Material.sy">sy (material.Material attribute)</a>
+      <li><a href="pyLabFEA.html#data.Data.Set.sy">sy (data.Data.Set attribute)</a>
+
+      <ul>
+        <li><a href="pyLabFEA.html#material.Material.sy">(material.Material attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="pyLabFEA.html#data.Data.sy_av">sy_av (data.Data attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set.syc">syc (data.Data.Set attribute)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -410,6 +515,8 @@
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#data.Data.Set.texture_param">texture_param (data.Data.Set attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#basic.Stress.theta">theta() (basic.Stress method)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.thick">thick (model.Model attribute)</a>
@@ -418,7 +525,7 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#material.Material.train_SVC">train_SVC() (material.Material method)</a>
 </li>
-      <li><a href="pyLabFEA.html#material.Material.Tresca">Tresca (material.Material attribute)</a>
+      <li><a href="pyLabFEA.html#material.Material.tresca">tresca (material.Material attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#material.Material.txdat">txdat (material.Material attribute)</a>
 </li>
@@ -430,10 +537,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="pyLabFEA.html#model.Model.u">u (model.Model attribute)</a>
 </li>
-      <li><a href="pyLabFEA.html#model.Model.ubcright">ubcright (model.Model attribute)</a>
+      <li><a href="pyLabFEA.html#data.Data.Set.ubc">ubc (data.Data.Set attribute)</a>
+</li>
+      <li><a href="pyLabFEA.html#data.Data.Set.ubc_">ubc_ (data.Data.Set attribute)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="pyLabFEA.html#model.Model.ubcright">ubcright (model.Model attribute)</a>
+</li>
       <li><a href="pyLabFEA.html#model.Model.ubctop">ubctop (model.Model attribute)</a>
 </li>
       <li><a href="pyLabFEA.html#model.Model.ubot">ubot (model.Model attribute)</a>
@@ -521,7 +632,7 @@
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.0.0</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

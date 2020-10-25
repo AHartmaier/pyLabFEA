@@ -25,3 +25,11 @@ Module Material
    :undoc-members:
    :show-inheritance:
 
+Module Data
+-----------
+
+.. automodule:: data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
