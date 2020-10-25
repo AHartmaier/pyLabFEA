@@ -27,7 +27,7 @@ def test_plasticity():
     
 def test_workhard():
     # check if work hardening is implemented correctly
-    assert np.abs(mat3.propJ2['stx']['seq'][-1] - 348.99999999999835) < 1E-5
+    assert np.abs(mat3.propJ2['stx']['seq'][-1] - 348.99994442298805) < 1E-5
     assert np.abs(mat3.propJ2['sty']['peeq'][-1] - 0.09883666666666659) < 1E-5
     assert np.abs(mat3.sigeps['et2']['sig'][-1][0] - 308.1781914893608) < 1E-5
     assert np.abs(mat3.sigeps['ect']['sig'][-1][0] + 192.86329081219714) < 1E-5
