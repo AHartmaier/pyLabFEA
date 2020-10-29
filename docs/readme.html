@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Overview &#8212; pyLabFEA 2.0.53 documentation</title>
+    <title>Technical guide &#8212; pyLabFEA 2.0.53 documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -16,7 +16,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Notebooks" href="examples.html" />
-    <link rel="prev" title="pyLabFEA documentation" href="index.html" />
+    <link rel="prev" title="Python Laboratory for Finite Element Analysis (pyLabFEA)" href="index.html" />
    
   <link rel="stylesheet" href="_static/custom.css" type="text/css" />
   
@@ -33,36 +33,21 @@
 
           <div class="body" role="main">
             
-  <div class="section" id="overview">
-<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
-<div class="section" id="python-laboratory-for-finite-element-analysis-pylabfea">
-<h2>Python Laboratory for Finite Element Analysis (pyLabFEA)<a class="headerlink" href="#python-laboratory-for-finite-element-analysis-pylabfea" title="Permalink to this headline">¶</a></h2>
-<dl class="field-list simple">
-<dt class="field-odd">Author</dt>
-<dd class="field-odd"><p>Alexander Hartmaier</p>
-</dd>
-<dt class="field-even">Organization</dt>
-<dd class="field-even"><p>ICAMS, Ruhr University Bochum, Germany</p>
-</dd>
-<dt class="field-odd">Contact</dt>
-<dd class="field-odd"><p><a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a></p>
-</dd>
-</dl>
-<p>Finite Element Analysis (FEA) is a numerical method for studying
-mechanical behavior of fluids and solids. The pyLabFEA package introduces a simple version
-of FEA for solid mechanics and elastic-plastic materials, which is
-fully written in Python. Due to its simplicity, it is well-suited for teaching, and
-its flexibility in constitutive modeling of materials makes it a useful
-research tool.</p>
-</div>
+  <div class="section" id="technical-guide">
+<h1>Technical guide<a class="headerlink" href="#technical-guide" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
-<p>The pyLabFEA package is installed with the following command</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install .
+<p>The pyLabFEA package can be downloaded from its <a class="reference external" href="https://github.com/AHartmaier/pyLabFEA.git">GitHub repository</a> and
+is simply installed with the following command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install . --user
 </pre></div>
 </div>
 <p>After this, the package can by imported into python scripts with</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea</span> <span class="k">as</span> <span class="nn">FE</span>
+</pre></div>
+</div>
+<p>The correct implementation can be tested with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pytest tests
 </pre></div>
 </div>
 </div>
@@ -134,10 +119,9 @@ Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#python-laboratory-for-finite-element-analysis-pylabfea">Python Laboratory for Finite Element Analysis (pyLabFEA)</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Technical guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#jupyter-notebooks">Jupyter notebooks</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
@@ -154,7 +138,7 @@ Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
 <h3>Related Topics</h3>
 <ul>
   <li><a href="index.html">Documentation overview</a><ul>
-      <li>Previous: <a href="index.html" title="previous chapter">pyLabFEA documentation</a></li>
+      <li>Previous: <a href="index.html" title="previous chapter">Python Laboratory for Finite Element Analysis (pyLabFEA)</a></li>
       <li>Next: <a href="examples.html" title="next chapter">Notebooks</a></li>
   </ul></li>
 </ul>

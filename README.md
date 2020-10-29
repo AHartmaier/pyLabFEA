@@ -18,7 +18,7 @@ constitutive modeling of materials makes it a useful research tool.
 The pyLabFEA package is installed with the following command
 
 ```
-$ python -m pip install .
+$ python -m pip install . --user
 ```
 
 After this, the package can by imported with

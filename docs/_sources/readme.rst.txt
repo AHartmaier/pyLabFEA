@@ -1,35 +1,30 @@
-Overview
-========
-
-Python Laboratory for Finite Element Analysis (pyLabFEA)
---------------------------------------------------------
-
-:Author: Alexander Hartmaier
-:Organization: ICAMS, Ruhr University Bochum, Germany
-:Contact: alexander.hartmaier@rub.de
-
-Finite Element Analysis (FEA) is a numerical method for studying
-mechanical behavior of fluids and solids. The pyLabFEA package introduces a simple version
-of FEA for solid mechanics and elastic-plastic materials, which is
-fully written in Python. Due to its simplicity, it is well-suited for teaching, and
-its flexibility in constitutive modeling of materials makes it a useful 
-research tool.
-
+Technical guide
+===============
 
 Installation
 ------------
 
-The pyLabFEA package is installed with the following command
+The pyLabFEA package can be downloaded from its `GitHub repository`_ and 
+is simply installed with the following command
+
+.. _Github repository: https://github.com/AHartmaier/pyLabFEA.git
 
 ::
 
-   $ python -m pip install .
+   $ python -m pip install . --user
 
 After this, the package can by imported into python scripts with
 
 .. code:: python
 
    import pylabfea as FE
+   
+The correct implementation can be tested with
+
+::
+
+    $ pytest tests
+
 
    
 Jupyter notebooks

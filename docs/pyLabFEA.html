@@ -41,7 +41,7 @@ equivalent stresses and strain, conversions of
 cylindrical to principal stresses and vice versa, and the classes <code class="docutils literal notranslate"><span class="pre">Stress</span></code> and <code class="docutils literal notranslate"><span class="pre">Strain</span></code>
 for efficient operations with these quantities.</p>
 <p>uses NumPy</p>
-<p>Version: 3.1 (2020-10-25)
+<p>Version: 3.2 (2020-10-26)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
@@ -362,7 +362,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 contains that attributes and methods needed in FEA. Materials are defined in
 module pylabfea.material</p>
 <p>uses NumPy, SciPy, MatPlotLib</p>
-<p>Version: 3.1 (2020-10-25)
+<p>Version: 3.2 (2020-10-26)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
@@ -1259,7 +1259,7 @@ machine learning algorithms as yield functions for plasticity.
 The module pylabfea.model is used to calculate mechanical properties of a defined material
 under various loading conditions.</p>
 <p>uses NumPy, MatPlotLib, sklearn and pyLabFEA.model</p>
-<p>Version: 3.1 (2020-10-25)
+<p>Version: 3.2 (2020-10-26)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
@@ -2017,9 +2017,10 @@ support vectors, i.e., to more short ranged kernels (optional, default: 4)</p></
 from virtual or physical mechanical tests in the pyLabFEA package. This class provides the
 methods necessary for analyzing data. During this processing, all information is gathered
 that is required to define a material, i.e., all parameters for elasticity, plasticity,
-and microstructures are provided from the data.</p>
-<p>uses NumPy, SciPy, MatPlotLib</p>
-<p>Version: 2.1 (2020-04-05)
+and microstructures are provided from the data. Materials are defined in
+module pylabfea.material based on the analyzed data of this module.</p>
+<p>uses NumPy, SciPy, MatPlotLib, Pandas</p>
+<p>Version: 3.2 (2020-10-26)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>

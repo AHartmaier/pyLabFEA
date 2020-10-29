@@ -41,7 +41,7 @@
 
 <span class="sd">uses NumPy, MatPlotLib, sklearn and pyLabFEA.model</span>
 
-<span class="sd">Version: 3.1 (2020-10-25)</span>
+<span class="sd">Version: 3.2 (2020-10-26)</span>
 <span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020</span>
 <span class="sd">Email: alexander.hartmaier@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
@@ -1182,6 +1182,7 @@
 <span class="sd">            yfun=0. # catch error that can be produced for anisotropic materials&#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="p">(</span><span class="n">yfun</span><span class="o">&lt;=</span><span class="n">ptol</span><span class="p">):</span>
             <span class="n">pdot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: Test for small stresses will be depracted in next version&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
             <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fgrad</span><span class="p">(</span><span class="n">Stress</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
@@ -1827,9 +1828,9 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../readme.html">Technical guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Notebooks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../pyLabFEA.html">Modules</a></li>
 </ul>
