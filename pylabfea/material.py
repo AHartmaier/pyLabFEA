@@ -7,7 +7,7 @@ under various loading conditions.
 
 uses NumPy, MatPlotLib, sklearn and pyLabFEA.model
 
-Version: 3.1 (2020-10-25)
+Version: 3.2 (2020-12-30)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -43,6 +43,10 @@ class Material(object):
         Existence of trained ML gradient (default: False)
     tresca  : Boolean
         Indicate if Tresca equivalent stress should be used (default: False)
+    hill_3p  : Boolean
+        Indicates whether 3-paramater Hill model should be used (default: False)
+    hill_6p  : Boolean
+        Indicates whether 6-paramater Hill model should be used (default: False)
     barlat  : Boolean
         Indicate if Barlat equivalent stress should be used (default: False)
     msg     : dictionary
@@ -65,6 +69,8 @@ class Material(object):
         Indicates existance of texture data for yield stress
     Ndof   : int
         degress of freedom for yield function, mandatory: 1:seq, 2:theta; optional: 3:work_hard, 4:texture)
+    smooth : Boolean
+        Indicates whether ML gradient is smoothened (default: False)
         
     Keyword Arguments
     -----------------
@@ -84,7 +90,7 @@ class Material(object):
         Store data on microstructure parameters: 'Npl', 'Nlc, 'Ntext', 'texture', 'peeq_max', 'work_hard', 'flow_stress' 
         are obtained from data analysis module. Other parameters can be added.
     msg :
-        Messages that can be retrieved: 'yield_fct', 'gradient', 'nsteps'
+        Messages that can be retrieved: 'yield_fct', 'gradient', 'nsteps', 'equiv'
     '''
     #Methods
     #elasticity: define elastic material parameters C11, C12, C44
@@ -103,10 +109,12 @@ class Material(object):
         self.txdat = False
         self.Ndof = 2
         self.smooth = False # smoothing of ML gradient
+        self.hill_6p = False
         self.msg = {
             'yield_fct' : None,
             'gradient'  : None,
-            'nsteps' : 0
+            'nsteps' : 0,
+            'equiv'  : None
         }
         self.prop = {    # stores strength and stress-strain data along given load paths
             'stx'   : {'ys':None,'seq':None,'eeq':None,'peeq':None,'style':None,'name':None},
@@ -406,12 +414,12 @@ class Material(object):
         test_sc  : float
             test score
         '''
-        'transformation of princ. stress into cyl. coordinates'
+        #transformation of princ. stress into cyl. coordinates
         self.gam_yf = gamma
         if self.msparam is None:
             self.scale_seq = self.sy
         else:
-            'calculate scaling factors need for SVC training from microstructure parameters'
+            #calculate scaling factors need for SVC training from microstructure parameters
             self.scale_seq = 0.
             self.scale_wh  = 0.
             self.scale_text = np.zeros(self.Nset)
@@ -420,15 +428,15 @@ class Material(object):
                 self.scale_wh  += (np.average(self.msparam[i]['work_hard'])-self.epc)/self.Nset
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
-        sh = np.shape(x)
+        #sh = np.shape(x)
         X_train = np.zeros((N,self.Ndof))
         if not cyl:
-            'princ. stresses'
+            #princ. stresses
             X_train[:,0] = seq_J2(x)/self.scale_seq - 1.
             X_train[:,1] = polar_ang(x)/np.pi
             print('Using principle stresses for training')
         else:
-            'cylindrical stresses'
+            #cylindrical stresses
             X_train[:,0] = x[:,0]/self.scale_seq - 1.
             X_train[:,1] = x[:,1]/np.pi
             print('Using cyclindrical stresses for training')
@@ -442,7 +450,7 @@ class Material(object):
                 X_train[:,ih+i] = x[:,ih+i]/self.scale_text[i] - 1.
                 print('Using texture data "%s" for training: %i data sets with texture_parameters in range [%4.2f,%4.2f]' 
                       % (self.msparam[i]['ms_type'], self.msparam[i]['Ntext'], self.msparam[i]['texture'][0], self.msparam[i]['texture'][-1]))
-        'copy left and right borders to enforce periodicity in theta'
+        #copy left and right borders to enforce periodicity in theta
         indr = np.nonzero(X_train[:,1]>1.-fs)
         indl = np.nonzero(X_train[:,1]<fs-1.)
         Xr = X_train[indr]
@@ -453,7 +461,7 @@ class Material(object):
         yh = np.append(y_train[indr], y_train[indl], axis=0)
         X_train = np.append(X_train, Xh, axis=0)
         y_train = np.append(y_train, yh, axis=0)
-        'coordinate transformation for test data'
+        #coordinate transformation for test data
         if x_test is not None:
             Ntest = len(x_test)
             X_test = np.zeros((Ntest,self.Ndof))
@@ -720,16 +728,36 @@ class Material(object):
                 fgrad[i,:] = Jac(sig[i,:]) @ np.array([1,dKdt,0])
             self.msg['gradient'] = 'gradient to ML_yf'
         else:
+            # calculate analytical gradient based on the active material formulation 
+            # standard: Hill definition of equiv. stress, which contains isotropic J2 equiv. stress
+            # as special case.
+            # currently implemented: J2, 3-parameter Hill (only principal stresses), 6-parameter Hill full stress tensor
+            # no gradient yet for Barlat and Tresca, numerical gradient
             h0 = self.hill[0]
             h1 = self.hill[1]
             h2 = self.hill[2]
+            if self.hill_6p:
+                    h3 = 2.*self.hill[3]
+                    h4 = 2.*self.hill[4]
+                    h5 = 2.*self.hill[5]
             d3 = self.drucker/3.
             if (seq is None):
                 seq = self.calc_seq(sig)
-            fgrad[:,0] = ((h0+h2)*sig[:,0] - h0*sig[:,1] - h2*sig[:,2])/seq + d3
-            fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/seq + d3
-            fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/seq + d3
-            self.msg['gradient'] = 'analytical'
+            if not self.hill_6p:
+                fgrad[:,0] = ((h0+h2)*sig[:,0] - h0*sig[:,1] - h2*sig[:,2])/seq + d3
+                fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/seq + d3
+                fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/seq + d3
+            if self.hill_6p:
+                if h0==h1==h2==1. and h3==h4==h5==6.:
+                    label = 'analytical, J2 isotropic, 6-parameter Hill'
+                else:
+                    label = 'analytical, 6-parameter Hill'
+            else:
+                if h0==h1==h2==1.:
+                    label = 'analytical, J2 isotropic, princ. stress'
+                else:
+                    label = 'analytical, 3-parameter Hill, princ. stress'
+            self.msg['gradient'] = label
         if sh==(3,):
             fgrad = fgrad[0,:]
         return fgrad
@@ -767,68 +795,132 @@ class Material(object):
         self.svm_grad2.fit(X_grad_train, y_grad_train2)
         self.ML_grad = True
 
-    def calc_seq(self, sprinc):
-        '''Calculate generalized equivalent stress from pricipal stresses;
-        equivalent to J2 for isotropic flow behavior and tension compression invariance;
+    def calc_seq(self, sig):
+        '''Calculate generalized equivalent stress from stress tensor;
+        equivalent J2 stress for isotropic flow behavior and tension compression invariance;
         Hill-type approach for anisotropic plastic yielding;
-        Drucker-like approach for tension-compression assymetry
+        Drucker-like approach for tension-compression asymmetry;
+        Barlat 2004-18p model for plastic anisotropy
+        
+        Step 1: transform input into 
+        (i)   sig: (N,6)-array of Voigt stresses (zeros added if input is  pric. stresses)
+        (ii)  sp: (N,3)-array of principal stresses
+        (iii) evec: (N,3,3)-array of stress eigenvectors/rotation matrices
+              in principal coordinate system (None if input is princ. stresses)
+        N=1 if input is single stress in which case return value is float
+        
+        Step 2: Call appropriate subroutines for evaluation of equiv. stress
+        Currently supported are: 
+        (i)   von Mises/J2 (material independent, works also for elastic materials)
+        (ii)  Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)
+              (works only in conjunction with appropriate plasticity definition)
+        (iii) Barlat Yld2004-18p (only in conjunction with appropriate plasticity)
+        
+        Step 3: If input is full Voigt stress tensor and 3-p Hill model (hill_3p) is used,
+        rotate tensor defined by Hill parameters into principal stress coordinate system
 
         Parameters
         ----------
-        sprinc : (3,), (N,3) or (N,6) array
-            Principal stress values
+        sig : (3,), (6,), (N,3) or (N,6) array
+            Stress values (for dim=3 principal stresses are assumed, otherwise Voigt stress)
 
         Returns
         -------
         seq : float or (N,) array
             Hill-Drucker-type equivalent stress
         '''
-        N = len(sprinc)
-        sh = np.shape(sprinc)
-        sig = sprinc
-        if sh==(3,) or sh==(6,):
-            N = 1 # sprinc is single principle stress vector
-            sprinc=np.array([sprinc])
+        N = len(sig)
+        sh = np.shape(sig)
+        #Step 1: Transform input
+        if sh==(3,):
+            N = 1 # sp is single principle stress vector
+            sp=np.array([sig])
+            sig = np.array([[sig[0], sig[1], sig[2], 0, 0,0]])
+            evec = None
+        elif sh==(N,3):
+            sp  = np.array(sig)
+            sig = np.append(sig,np.zeros((N,3)), axis=1)
+            evec = None
+        elif sh==(6,):
+            N = 1
+            hs = Stress(sig)
+            sp = np.array([hs.princ])
+            evec = np.array([hs.evec])
+            sig = np.array([sig])
         elif sh==(N,6):
-            sprinc=np.zeros((N,3))
-            for i in range(N):
-                sprinc[i,:] = Stress(sig[i,:]).p
-        elif sh!=(N,3):
+            sp, evec = sprinc(sig)
+        else:
             print('*** calc_seq: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
-            sys.exit('Error: Unknown format of stress in calc_seq')
+            raise TypeError('Unknown format of stress in calc_seq')
+            
+        #Step 2: call subroutines or evaluate von Mises/J2 equiv stress
         if self.tresca:
-            'calculate Tresca euiv. stress'
-            seq = np.amax(sprinc,axis=1) - np.amin(sprinc,axis=1)
+            #calculate Tresca equiv. stress
+            seq = np.amax(sp,axis=1) - np.amin(sp,axis=1)
         elif self.barlat:
+            #calculate Baralat equiv. stress
             seq = np.zeros(N)
-            if sh!=(N,6) and sh!=(6,):
-                sig = np.append(sig,np.zeros((N,3)), axis=1)
             for i in range(N):
                 seq[i] = self.calc_seqB(sig[i,:])
         else:
-            'calculate Hill or J2 equiv. stress (latter is default)'
-            d12 = sprinc[:,0] - sprinc[:,1]
-            d23 = sprinc[:,1] - sprinc[:,2]
-            d31 = sprinc[:,2] - sprinc[:,0]
+            # calculate J2 or Hill equiv. stress
+            I1  = np.sum(sp, axis=1)/3. # hydrostatic stress as 1st invariant
+            hp_const = True
             if (self.sy==None):
-                h0 = h1 = h2 = 1.
+                # elastic material
+                hp = np.ones(3)
                 d0 = 0.
             else:
-                h0 = self.hill[0]
-                h1 = self.hill[1]
-                h2 = self.hill[2]
+                hp = self.hill
                 d0 = self.drucker
+                if self.hill_3p and (evec is not None):
+                    # Step 3: # rotate anisotropy parameters into princ. stress frame
+                    # Rotation only necessary if 3-p Hill model is applied for 
+                    # full Voigt stress tensor and material is anisotropic
+                    hh = np.linalg.norm(hp-np.ones(3))
+                    if hh>1.e-5:
+                        hp = np.ones((N,3))
+                        hp_const = False
+                        for i in range(N):
+                            hp[i,:] = np.diag(evec[i,:,:]@np.diag(self.hill)@evec[i,:,:].T)
+                
             # consider anisotropy in flow behavior in second invariant in Hill-type approach
-            I2  = 0.5*(h0*np.square(d12) + h1*np.square(d23) + h2*np.square(d31))
-            # consider hydrostatic stresses for tension-compression assymetry
-            I1  = np.sum(sprinc[:,0:3], axis=1)/3.
+            if self.hill_6p:
+                # equiv. stress for full 6-parameter Hill model
+                hh = np.zeros((N,6))
+                hh[:,0:3] = I1[:,None]
+                sd = sig - hh # deviatoric stress tensor
+                I2 = hp[0]*np.square(sd[:,0]-sd[:,1]) + \
+                     hp[1]*np.square(sd[:,1]-sd[:,2]) + \
+                     hp[2]*np.square(sd[:,2]-sd[:,0]) + \
+                     6.*hp[3]*np.square(sd[:,3])      + \
+                     6.*hp[4]*np.square(sd[:,4])      + \
+                     6.*hp[5]*np.square(sd[:,5])
+                I2 *= 0.5
+                self.msg['equiv'] = '6-parameter Hill, full Voigt stress'
+                #print('Full stress', np.sqrt(I2))
+            else:
+                # standard: equiv. stress based on princ. stresses with 3-parameter Hill model
+                # calculate Hill or J2 equiv. stress (latter is default, all Hill parameters = 1)
+                d12 = sp[:,0] - sp[:,1]
+                d23 = sp[:,1] - sp[:,2]
+                d31 = sp[:,2] - sp[:,0]
+                if hp_const:
+                    I2 = 0.5*(hp[0]*np.square(d12) + hp[1]*np.square(d23) + hp[2]*np.square(d31))
+                    self.msg['equiv'] = '3-parameter Hill'
+                else:
+                    I2 = 0.5*(hp[:,0]*np.square(d12) + hp[:,1]*np.square(d23) + hp[:,2]*np.square(d31))
+                    self.msg['equiv'] = '3-parameter Hill, full Voigt stress'
+                #print('Princ. Stress', np.sqrt(I2))
+            # eqiv stress including hydrostatic stress for tension-compression assymetry
             seq  = np.sqrt(I2) + d0*I1   # generalized eqiv. stress
-        if sh==(3,) or sh==(6,):
+        if N==1:
             seq = seq[0]
         return seq
     
     def calc_seqB(self, sv):
-        '''Calculate equivalent stress based on Yld2004-18p yield function proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009
+        '''Calculate equivalent stress based on Yld2004-18p yield function 
+        proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009
         
         Parameters
         ----------
@@ -849,7 +941,7 @@ class Material(object):
         seq  = np.abs(Stp1[0]-Stp2[0])**a  + np.abs(Stp1[0]-Stp2[1])**a  + np.abs(Stp1[0]-Stp2[2])**a + \
                np.abs(Stp1[1]-Stp2[0])**a  + np.abs(Stp1[1]-Stp2[1])**a  + np.abs(Stp1[1]-Stp2[2])**a + \
                np.abs(Stp1[2]-Stp2[0])**a  + np.abs(Stp1[2]-Stp2[1])**a  + np.abs(Stp1[2]-Stp2[2])**a  
-        seq  = 0.5*seq**(1./a)
+        seq  = (0.25*seq)**(1./a)
         return seq
 
     def elasticity(self, C11=None, C12=None, C44=None, # standard parameters for crystals with cubic symmetry
@@ -874,9 +966,9 @@ class Material(object):
         '''
         if (E is not None):
             if (nu is None):
-                sys.exit('Error: Inconsistent definition of material parameters: Only E provided')
+                raise ValueError('Error: Inconsistent definition of material parameters: Only E provided')
             if ((C11 is not None)or(C12 is not None)or(C44 is not None)):
-                sys.exit('Error: Inconsistent definition of material parameters: E provided together with C_ij')
+                raise ValueError('Error: Inconsistent definition of material parameters: E provided together with C_ij')
             hh = E/((1.+nu)*(1.-2.*nu))
             self.C11 = (1.-nu)*hh
             self.C12 = nu*hh
@@ -886,25 +978,26 @@ class Material(object):
             self.CV = None
         elif (C11 is not None):
             if (nu is not None):
-                sys.exit('Error: Inconsistent definition of material parameters: nu provided together with C_ij')
+                raise ValueError('Error: Inconsistent definition of material parameters: nu provided together with C_ij')
             if ((C12 is None)or(C44 is None)):
-                sys.exit('Error: Inconsistent definition of material parameters: C_12 or C_44 values missing')
+                raise ValueError('Error: Inconsistent definition of material parameters: C_12 or C_44 values missing')
             self.C11 = C11
             self.C12 = C12
             self.C44 = C44
             self.nu = C12/(C11+C12)
             self.E = 2*C44*(1+self.nu) # only for isotropy
             self.CV = None
-            print('Warning: E and nu calculated from anisotropic elastic parameters')
+            print('***Warning: E and nu calculated from anisotropic elastic parameters')
         elif (CV is not None):
             self.CV = np.array(CV)
             self.nu = self.CV[0,1]/(self.CV[0,0]+self.CV[0,1])
             self.E = 2*self.CV[3,3]*(1+self.nu) # only for isotropy
             #print('Warning: E and nu calculated from anisotropic elastic parameters')
         else:
-            sys.exit('Error: Inconsistent definition of material parameters')
+            raise ValueError('Error: Inconsistent definition of material parameters')
 
-    def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0., tresca=False, barlat=None, barlat_exp=None):
+    def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0., tresca=False, barlat=None, \
+                   barlat_exp=None, hill_3p=None, hill_6p=False):
         '''Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
 
@@ -924,14 +1017,40 @@ class Material(object):
             Array with parameters for Barlat Yld2004-18p yield function (optional)
         barlat_exp : int
             Exponent for Barlat Yld2004-18p yield function (optional)
+        hill_3p : Boolean
+            Indicate if 3-parameter Hill model shall be applied (optional, default: None)
+            Will be set True automatically if 3 Hill paramaters != 1 are provided 
+        hill_6p : Boolean
+            Indicate if 6-parameter Hill model shall be applied (optional, default: False)
+            Will be set True automatically if 6 Hill parameters are provided
         '''
         self.sy0 = sy  # store initial yield strength of material
         self.sy = sy   # current yield strength (may be modified by texture)
         self.sflow = sy # initialize flow stress (will be increase with work hardening)
         self.khard = khard  # work hardening rate (linear w.h.)
         self.Hpr = khard/(1.-khard/self.E)  # constant for w.h.
-        self.hill = np.array(hill)  # Hill anisotropic parameters
         self.drucker = drucker   # Drucker-Prager parameter: weight of hydrostatic stress
+        self.hill = np.array(hill)  # Hill anisotropic parameters
+        # determine if 6-Hill parameters are provided
+        if hill_6p:
+            # Hill 6p set True by user
+            if len(hill)!=6:
+                raise ValueError('When hill_6p is set True, 6 Hill parameters must be provided')
+        else:
+            # set hill_6p automatically
+            hill_6p = (len(hill)==6)
+        self.hill_6p = hill_6p
+        # determine if 3p-Hill model needs to be used
+        if hill_3p is None:
+            hill_3p = not hill_6p
+            if hill_3p and (hill[0]==1.) and (hill[1]==1.) and (hill[2]==1.):
+                hill_3p = False
+        elif len(hill)!=3 and hill_3p:
+            raise ValueError('When hill_3p is set True, only 3 Hill parameters can be provided')
+        self.hill_3p = hill_3p
+        # set Trseca flag
+        if tresca is None:
+            tresca = False
         self.tresca = tresca
         if barlat is not None:
             self.barlat = True
@@ -950,6 +1069,8 @@ class Material(object):
                          [   0.,    0.,    0.,   0., barlat[16],  0.],
                          [   0.,    0.,    0.,   0.,  0., barlat[17]]])
             self.barlat_exp = barlat_exp
+        else:
+            self.barlat = False
 
     def microstructure(self, param, grain_size=None, grain_shape=None, porosity=None):
         '''Define microstructural parameters of the material: crstallographic texture, grain size, grain shape
@@ -980,10 +1101,10 @@ class Material(object):
             h3 = self.msparam[i]['Ntext'] != Ntext
             if h1 or h2 or h3:
                 print('Error: Structure of data set #',i,' is inconsistent:', Nlc, Npl, Ntext, h1, h2, h3)
-                sys.exit()
+                raise ValueError('Inconsistent data structure')
                 'Conditions can be relaxed by modifying train_SVC'
             if self.msparam[i]['epc'] != self.epc:
-                print('Warning in microscture: Inconsistent definition of yield onset in texture',i,'. Using eps_cr=',self.epc)
+                print('***Warning in microscture: Inconsistent definition of yield onset in texture',i,'. Using eps_cr=',self.epc)
         self.whdat=False if Npl==1 else True    # work hardening data exists
         self.txdat=False if Ntext==1 else True  # texture variations exist
         self.Ndof=3 if self.whdat else 2        # add dof for work hardening parameter if data exists
@@ -1021,10 +1142,10 @@ class Material(object):
         sm = np.sum(self.tx_cur) # sum of mixture parameters
         if sm>1. or sm<0.:
             print('Error: Microstructure parameters out of range:',sm, current)
-            sys.exit()
+            raise ValueError('Bad parameter range')
         if len(self.tx_cur) != self.Nset:
-            print('Error: Microstructure parametershave wrong dimension:',current, self.Nset)
-            sys.exit()
+            print('Error: Microstructure parameters have wrong dimension:',current, self.Nset)
+            raise ValueError('Wrong dimension of parameters')
         'calculate weight factor for each texture based on its mixture parameter'
         if sm<1.e-3:
             wght=np.ones(self.Nset)/self.Nset
@@ -1148,6 +1269,7 @@ class Material(object):
             yfun=0. # catch error that can be produced for anisotropic materials'''
         if (yfun<=ptol):
             pdot = np.zeros(6)
+            #print('WARNING: Test for small stresses will be depracted in next version')
         else:
             a = np.zeros(6)
             a[0:3] = self.calc_fgrad(Stress(sig).p)
@@ -1695,7 +1817,7 @@ class Material(object):
         return
     
     def polar_plot_yl(self, Na=72, cmat=None, data=None, dname='reference', scaling=None, 
-                      field=False, predict=False, cbar=False, Np=100, file=None):
+                      field=False, predict=False, cbar=False, Np=100, file=None, arrow=False):
         '''Plot yield locus as polar plot in deviatoric stress plane
         
         Parameters
@@ -1705,7 +1827,7 @@ class Material(object):
         cmat : list of materials
             Materials of which YL is plotted in same plot with same scaling (optional)
         data : (N,3) array
-            Array of principle stress added to plot (optional)
+            Array of cylindrical stress added to plot (optional)
         dname : str
             Label for data (optional, default: reference)
         scaling : float
@@ -1720,6 +1842,8 @@ class Material(object):
             Plot colorbar for field (optional, default: False)
         file  : str
             Name of PDF file to which plot is saved
+        arrow : Boolean
+            Indicate if arrows for the pricipal stress directions are shown (optional, default: False)
             
         '''
         if scaling is None:
@@ -1770,8 +1894,19 @@ class Material(object):
                 i += 1
         if data is not None:
             ax.plot(data[:,1],data[:,0]*sf,'.b', label=dname)
-
-        plt.legend(loc=(.9,0.95),fontsize=14)
+        if arrow:
+            dr = self.sy
+            drh = 0.08*dr
+            ax.arrow(0, 0, 0, dr, head_width=0.05, width=0.004, 
+                     head_length=drh, color='r', length_includes_head=True)
+            ax.text(-0.12, dr*0.89, '$\sigma_1$', color='r',fontsize=22)
+            ax.arrow(2.0944, 0, 0, dr, head_width=0.05,
+                     width=0.004, head_length=drh, color='r', length_includes_head=True)
+            ax.text(2.24, dr*0.94, '$\sigma_2$', color='r',fontsize=22)
+            ax.arrow(-2.0944, 0, 0, dr, head_width=0.05,
+                     width=0.004, head_length=drh, color='r', length_includes_head=True)
+            ax.text(-2.04, dr*0.97, '$\sigma_3$', color='r',fontsize=22)
+        plt.legend(loc=(.9,0.95),fontsize=18)
         if file is not None:
             plt.savefig(file+'.pdf', format='pdf', dpi=300)
         plt.show()

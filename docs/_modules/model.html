@@ -4,10 +4,10 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>model &#8212; pyLabFEA 2.0.53 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
@@ -156,6 +156,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">epgl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span> <span class="c1"># list for time evolution of global plastic strain</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">Nnode</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1">#SRM : named module glob exists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">glob</span> <span class="o">=</span> <span class="p">{</span>
             <span class="s1">&#39;ebc1&#39;</span>   <span class="p">:</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># global x-strain from BC</span>
@@ -593,7 +594,7 @@
             <span class="n">NY</span> <span class="o">=</span> <span class="mi">1</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Warning: NY=1 for 1-d model&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="c1">#print(&#39;Warning: solution of previous solution steps is deleted&#39;)</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;Warning: Solution of previous steps is deleted&#39;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">f</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">NnodeX</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shapefact</span><span class="o">*</span><span class="n">NX</span> <span class="o">+</span> <span class="mi">1</span>    <span class="c1"># number of nodes along x axis</span>
@@ -724,7 +725,7 @@
 <span class="sd">        Model.u     : (Model.Ndof,) array</span>
 <span class="sd">            Nodal displacements</span>
 <span class="sd">        Model.f     : (Model.Ndof,) array</span>
-<span class="sd">            Nodel forces</span>
+<span class="sd">            Nodal forces</span>
 <span class="sd">        Model.sgl   : (N,6) array</span>
 <span class="sd">            Global stress as as Voigt tensor for each incremental load step (homogenized element solution)</span>
 <span class="sd">        Model.egl   : (N,6) array</span>
@@ -738,6 +739,10 @@
 <span class="sd">        Element.epl : (6,) array</span>
 <span class="sd">            Element solution for plastic strain tensor</span>
 <span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1">#test if meshing has been performed</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">Nnode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Attributes for mesh not set, but required by solver.&#39;</span><span class="p">)</span>
+        
         <span class="c1">#calculate reduced stiffness matrix according to BC</span>
         <span class="k">def</span> <span class="nf">Kred</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">ind</span><span class="p">):</span>
             <span class="n">Kred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">ind</span><span class="p">)))</span>
@@ -1421,7 +1426,7 @@
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

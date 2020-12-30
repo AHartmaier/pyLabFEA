@@ -4,10 +4,10 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>basic &#8212; pyLabFEA 2.0.53 documentation</title>
-    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
     <script src="../_static/jquery.js"></script>
     <script src="../_static/underscore.js"></script>
@@ -46,10 +46,15 @@
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Strain&#39;</span><span class="p">,</span> <span class="s1">&#39;Stress&#39;</span><span class="p">,</span> <span class="s1">&#39;a_vec&#39;</span><span class="p">,</span> <span class="s1">&#39;b_vec&#39;</span><span class="p">,</span> <span class="s1">&#39;eps_eq&#39;</span><span class="p">,</span> <span class="s1">&#39;polar_ang&#39;</span><span class="p">,</span> <span class="s1">&#39;ptol&#39;</span><span class="p">,</span> 
-           <span class="s1">&#39;s_cyl&#39;</span><span class="p">,</span> <span class="s1">&#39;seq_J2&#39;</span><span class="p">,</span> <span class="s1">&#39;sp_cart&#39;</span><span class="p">]</span>
+           <span class="s1">&#39;s_cyl&#39;</span><span class="p">,</span> <span class="s1">&#39;seq_J2&#39;</span><span class="p">,</span> <span class="s1">&#39;sp_cart&#39;</span><span class="p">,</span> <span class="s1">&#39;svoigt&#39;</span><span class="p">,</span> <span class="s1">&#39;sprinc&#39;</span><span class="p">]</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="sd">&#39;&#39;&#39;try:</span>
+<span class="sd">    import quaternion</span>
+<span class="sd">    av_quater = True</span>
+<span class="sd">except:</span>
+<span class="sd">    av_quater = False&#39;&#39;&#39;</span>
 
 <span class="c1">#===================================</span>
 <span class="c1">#define global methods and variables</span>
@@ -61,7 +66,7 @@
 <span class="n">ptol</span> <span class="o">=</span> <span class="mf">3.e-3</span>
 <span class="sd">&#39;&#39;&#39;Tolerance: Plastic yielding if yield function &gt; ptol&#39;&#39;&#39;</span>
 <div class="viewcode-block" id="seq_J2"><a class="viewcode-back" href="../pyLabFEA.html#basic.seq_J2">[docs]</a><span class="k">def</span> <span class="nf">seq_J2</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Calculate J2 equivalent stress from principal stresses</span>
+    <span class="sd">&#39;&#39;&#39;Calculate J2 equivalent stress from any stress tensor</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -77,10 +82,10 @@
     <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sprinc is single principle stress vector</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is single principle stress vector</span>
         <span class="n">sprinc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
     <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
-        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sprinc is single Voigt stress</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is single Voigt stress</span>
         <span class="n">sprinc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Stress</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">p</span><span class="p">])</span>
     <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
         <span class="n">sprinc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
@@ -101,7 +106,7 @@
     <span class="k">return</span> <span class="n">seq</span></div>
 
 <div class="viewcode-block" id="polar_ang"><a class="viewcode-back" href="../pyLabFEA.html#basic.polar_ang">[docs]</a><span class="k">def</span> <span class="nf">polar_ang</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;Transform principal stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</span>
+    <span class="sd">&#39;&#39;&#39;Transform stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -129,16 +134,93 @@
         <span class="n">sprinc</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** polar_angle: N, sh&#39;</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">sh</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">FormatError</span><span class="p">(</span><span class="s1">&#39;Error: Unknown format of stress in polar_angle&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="n">TyeError</span><span class="p">(</span><span class="s1">&#39;Error: Unknown format of stress in polar_angle&#39;</span><span class="p">)</span>
     <span class="n">hyd</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sprinc</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span>  <span class="c1"># hydrostatic component</span>
-    <span class="n">dev</span> <span class="o">=</span> <span class="n">sprinc</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">hyd</span><span class="p">,</span> <span class="n">hyd</span><span class="p">,</span> <span class="n">hyd</span><span class="p">])</span><span class="o">.</span><span class="n">transpose</span><span class="p">()</span> <span class="c1"># deviatoric princ. stress</span>
-    <span class="n">vn</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#norms of stress vectors</span>
-    <span class="n">dsa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="n">a_vec</span><span class="p">)</span>
-    <span class="n">dsb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="n">b_vec</span><span class="p">)</span>
+    <span class="n">dev</span> <span class="o">=</span> <span class="n">sprinc</span> <span class="o">-</span> <span class="n">hyd</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span> <span class="c1"># deviatoric princ. stress</span>
+    <span class="n">vn</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>  <span class="c1">#norms of princ. stress vectors</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">vn</span><span class="o">&lt;</span><span class="mf">1.e-4</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">vn</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
+    <span class="n">dsa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dev</span><span class="o">/</span><span class="n">vn</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span><span class="n">a_vec</span><span class="p">)</span>
+    <span class="n">dsb</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">dev</span><span class="o">/</span><span class="n">vn</span><span class="p">[:,</span><span class="kc">None</span><span class="p">],</span><span class="n">b_vec</span><span class="p">)</span>
     <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">angle</span><span class="p">(</span><span class="n">dsa</span> <span class="o">+</span> <span class="mi">1</span><span class="n">j</span><span class="o">*</span><span class="n">dsb</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
         <span class="n">theta</span><span class="o">=</span><span class="n">theta</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">theta</span></div>
+
+<div class="viewcode-block" id="sprinc"><a class="viewcode-back" href="../pyLabFEA.html#basic.sprinc">[docs]</a><span class="k">def</span> <span class="nf">sprinc</span><span class="p">(</span><span class="n">sig</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Convert Voigt stress tensors into principal stresses and eigenvectors.</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    sig : (6,), (N,6), (3,3), or (N,3,3) array</span>
+<span class="sd">        Voigt stress tensor (dim=6) or Cartesian stress tensor (dim=3x3)</span>
+<span class="sd">        </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    spa : (3,) or (N,3) array</span>
+<span class="sd">        Principal stresses</span>
+<span class="sd">    eva : (3,3) or (N,3,3) array</span>
+<span class="sd">        Eigenvectors/rotation matrices of stress tensor</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is Cartesian single stress tensor</span>
+        <span class="n">st</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">st</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> <span class="c1"># sig is array of Cart. stress tensors</span>
+    <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is single Voigt stress</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">st</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">st</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">st</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        <span class="n">st</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">st</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">3</span><span class="p">]</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+            <span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="n">st</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">sig</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** sprinc: N, sh&#39;</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">sh</span><span class="p">,</span> <span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error: Unknown format of stress in sprinc&#39;</span><span class="p">)</span>
+        
+    <span class="c1">#calculate principal stresses and eigen vectors</span>
+    <span class="n">spa</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">eva</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">sp</span><span class="p">,</span> <span class="n">ev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">st</span><span class="p">[</span><span class="n">n</span><span class="p">])</span> <span class="c1"># solve eigenvalue problem </span>
+        <span class="c1">#arrange principal stress components according to major force axes</span>
+        <span class="n">iev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">ev</span><span class="p">),</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="n">i0</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iev</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span> <span class="c1"># positions of indices 0</span>
+        <span class="n">i1</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iev</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">i2</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">x</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">iev</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">k0</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i0</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">k0</span><span class="p">):</span>
+            <span class="n">j</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i0</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">i1</span><span class="p">)):</span>
+            <span class="n">j</span><span class="p">[</span><span class="n">k0</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">k0</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">i1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">i2</span><span class="p">)):</span>
+            <span class="n">j</span><span class="p">[</span><span class="n">k0</span><span class="o">+</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="n">ev</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ev</span><span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="mi">0</span><span class="p">],:],</span> <span class="n">ev</span><span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="mi">1</span><span class="p">],:],</span> <span class="n">ev</span><span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="mi">2</span><span class="p">],:]])</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sp</span><span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">sp</span><span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="n">sp</span><span class="p">[</span><span class="n">j</span><span class="p">[</span><span class="mi">2</span><span class="p">]]])</span>
+        <span class="c1">#ensure positive determinant</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">ev</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="n">ev</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">spa</span><span class="p">[</span><span class="n">n</span><span class="p">,:]</span> <span class="o">=</span> <span class="n">sp</span>
+        <span class="n">eva</span><span class="p">[</span><span class="n">n</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">ev</span>
+    <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
+        <span class="n">spa</span> <span class="o">=</span> <span class="n">spa</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">eva</span> <span class="o">=</span> <span class="n">eva</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span>
+    <span class="k">return</span> <span class="n">spa</span><span class="p">,</span> <span class="n">eva</span></div>
 
 <div class="viewcode-block" id="sp_cart"><a class="viewcode-back" href="../pyLabFEA.html#basic.sp_cart">[docs]</a><span class="k">def</span> <span class="nf">sp_cart</span><span class="p">(</span><span class="n">scyl</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;Convert cylindrical stress into 3D Cartesian vector of deviatoric principle stresses </span>
@@ -168,13 +250,41 @@
         <span class="n">sprinc</span><span class="o">=</span><span class="n">sprinc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">sprinc</span></div>
 
-<div class="viewcode-block" id="s_cyl"><a class="viewcode-back" href="../pyLabFEA.html#basic.s_cyl">[docs]</a><span class="k">def</span> <span class="nf">s_cyl</span><span class="p">(</span><span class="n">sprinc</span><span class="p">,</span> <span class="n">mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="svoigt"><a class="viewcode-back" href="../pyLabFEA.html#basic.svoigt">[docs]</a><span class="k">def</span> <span class="nf">svoigt</span><span class="p">(</span><span class="n">scyl</span><span class="p">,</span> <span class="n">evec</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Convert cylindrical stress and eigenvectors into Voigt stress tensor</span>
+<span class="sd">    </span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    scyl : (3,) or (N,3) array </span>
+<span class="sd">        Cylindrical stress in form (seq, theta, p)</span>
+<span class="sd">    evec : (3,3) or (N,3,3) array </span>
+<span class="sd">        Eigenvectors of stress tensor</span>
+<span class="sd">         </span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    svoigt : (6,) or (N,6) array</span>
+<span class="sd">        Voigt stress tensor</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1">#sh = np.shape(scyl) </span>
+    <span class="c1">#if sh==(3,):</span>
+    <span class="c1">#    scyl = np.array([scyl])</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">sp_cart</span><span class="p">(</span><span class="n">scyl</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">det</span><span class="p">(</span><span class="n">evec</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+        <span class="n">evec</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># enforce right-handed system of eigenvectors</span>
+    <span class="n">st</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>  <span class="c1"># diag. matrix of princ. stresses</span>
+    <span class="n">hh</span> <span class="o">=</span> <span class="n">evec</span><span class="nd">@st@evec</span><span class="o">.</span><span class="n">T</span>  <span class="c1"># rotate back into original stress frame</span>
+    <span class="n">svoigt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">hh</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span> <span class="n">hh</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="n">hh</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">hh</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">hh</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="n">hh</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span> 
+    <span class="c1">#if sh==(3,):</span>
+    <span class="c1">#    svoigt=svoigt[0]</span>
+    <span class="k">return</span> <span class="n">svoigt</span></div>
+
+<div class="viewcode-block" id="s_cyl"><a class="viewcode-back" href="../pyLabFEA.html#basic.s_cyl">[docs]</a><span class="k">def</span> <span class="nf">s_cyl</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">mat</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;convert principal stress into cylindrical stress vector </span>
 <span class="sd">    </span>
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    sprinc : (3,) or (N,3) array </span>
-<span class="sd">         principal stresses</span>
+<span class="sd">    sig : (3,), (6,), (N,3) or (N,6) array </span>
+<span class="sd">         stress to be converted, if (3,) or (N,3) principal stress is assumed</span>
 <span class="sd">    mat : object of class ``Material``</span>
 <span class="sd">        Material for Hill-type principal stress (optional) </span>
 <span class="sd">         </span>
@@ -183,19 +293,32 @@
 <span class="sd">    sc : (3,) or (N,3) array</span>
 <span class="sd">        stress in cylindrical coordinates (seq, theta, p)</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">sprinc</span><span class="p">)</span> 
-    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sprinc</span><span class="p">)</span>
+    <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span> 
+    <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-        <span class="n">sprinc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sprinc</span><span class="p">])</span>
+        <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is single principle stress vector</span>
+        <span class="n">sp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sig</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sig</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
+    <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">sp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
         <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">sp</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">Stress</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span><span class="o">.</span><span class="n">princ</span><span class="p">])</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
+        <span class="n">sp</span> <span class="o">=</span> <span class="n">sprinc</span><span class="p">(</span><span class="n">sig</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** s_cyl (N,sh): &#39;</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">sh</span><span class="p">,</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;Error in s_cyl: Format not supported&#39;</span><span class="p">)</span>
     <span class="n">sc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
     <span class="k">if</span> <span class="n">mat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">sc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq_J2</span><span class="p">(</span><span class="n">sprinc</span><span class="p">)</span>
+        <span class="n">sc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq_J2</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">sc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="n">sprinc</span><span class="p">)</span>
-    <span class="n">sc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">polar_ang</span><span class="p">(</span><span class="n">sprinc</span><span class="p">)</span>
-    <span class="n">sc</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sprinc</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span>
-    <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
+        <span class="n">sc</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+    <span class="n">sc</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">polar_ang</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span>
+    <span class="n">sc</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">sp</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span>
+    <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
         <span class="n">sc</span><span class="o">=</span><span class="n">sc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">return</span> <span class="n">sc</span></div>
 
@@ -227,7 +350,7 @@
         <span class="n">eeq</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">eps</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">eps</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*** eps_eq (N,sh): &#39;</span><span class="p">,</span><span class="n">N</span><span class="p">,</span><span class="n">sh</span><span class="p">,</span><span class="n">sys</span><span class="o">.</span><span class="n">_getframe</span><span class="p">()</span><span class="o">.</span><span class="n">f_back</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span><span class="p">)</span>
-        <span class="k">raise</span> <span class="n">FormatError</span><span class="p">(</span><span class="s1">&#39;Error in eps_eq: Format not supported&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Error in eps_eq: Format not supported&#39;</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
         <span class="n">eeq</span> <span class="o">=</span> <span class="n">eeq</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -268,10 +391,10 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">tens</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tens</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span><span class="o">=</span><span class="n">sv</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tens</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tens</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]</span><span class="o">=</span><span class="n">sv</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
         <span class="c1">#calcualte principal stresses and eigen vectors</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">princ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">evec</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tens</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">princ</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">hydrostatic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">d</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">sv</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">princ</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">evec</span> <span class="o">=</span> <span class="n">sprinc</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tens</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">p</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">princ</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">h</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hydrostatic</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span><span class="o">/</span><span class="mf">3.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dev</span> <span class="o">=</span> <span class="n">sv</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">,</span> <span class="mf">0.</span><span class="p">])</span>
             
 <div class="viewcode-block" id="Stress.seq"><a class="viewcode-back" href="../pyLabFEA.html#basic.Stress.seq">[docs]</a>    <span class="k">def</span> <span class="nf">seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mat</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;calculate Hill-type equivalent stress, invokes corresponding method of class ``Material``</span>
@@ -286,7 +409,10 @@
 <span class="sd">        seq : float</span>
 <span class="sd">            equivalent stress of Hill-type</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="n">seq</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mat</span><span class="o">.</span><span class="n">hill_6p</span><span class="p">:</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">v</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">seq</span> <span class="o">=</span> <span class="n">mat</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">seq</span></div>
     
 <div class="viewcode-block" id="Stress.theta"><a class="viewcode-back" href="../pyLabFEA.html#basic.Stress.theta">[docs]</a>    <span class="k">def</span> <span class="nf">theta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -310,6 +436,17 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">sJ2</span> <span class="o">=</span> <span class="n">seq_J2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">sJ2</span></div>
+    
+<div class="viewcode-block" id="Stress.cyl"><a class="viewcode-back" href="../pyLabFEA.html#basic.Stress.cyl">[docs]</a>    <span class="k">def</span> <span class="nf">cyl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Calculate cylindrical stress tensor</span>
+<span class="sd">        </span>
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        cyl : (3,) array</span>
+<span class="sd">            stress in cylindrical form: (J2 eqiv. stress, polar angle, hydrostatic)</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">cyl</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">seq_J2</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">),</span> <span class="n">polar_ang</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">p</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">h</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">cyl</span></div>
     
 <div class="viewcode-block" id="Stress.lode_ang"><a class="viewcode-back" href="../pyLabFEA.html#basic.Stress.lode_ang">[docs]</a>    <span class="k">def</span> <span class="nf">lode_ang</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Calculate Lode angle:  </span>
@@ -455,7 +592,7 @@
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

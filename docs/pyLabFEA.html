@@ -4,10 +4,10 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Modules &#8212; pyLabFEA 2.0.53 documentation</title>
-    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
     <script src="_static/jquery.js"></script>
     <script src="_static/underscore.js"></script>
@@ -175,6 +175,20 @@ calculates principle stresses, equivalent stresses and transforms into cylindric
 </dd></dl>
 
 <dl class="py method">
+<dt id="basic.Stress.cyl">
+<code class="sig-name descname">cyl</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress.cyl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress.cyl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate cylindrical stress tensor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p><strong>cyl</strong> – stress in cylindrical form: (J2 eqiv. stress, polar angle, hydrostatic)</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>(3,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt id="basic.Stress.lode_ang">
 <code class="sig-name descname">lode_ang</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">X</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress.lode_ang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.Stress.lode_ang" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate Lode angle:
@@ -274,7 +288,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 <dl class="py function">
 <dt id="basic.polar_ang">
 <code class="sig-prename descclassname">basic.</code><code class="sig-name descname">polar_ang</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#polar_ang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.polar_ang" title="Permalink to this definition">¶</a></dt>
-<dd><p>Transform principal stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</p>
+<dd><p>Transform stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>) </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,), (N,3): Principal stresses;
@@ -302,12 +316,12 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 
 <dl class="py function">
 <dt id="basic.s_cyl">
-<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">s_cyl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sprinc</span></em>, <em class="sig-param"><span class="n">mat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#s_cyl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.s_cyl" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">s_cyl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em>, <em class="sig-param"><span class="n">mat</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#s_cyl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.s_cyl" title="Permalink to this definition">¶</a></dt>
 <dd><p>convert principal stress into cylindrical stress vector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sprinc</strong> (<em>(</em><em>3</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – principal stresses</p></li>
+<li><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – stress to be converted, if (3,) or (N,3) principal stress is assumed</p></li>
 <li><p><strong>mat</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – Material for Hill-type principal stress (optional)</p></li>
 </ul>
 </dd>
@@ -323,7 +337,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 <dl class="py function">
 <dt id="basic.seq_J2">
 <code class="sig-prename descclassname">basic.</code><code class="sig-name descname">seq_J2</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#seq_J2"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.seq_J2" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate J2 equivalent stress from principal stresses</p>
+<dd><p>Calculate J2 equivalent stress from any stress tensor</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>) </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – (3,), (N,3): Principal stress or list of principal stresses;
@@ -351,6 +365,44 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.sprinc">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">sprinc</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#sprinc"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.sprinc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Voigt stress tensors into principal stresses and eigenvectors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>6</em><em>)</em><em>, </em><em>(</em><em>3</em><em>,</em><em>3</em><em>)</em><em>, or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Voigt stress tensor (dim=6) or Cartesian stress tensor (dim=3x3)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>spa</strong> (<em>(3,) or (N,3) array</em>) – Principal stresses</p></li>
+<li><p><strong>eva</strong> (<em>(3,3) or (N,3,3) array</em>) – Eigenvectors/rotation matrices of stress tensor</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="basic.svoigt">
+<code class="sig-prename descclassname">basic.</code><code class="sig-name descname">svoigt</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">scyl</span></em>, <em class="sig-param"><span class="n">evec</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#svoigt"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#basic.svoigt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert cylindrical stress and eigenvectors into Voigt stress tensor</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>scyl</strong> (<em>(</em><em>3</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Cylindrical stress in form (seq, theta, p)</p></li>
+<li><p><strong>evec</strong> (<em>(</em><em>3</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Eigenvectors of stress tensor</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>svoigt</strong> – Voigt stress tensor</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(6,) or (N,6) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1236,7 +1288,7 @@ are stored as attributes of class <code class="docutils literal notranslate"><sp
 <dt class="field-even">Yields</dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>Model.u</strong> (<em>(Model.Ndof,) array</em>) – Nodal displacements</p></li>
-<li><p><strong>Model.f</strong> (<em>(Model.Ndof,) array</em>) – Nodel forces</p></li>
+<li><p><strong>Model.f</strong> (<em>(Model.Ndof,) array</em>) – Nodal forces</p></li>
 <li><p><strong>Model.sgl</strong> (<em>(N,6) array</em>) – Global stress as as Voigt tensor for each incremental load step (homogenized element solution)</p></li>
 <li><p><strong>Model.egl</strong> (<em>(N,6) array</em>) – Global total strain as as Voigt tensor for each incremental load step (homogenized element solution)</p></li>
 <li><p><strong>Model.epgl</strong> (<em>(N,6) array</em>) – Global plastic strain as as Voigt tensor for each incremental load step (homogenized element solution)</p></li>
@@ -1322,6 +1374,28 @@ and derived properties und various loading conditions (dictionary)</p>
 <dt id="material.Material.tresca">
 <code class="sig-name descname">tresca</code><a class="headerlink" href="#material.Material.tresca" title="Permalink to this definition">¶</a></dt>
 <dd><p>Indicate if Tresca equivalent stress should be used (default: False)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.hill_3p">
+<code class="sig-name descname">hill_3p</code><a class="headerlink" href="#material.Material.hill_3p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether 3-paramater Hill model should be used (default: False)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="material.Material.hill_6p">
+<code class="sig-name descname">hill_6p</code><a class="headerlink" href="#material.Material.hill_6p" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether 6-paramater Hill model should be used (default: False)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Boolean</p>
@@ -1450,6 +1524,17 @@ and derived properties und various loading conditions (dictionary)</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt id="material.Material.smooth">
+<code class="sig-name descname">smooth</code><a class="headerlink" href="#material.Material.smooth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicates whether ML gradient is smoothened (default: False)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="field-list simple">
 <dt class="field-odd">Keyword Arguments</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1464,7 +1549,7 @@ Contains data for ‘sig’ (2d-array - stress), ‘eps’ (2d-array - strain),
 ‘epl’ (2d-array - plastic strain)</p></li>
 <li><p><strong>msparam</strong> – Store data on microstructure parameters: ‘Npl’, ‘Nlc, ‘Ntext’, ‘texture’, ‘peeq_max’, ‘work_hard’, ‘flow_stress’
 are obtained from data analysis module. Other parameters can be added.</p></li>
-<li><p><strong>msg</strong> – Messages that can be retrieved: ‘yield_fct’, ‘gradient’, ‘nsteps’</p></li>
+<li><p><strong>msg</strong> – Messages that can be retrieved: ‘yield_fct’, ‘gradient’, ‘nsteps’, ‘equiv’</p></li>
 </ul>
 </dd>
 </dl>
@@ -1555,14 +1640,35 @@ function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient
 
 <dl class="py method">
 <dt id="material.Material.calc_seq">
-<code class="sig-name descname">calc_seq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sprinc</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_seq" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate generalized equivalent stress from pricipal stresses;
-equivalent to J2 for isotropic flow behavior and tension compression invariance;
+<code class="sig-name descname">calc_seq</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sig</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_seq"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_seq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate generalized equivalent stress from stress tensor;
+equivalent J2 stress for isotropic flow behavior and tension compression invariance;
 Hill-type approach for anisotropic plastic yielding;
-Drucker-like approach for tension-compression assymetry</p>
+Drucker-like approach for tension-compression asymmetry;
+Barlat 2004-18p model for plastic anisotropy</p>
+<p>Step 1: transform input into
+(i)   sig: (N,6)-array of Voigt stresses (zeros added if input is  pric. stresses)
+(ii)  sp: (N,3)-array of principal stresses
+(iii) evec: (N,3,3)-array of stress eigenvectors/rotation matrices</p>
+<blockquote>
+<div><p>in principal coordinate system (None if input is princ. stresses)</p>
+</div></blockquote>
+<p>N=1 if input is single stress in which case return value is float</p>
+<p>Step 2: Call appropriate subroutines for evaluation of equiv. stress
+Currently supported are:
+(i)   von Mises/J2 (material independent, works also for elastic materials)
+(ii)  Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)</p>
+<blockquote>
+<div><p>(works only in conjunction with appropriate plasticity definition)</p>
+</div></blockquote>
+<ol class="lowerroman simple" start="3">
+<li><p>Barlat Yld2004-18p (only in conjunction with appropriate plasticity)</p></li>
+</ol>
+<p>Step 3: If input is full Voigt stress tensor and 3-p Hill model (hill_3p) is used,
+rotate tensor defined by Hill parameters into principal stress coordinate system</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sprinc</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Principal stress values</p>
+<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Stress values (for dim=3 principal stresses are assumed, otherwise Voigt stress)</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>seq</strong> – Hill-Drucker-type equivalent stress</p>
@@ -1576,7 +1682,8 @@ Drucker-like approach for tension-compression assymetry</p>
 <dl class="py method">
 <dt id="material.Material.calc_seqB">
 <code class="sig-name descname">calc_seqB</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sv</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.calc_seqB"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.calc_seqB" title="Permalink to this definition">¶</a></dt>
-<dd><p>Calculate equivalent stress based on Yld2004-18p yield function proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009</p>
+<dd><p>Calculate equivalent stress based on Yld2004-18p yield function
+proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>sv</strong> (<em>(</em><em>6</em><em>,</em><em>) </em><em>array</em>) – Voigt stress tensor</p>
@@ -1753,7 +1860,7 @@ and porosity.</p>
 
 <dl class="py method">
 <dt id="material.Material.plasticity">
-<code class="sig-name descname">plasticity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hill</span><span class="o">=</span><span class="default_value">[1.0, 1.0, 1.0]</span></em>, <em class="sig-param"><span class="n">drucker</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">khard</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">tresca</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">barlat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">barlat_exp</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plasticity" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plasticity</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">sy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hill</span><span class="o">=</span><span class="default_value">[1.0, 1.0, 1.0]</span></em>, <em class="sig-param"><span class="n">drucker</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">khard</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">tresca</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">barlat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">barlat_exp</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hill_3p</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hill_6p</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plasticity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.plasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define plastic material parameters; anisotropic Hill-like and Drucker-like
 behavior is supported</p>
 <dl class="field-list simple">
@@ -1766,6 +1873,10 @@ behavior is supported</p>
 <li><p><strong>tresca</strong> (<em>Boolean</em>) – Indicate if Tresca equivalent stress should be used (optional, default: False)</p></li>
 <li><p><strong>barlat</strong> (<em>(</em><em>18</em><em>,</em><em>) </em><em>array</em>) – Array with parameters for Barlat Yld2004-18p yield function (optional)</p></li>
 <li><p><strong>barlat_exp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Exponent for Barlat Yld2004-18p yield function (optional)</p></li>
+<li><p><strong>hill_3p</strong> (<em>Boolean</em>) – Indicate if 3-parameter Hill model shall be applied (optional, default: None)
+Will be set True automatically if 3 Hill paramaters != 1 are provided</p></li>
+<li><p><strong>hill_6p</strong> (<em>Boolean</em>) – Indicate if 6-parameter Hill model shall be applied (optional, default: False)
+Will be set True automatically if 6 Hill parameters are provided</p></li>
 </ul>
 </dd>
 </dl>
@@ -1845,14 +1956,14 @@ behavior is supported</p>
 
 <dl class="py method">
 <dt id="material.Material.polar_plot_yl">
-<code class="sig-name descname">polar_plot_yl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Na</span><span class="o">=</span><span class="default_value">72</span></em>, <em class="sig-param"><span class="n">cmat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dname</span><span class="o">=</span><span class="default_value">'reference'</span></em>, <em class="sig-param"><span class="n">scaling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">field</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">predict</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cbar</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">Np</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.polar_plot_yl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.polar_plot_yl" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">polar_plot_yl</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">Na</span><span class="o">=</span><span class="default_value">72</span></em>, <em class="sig-param"><span class="n">cmat</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">data</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">dname</span><span class="o">=</span><span class="default_value">'reference'</span></em>, <em class="sig-param"><span class="n">scaling</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">field</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">predict</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cbar</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">Np</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">arrow</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.polar_plot_yl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#material.Material.polar_plot_yl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot yield locus as polar plot in deviatoric stress plane</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Na</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of angles on which yield locus is evaluated (optional, default: 72)</p></li>
 <li><p><strong>cmat</strong> (<em>list of materials</em>) – Materials of which YL is plotted in same plot with same scaling (optional)</p></li>
-<li><p><strong>data</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Array of principle stress added to plot (optional)</p></li>
+<li><p><strong>data</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Array of cylindrical stress added to plot (optional)</p></li>
 <li><p><strong>dname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Label for data (optional, default: reference)</p></li>
 <li><p><strong>scaling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Scaling factor for stresses (optional)</p></li>
 <li><p><strong>field</strong> (<em>Boolean</em>) – Field of decision function is plotted (optional, default: False)</p></li>
@@ -1860,6 +1971,7 @@ behavior is supported</p>
 <li><p><strong>Np</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of points per axis for field plot (optional, default: 100)</p></li>
 <li><p><strong>cbar</strong> (<em>Boolean</em>) – Plot colorbar for field (optional, default: False)</p></li>
 <li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of PDF file to which plot is saved</p></li>
+<li><p><strong>arrow</strong> (<em>Boolean</em>) – Indicate if arrows for the pricipal stress directions are shown (optional, default: False)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2026,7 +2138,7 @@ Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt id="data.Data">
-<em class="property">class </em><code class="sig-prename descclassname">data.</code><code class="sig-name descname">Data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msl</span></em>, <em class="sig-param"><span class="n">path_data</span></em>, <em class="sig-param"><span class="n">path_json</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'Dataset'</span></em>, <em class="sig-param"><span class="n">nth</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">epl_crit</span><span class="o">=</span><span class="default_value">0.002</span></em>, <em class="sig-param"><span class="n">d_ep</span><span class="o">=</span><span class="default_value">0.0005</span></em>, <em class="sig-param"><span class="n">epl_max</span><span class="o">=</span><span class="default_value">0.03</span></em>, <em class="sig-param"><span class="n">npe</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.Data" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">data.</code><code class="sig-name descname">Data</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">msl</span></em>, <em class="sig-param"><span class="n">path_data</span></em>, <em class="sig-param"><span class="n">path_json</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">name</span><span class="o">=</span><span class="default_value">'Dataset'</span></em>, <em class="sig-param"><span class="n">nth</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">sdim</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">epl_crit</span><span class="o">=</span><span class="default_value">0.002</span></em>, <em class="sig-param"><span class="n">d_ep</span><span class="o">=</span><span class="default_value">0.0005</span></em>, <em class="sig-param"><span class="n">epl_max</span><span class="o">=</span><span class="default_value">0.03</span></em>, <em class="sig-param"><span class="n">npe</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">plot</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.Data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling data from virtual mechanical tests in micromechanical
 simulations and data from physical mechanical tests on materials with various
@@ -2036,8 +2148,9 @@ microstructures</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>msl</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List with names of JOSN files with metadata for all microstructures</p></li>
 <li><p><strong>path_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Trunc of pathname for data files</p></li>
-<li><p><strong>path_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Trunc of pathname for JSON metadata files (Optional, default: path_data)</p></li>
+<li><p><strong>path_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Trunc of pathname for JSON metadata files (optional, default: path_data)</p></li>
 <li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of Dataset (optional, default: ‘Dataset’)</p></li>
+<li><p><strong>sdim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Dimensionality of stresses; if sdim=3 only principal stresses are considered (optional, default: 3)</p></li>
 <li><p><strong>nth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Read only every nth lines of input file (optional, default: 1)</p></li>
 <li><p><strong>epl_crit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Critical plastic strain at which yield strength is defined (optional, default: 2.e-3)</p></li>
 <li><p><strong>d_ep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Range around critical value of plastic strain in which flow stresses are
@@ -2279,7 +2392,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 
 <dl class="py attribute">
 <dt>
-<code class="sig-name descname">eps, epl, eel, sig, ubc</code></dt>
+<code class="sig-name descname">eps, epl, eel, sig, ubc, sc_full</code></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>(N,) array</p>
@@ -2315,7 +2428,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <dd><p>Filtered boundary condition vector around yield point</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(Ndat,3) array</p>
+<dd class="field-odd"><p>(Ndat,db.sdim) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2323,10 +2436,10 @@ evaluated (optional, default: 5.e-4)</p></li>
 <dl class="py attribute">
 <dt id="data.Data.Set.sig_">
 <code class="sig-name descname">sig_</code><a class="headerlink" href="#data.Data.Set.sig_" title="Permalink to this definition">¶</a></dt>
-<dd><p>Filtered princ. stress tensor around yield point</p>
+<dd><p>Filtered stress tensor around yield point (princ. stresses for sdim=3)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>(Ndat,3) array</p>
+<dd class="field-odd"><p>(Ndat,db.sdim) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2399,7 +2512,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 
 <dl class="py method">
 <dt id="data.Data.Set.plot_set">
-<code class="sig-name descname">plot_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nth</span><span class="o">=</span><span class="default_value">18</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">18</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data.Set.plot_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.Data.Set.plot_set" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">plot_set</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">nth</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">fontsize</span><span class="o">=</span><span class="default_value">18</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data.Set.plot_set"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#data.Data.Set.plot_set" title="Permalink to this definition">¶</a></dt>
 <dd><p>Graphical output of equiv. stress vs. equic. total strain for selected load cases and
 raw data in deviatoric cyl. stress space</p>
 <dl class="field-list simple">
@@ -2411,12 +2524,6 @@ raw data in deviatoric cyl. stress space</p>
 </ul>
 </dd>
 </dl>
-</dd></dl>
-
-<dl class="py attribute">
-<dt id="data.Data.Set.ubc">
-<code class="sig-name descname">ubc</code><a class="headerlink" href="#data.Data.Set.ubc" title="Permalink to this definition">¶</a></dt>
-<dd><p>calculate eqiv. stresses and strains and theta values</p>
 </dd></dl>
 
 </dd></dl>
@@ -2460,9 +2567,9 @@ raw data in deviatoric cyl. stress space</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Contents:</span></p>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="readme.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Technical guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Notebooks</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#module-0">Module Basic</a></li>
@@ -2507,7 +2614,7 @@ raw data in deviatoric cyl. stress space</p>
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.1.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.3.1</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |
