@@ -15,22 +15,20 @@ constitutive modeling of materials makes it a useful research tool.
 
 ## Installation
 
-The pyLabFEA package can be installed directly from the GitHub repository with the following command
+The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/individual) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) environment with a recent Python version. It can be installed directly from its GitHub repository with the following command
 
 ```
 $ python -m pip install git+https://github.com/AHartmaier/pyLabFEA.git
 ```
 
-Alternatively, the repository can be cloned locally and installed via
+Alternatively, the repository can be cloned and installed locally. It is recommended to create a conda environment before installation. This can be done by the following the command line instructions
 
 ```
+$ git clone https://github.com/AHartmaier/pyLabFEA.git
+$ cd pyLabFEA.git/trunk/
+$ conda env create -f environment.yml
+$ conda activate pylabfea
 $ python -m pip install . --user
-```
-
-from within the `trunk` directory. After this, the package can by imported into python with
-
-```python
-import pylabfea as FE
 ```
 
 The correct implementation can be tested with
@@ -39,11 +37,18 @@ The correct implementation can be tested with
 $ pytest tests
 ```
 
+After this, the package can be used within python, e.g. be importing the entire package with
+
+```python
+import pylabfea as FE
+```
+
+
 ## Documentation
 
-Online documentation for pyLabFEA can be found under https://ahartmaier.github.io/pyLabFEA/.
-For offline use, open pyLabFEA/docs/index.html to browse through the contents.
-The documentation is generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
+Online documentation for pyLabFEA can be found under [https://ahartmaier.github.io/pyLabFEA/]().
+For offline use, open docs/index.html to browse through the contents.
+The documentation has been generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 ## Jupyter notebooks
 
