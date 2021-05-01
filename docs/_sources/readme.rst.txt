@@ -4,14 +4,32 @@ Technical guide
 Installation
 ------------
 
-The pyLabFEA package can be downloaded from its `GitHub repository`_ and 
-is simply installed with the following command
+The pyLabFEA package requires an `Anaconda`_ or `Miniconda`_ environment with a recent Python 
+version. It can be installed directly from its `GitHub repository`_  with 
+the following command
 
+.. _Anaconda: https://www.anaconda.com/products/individual
+.. _Miniconda: https://docs.conda.io/en/latest/miniconda.html
 .. _Github repository: https://github.com/AHartmaier/pyLabFEA.git
 
 ::
 
-   $ python -m pip install . --user
+$ python -m pip install git+https://github.com/AHartmaier/pyLabFEA.git
+
+Alternatively, the repository can be cloned locally and installed via
+
+::
+
+$ git clone https://github.com/AHartmaier/pyLabFEA.git
+$ cd pyLabFEA.git/trunk/
+$ conda env create -f environment.yml
+$ conda activate pylabfea$ python -m pip install . --user
+
+The correct implementation can be tested with
+
+::
+
+$ pytest tests
 
 After this, the package can by imported into python scripts with
 
@@ -19,13 +37,6 @@ After this, the package can by imported into python scripts with
 
    import pylabfea as FE
    
-The correct implementation can be tested with
-
-::
-
-    $ pytest tests
-
-
    
 Jupyter notebooks
 -----------------
@@ -34,12 +45,13 @@ The pyLabFEA package is conveniently used with Jupyter notebooks.
 Available notebooks with tutorials on linear and non-linear FEA,
 homogenization of elastic and elastic-plastic material behavior, and
 constitutive models based on machine learning algorithms are contained in
-subfolder ``notebooks``. An overview on the contents of the notebooks 
+the subfolder 'notebooks' and can be accessed via ``ìndex.ipynb``. 
+An overview on the contents of the notebooks 
 is available `here`_ .
 
 .. _here: https://ahartmaier.github.io/pyLabFEA/examples.html
 
-The Jupyter notebooks of the pyLabFEA tutorials are also available on `Binder`_
+The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on `Binder`_
 
 .. _Binder: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
 

@@ -55,10 +55,10 @@ The documentation has been generated using [Sphinx](http://www.sphinx-doc.org/en
 pyLabFEA is conveniently used with Jupyter notebooks. 
 Available notebooks with tutorials on linear and non-linear FEA, homogenization of elastic and
 elastic-plastic material behavior, and constitutive models based on
-machine learning algorithms are contained in subfolder `notebooks`. An
-overview on the contents of the notebooks is available [here](https://ahartmaier.github.io/pyLabFEA/examples.html).
+machine learning algorithms are contained in the subfolder 'notebooks' and can be accessed via `index.ipynb`. An
+overview on the contents of the notebooks is also available [here](https://ahartmaier.github.io/pyLabFEA/examples.html).
 
-The Jupyter notebooks of the pyLabFEA tutorials are also available on Binder 
+The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
 
