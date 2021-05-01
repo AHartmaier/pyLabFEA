@@ -46,7 +46,7 @@ import pylabfea as FE
 
 ## Documentation
 
-Online documentation for pyLabFEA can be found under [https://ahartmaier.github.io/pyLabFEA/]().
+Online documentation for pyLabFEA can be found under [https://ahartmaier.github.io/pyLabFEA/](https://ahartmaier.github.io/pyLabFEA/).
 For offline use, open docs/index.html to browse through the contents.
 The documentation has been generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
