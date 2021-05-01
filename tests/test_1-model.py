@@ -19,18 +19,18 @@ def test_model():
 def test_plasticity():
     #check if nonlinear stress-strain data is correct
     assert np.abs(mat2.propJ2['stx']['ys'] - 146.38501094227996) < 1E-5
-    assert np.abs(mat2.propJ2['sty']['seq'][-1] - 168.51605098183157) < 1E-5
+    assert np.abs(mat2.propJ2['sty']['seq'][-1] - 168.5141123395444) < 1E-5
     assert np.abs(mat2.propJ2['sty']['peeq'][-1] - 0.04969421741530513) < 1E-5
     assert np.abs(mat2.propJ2['et2']['ys'] - 136.93063937629154) < 1E-5
     assert np.abs(mat2.propJ2['ect']['peeq'][-1] - 0.04570405456408677) < 1E-5
-    assert np.abs(mat2.propJ2['ect']['seq'][-1] - 168.32174793640704) < 1E-5
+    assert np.abs(mat2.propJ2['ect']['seq'][-1] - 168.3199594723871) < 1E-5
     
 def test_workhard():
     # check if work hardening is implemented correctly
-    assert np.abs(mat3.propJ2['stx']['seq'][-1] - 348.99994442298805) < 1E-5
+    assert np.abs(mat3.propJ2['stx']['seq'][-1] - 347.68211920529546) < 1E-5
     assert np.abs(mat3.propJ2['sty']['peeq'][-1] - 0.09883666666666659) < 1E-5
-    assert np.abs(mat3.sigeps['et2']['sig'][-1][0] - 308.1781914893608) < 1E-5
-    assert np.abs(mat3.sigeps['ect']['sig'][-1][0] + 192.86329081219714) < 1E-5
+    assert np.abs(mat3.sigeps['et2']['sig'][-1][0] - 307.1334214002634) < 1E-5
+    assert np.abs(mat3.sigeps['ect']['sig'][-1][0] + 192.15895530336059) < 1E-5
     
 #define model for elasticity tests
 fem_v = FE.Model(dim=2, planestress=True)   # call class to generate container for finite element model

@@ -5,11 +5,11 @@ module pylabfea.material
 
 uses NumPy, SciPy, MatPlotLib
 
-Version: 3.2 (2020-12-30)
+Version: 3.4 (2021-01-07)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
-Email: alexander.hartmaier@rub.de
+Email: alexander.hartma4er@rub.de
 distributed under GNU General Public License (GPLv3)'''
-from pylabfea.basic import *
+from pylabfea.basic import Stress, eps_eq, ptol
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -725,23 +725,22 @@ class Model(object):
                 sref = Stress(el.dsig()).seq(el.Mat) # max. element stress increment
                 if el.Mat.sy!=None and sref>0.1:  # not necessary for elastic material or small steps
                     peeq = eps_eq(el.epl) # calculate equiv. plastic strain
-                    
                     yf0 = el.Mat.calc_yf(el.sig, peeq=peeq)  # yield fct. at start of load step
                     #if element starts in elastic regime load step can only touch yield surface
                     if  yf0 < -0.15:
                         if el.Mat.ML_yf:
                             #for categorial ML yield function, calculate yf0 as distance to yield surface
-                            #construct normal stress vector in loading sirection for search of yield point
+                            #construct normal stress vector in loading direction for search of yield point
                             hs = np.zeros(3)
                             if np.abs(max_dbcr)>1.e-6:
                                 hs[0] = el.Mat.sy*np.sign(max_dbcr)
                             if np.abs(max_dbct)>1.e-6:
                                 hs[1] = el.Mat.sy*np.sign(max_dbct)
-                            yf0 = el.Mat.ML_full_yf(el.sig, ld=hs, verb=verb)  # distance of initial stress state to yield locus
+                            yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=hs, verb=verb)
                         hh = np.minimum(1., -yf0/sref)
                         sc_list.append(hh)
                     else:
-                        hh = np.minimum(1., np.sqrt(1.5)*el.Mat.sflow/sref)
+                        hh = np.minimum(1., np.sqrt(1.5)*el.Mat.get_sflow(peeq)/sref)
                         sc_list.append(hh) # make sure load step does not exceed yield surface too much
             # select scaling appropriate scaling such that no element crosses yield surface
             if len(sc_list)==0: sc_list=[1.]
@@ -749,10 +748,11 @@ class Model(object):
             if hh < 0.1:
                 scf = np.amin(sc_list)  # if almost all elements have same yield fct, take minimum
             else:
-                scf = np.mean(sc_list) - hh # otherwise take average - standard deviation
+                hm = np.mean(sc_list)
+                scf = np.maximum(1.e-3, hm-hh) # otherwise take average - standard deviation
             if scf<1.e-3:
                 if verb:
-                    warnings.warn('Warning: Small load increment in calc_scf: ',scf)
+                    warnings.warn('Warning: Small load increment in calc_scf: '+str(scf))
                 scf = 1.e-3
             return scf
 
@@ -882,7 +882,7 @@ class Model(object):
         #the tangent stiffness matrix of the last load step is used as initial guess
         #current tangent stiffness matrix compatible with BC is determined iteratively
         il = 0
-        iter = 0
+        nit = 0
         niter = []
         co_nconv = []
         bc_inc = True
@@ -916,30 +916,30 @@ class Model(object):
                 scale_bc = (calc_scf() if il < 10 else 1.)
                 dbcr = max_dbcr*scale_bc  # improves the accuracy of the initial yield point
                 dbct = max_dbct*scale_bc  # for finite element simulation
-                iter = 0
+                nit = 0
                 change = True
                 conv = False
                 if verb:
                     print('***Load step #',il)
                     print('scaling factor',scale_bc)
-                while (change or not conv) and iter<=30:
+                while (change or not conv) and nit<=15:
                     # repeat solution step until stiffness matrix remains unchanged
                     # a proper Newton-Raphson algorithm should be implemented here
-                    if il < 20 and iter>1:
+                    if il < 6 and nit>1:
                         # start reducing load increments to reach convergence
-                        hs = 0.08
+                        hs = 0.5
                         if max_dbcr >= 0:
-                            hh = np.minimum(self.bcr-bcr0, max_dbcr*hs)
-                            dbcr = np.maximum(0.1*dbcr, hh)
+                            hh = np.minimum(self.bcr-bcr0, dbcr*hs)
+                            dbcr = np.maximum(0.05*max_dbcr, hh)
                         else:
-                            hh = np.maximum(self.bcr-bcr0, max_dbcr*hs)
-                            dbcr = np.minimum(0.1*dbcr, hh)
+                            hh = np.maximum(self.bcr-bcr0, dbcr*hs)
+                            dbcr = np.minimum(0.05*max_dbcr, hh)
                         if max_dbct >= 0:
-                            hh = np.minimum(self.bct-bct0, max_dbct*hs)
-                            dbct = np.maximum(0.1*dbct, hh)
+                            hh = np.minimum(self.bct-bct0, dbct*hs)
+                            dbct = np.maximum(0.05*max_dbct, hh)
                         else:
-                            hh = np.maximum(self.bct-bct0, max_dbct*hs)
-                            dbct = np.minimum(0.1*dbct, hh)
+                            hh = np.maximum(self.bct-bct0, dbct*hs)
+                            dbct = np.minimum(0.05*max_dbct, hh)
                         
                     # solve system with current K matrix
                     K = self.setupK()  # assemble updated tangent stiffness matrix
@@ -954,11 +954,11 @@ class Model(object):
                             fyld, el.res_sig, el.res_depl, gr_stiff = \
                                 el.Mat.response(el.sig, el.epl, el.deps(), el.CV) 
                             el.res_deps = el.deps()
-                            f.append(fyld/el.Mat.sflow)    # store result of yield function
+                            f.append(fyld/el.Mat.get_sflow(eps_eq(el.epl)))    # store result of yield function
                             hh = np.linalg.norm(el.elstiff-gr_stiff) # Frobenius norm of differences b/w stiffness matrices before and after load step
                             if hh > 1.e-3:
                                 # if difference is too large, update element stiffness matrix
-                                if iter < 15:
+                                if nit < 15:
                                     el.elstiff = gr_stiff
                                 else:
                                     el.elstiff = 0.5*(gr_stiff + el.elstiff)
@@ -972,29 +972,29 @@ class Model(object):
                     conv = np.all(f<=ptol*1.0001)
                     if verb:
                         if not conv:
-                            print('\n  ###  Warning: No convergence of plasticity algorithm in trial step #',iter)
+                            print('\n  ###  Warning: No convergence of plasticity algorithm in trial step #',nit)
                             print('  ###  yield function=',f)#,'residual forces on inner nodes=',fres[jin])
                             print('  ###  Convergence stats (ptol=',ptol,'):')
                             for j,el in enumerate(self.element):
                                 print('EL #',j,'iteration steps:', \
                                   el.stat_nlin['max_steps'], 'max. Dstiff:',el.stat_nlin['max_dstiff']) 
                             print('\n')
-                        print('+++Inner trial step #',iter)
+                        print('+++Inner trial step #',nit)
                         #fres = K @ (self.u+self.du)
                         print('load increment right:', dbcr)
                         print('load increment top:',dbct)
 
                     if not conv:
                         nconv += 1
-#                         if iter >= 30:
-#                             print('\n conv,iter,f,ptol,dbcr,dbct',conv,iter,f,ptol,dbcr,dbct)
+#                         if nit >= 30:
+#                             print('\n conv,nit,f,ptol,dbcr,dbct',conv,nit,f,ptol,dbcr,dbct)
 #                             raise RuntimeError('Error: No convergence achieved in plasticity routine')
 #                         else:
 #                             # further reduce load increments to reach convergence
 #                             dbcr *= 0.1
 #                             dbct *= 0.1
                         
-                    iter += 1
+                    nit += 1
                 # end while change
             # end if nonlin    
             #update internal variables with results of load step
@@ -1008,13 +1008,13 @@ class Model(object):
                     el.epl += el.res_depl
                     el.sig = el.res_sig    
                 el.eps = el.eps_t()
-                if el.Mat.msparam is not None:
+                '''if el.Mat.msparam is not None:
                     # data-based plasticity
                     peeq = eps_eq(el.epl)
-                    el.Mat.set_workhard(peeq)
+                    el.Mat.set_workhard(peeq)'''
             #update load step
             il += 1
-            niter.append(iter-1)
+            niter.append(nit-1)
             co_nconv.append(nconv)
             bcr0 += dbcr
             hl = np.abs(bcr0-self.bcr)>1.e-6 and np.abs(self.bcr)>1.e-9
@@ -1030,12 +1030,11 @@ class Model(object):
             self.egl  = np.append(self.egl, [self.glob['eps']], axis=0)
             self.epgl = np.append(self.epgl,[self.glob['epl']], axis=0)
             if verb:
-                fres = K@self.du  # residual forces 
-                fnorm = np.linalg.norm(fres[jin],1)  # norm of residual nodal forces
-                print('Iteration step #',iter)
+                print('Iteration step #',nit)
                 print('Load increment ', il, 'total',self.namebct,'top ',bct0,'/',self.bct,'; last step ',dbct)
                 print('Load increment ', il, 'total',self.namebcr,'rhs',bcr0,'/',self.bcr,'; last step ',dbcr)
-                #print('Yield function after ',iter,'steps: f=',f, '; norm(f_node)=',fnorm)
+                #fres = K@self.du  # residual forces
+                #print('Yield function after ',nit,'steps: f=',f, '; norm(f_node)=',np.linalg.norm(fres[jin],1))
 #                 ih = np.array(self.notop)*self.dim
 #                 print('Nodal forces f_x on top surface nodes: ',fres[ih])
 #                 ih = np.array(self.notop)*self.dim + 1

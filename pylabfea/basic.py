@@ -6,13 +6,11 @@ for efficient operations with these quantities.
 
 uses NumPy
 
-Version: 3.2 (2020-12-30)
+Version: 3.4 (2021-04-07)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 
-__all__ = ['Strain', 'Stress', 'a_vec', 'b_vec', 'eps_eq', 'polar_ang', 'ptol', 
-           's_cyl', 'seq_J2', 'sp_cart', 'svoigt', 'sprinc']
 
 import numpy as np
 import sys
@@ -29,7 +27,7 @@ a_vec = np.array([1., -0.5, -0.5])/np.sqrt(1.5)
 '''First unit vector spanning deviatoric stress plane (real axis)'''
 b_vec = np.array([0.,  0.5, -0.5])*np.sqrt(2)  
 '''Second unit vector spanning deviatoric stress plane (imaginary axis)'''
-ptol = 3.e-3
+ptol = 5.e-3
 '''Tolerance: Plastic yielding if yield function > ptol'''
 def seq_J2(sig):
     '''Calculate J2 equivalent stress from any stress tensor
@@ -49,22 +47,20 @@ def seq_J2(sig):
     sh = np.shape(sig)
     if sh==(3,):
         N = 1 # sig is single principle stress vector
-        sprinc=np.array([sig])
+        sp = np.array([sig])
     elif sh==(6,):
         N = 1 # sig is single Voigt stress
-        sprinc=np.array([Stress(sig).p])
+        sp = [sprinc(sig)[0]]
     elif sh==(N,6):
-        sprinc=np.zeros((N,3))
-        for i in range(N):
-            sprinc[i,:] = Stress(sig[i,:]).p
+        sp = sprinc(sig)[0]
     elif sh==(N,3):
-        sprinc=np.array(sig)
+        sp = np.array(sig)
     else:
         print('*** seq_J2: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
         raise TypeError('Error: Unknown format of stress in seq_J2')
-    d12 = sprinc[:,0] - sprinc[:,1]
-    d23 = sprinc[:,1] - sprinc[:,2]
-    d31 = sprinc[:,2] - sprinc[:,0]
+    d12 = sp[:,0] - sp[:,1]
+    d23 = sp[:,1] - sp[:,2]
+    d31 = sp[:,2] - sp[:,0]
     J2  = 0.5*(np.square(d12) + np.square(d23) + np.square(d31))
     seq  = np.sqrt(J2)  # J2 eqiv. stress
     if sh==(3,) or sh==(6,): 
@@ -89,20 +85,18 @@ def polar_ang(sig):
     N = len(sig)
     if sh==(3,):
         N = 1
-        sprinc = np.array([sig])
+        sp = np.array([sig])
     elif sh==(6,):
-        sprinc = np.array([Stress(sig).p])
+        sp = [sprinc(sig)[0]]
     elif sh==(N,6):
-        sprinc=np.zeros((N,3))
-        for i in range(N):
-            sprinc[i,:] = Stress(sig[i,:]).p
+        sp = sprinc(sig)[0]
     elif sh==(N,3):
-        sprinc=np.array(sig)
+        sp = np.array(sig)
     else:
         print('*** polar_angle: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
-        raise TyeError('Error: Unknown format of stress in polar_angle')
-    hyd = np.sum(sprinc,axis=1)/3.  # hydrostatic component
-    dev = sprinc - hyd[:,None] # deviatoric princ. stress
+        raise TypeError('Error: Unknown format of stress in polar_angle')
+    hyd = np.sum(sp,axis=1)/3.  # hydrostatic component
+    dev = sp - hyd[:,None] # deviatoric princ. stress
     vn  = np.linalg.norm(dev,axis=1)  #norms of princ. stress vectors
     ind = np.nonzero(vn<1.e-4)[0]
     vn[ind] = 1.
@@ -137,13 +131,13 @@ def sprinc(sig):
         st=np.array(sig) # sig is array of Cart. stress tensors
     elif sh==(6,):
         N = 1 # sig is single Voigt stress
-        st = np.zeros((3,3))
-        st[0,0]=sig[0]
-        st[1,1]=sig[1]
-        st[2,2]=sig[2]
-        st[2,1]=st[1,2]=sig[3]
-        st[2,0]=st[0,2]=sig[4]
-        st[1,0]=st[0,1]=sig[5]
+        st = np.zeros((1,3,3))
+        st[0,0,0]=sig[0]
+        st[0,1,1]=sig[1]
+        st[0,2,2]=sig[2]
+        st[0,2,1]=st[0,1,2]=sig[3]
+        st[0,2,0]=st[0,0,2]=sig[4]
+        st[0,1,0]=st[0,0,1]=sig[5]
     elif sh==(N,6):
         st=np.zeros((N,3,3))
         for i in range(N):
@@ -189,7 +183,7 @@ def sprinc(sig):
     return spa, eva
 
 def sp_cart(scyl):
-    '''Convert cylindrical stress into 3D Cartesian vector of deviatoric principle stresses 
+    '''Convert cylindrical stress into 3D Cartesian principle stress
     
     Parameters
     ----------
@@ -211,7 +205,7 @@ def sp_cart(scyl):
              *np.sqrt(2./3.)*np.array([seq,seq,seq]).T
     if sh[0]==3:
         p = scyl[:,2]
-        sprinc += np.array([p,p,p]).T
+        sprinc += np.array([p,p,p]).T/3.
     if sh==(2,) or sh==(3,):
         sprinc=sprinc[0]
     return sprinc
@@ -287,6 +281,29 @@ def s_cyl(sig, mat=None):
     if sh==(3,) or sh==(6,):
         sc=sc[0]
     return sc
+
+def sdev(sig):
+    '''Calculate deviatoric stress component from given stress tensor
+    
+    Parameters
+    ----------
+    sig : (3,), (6,) (N,3) or (N,6) array
+         
+    Returns
+    -------
+    sd : float or (N,) array
+        deviatoric stresses
+    '''
+    sh = np.shape(sig)
+    hyd = np.zeros(sh)
+    if sh==(3,) or sh==(6,):
+        p = np.sum(sig[0:3])/3.
+        hyd[0:3] = p[None]
+    else:
+        p = np.sum(sig[:,0:3],axis=1)/3.
+        hyd[:,0:3] = p[:,None]
+    sd = sig - hyd
+    return sd
 
 def eps_eq(eps):
     '''Calculate equivalent strain 

@@ -26,7 +26,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     description="Python Laboratory for Finite Element Analysis",
-    install_requires=['numpy', 'matplotlib', 'scipy', 'scikit-learn'],
+    install_requires=['numpy', 'matplotlib', 'scipy', 'scikit-learn', 'pandas'],
     license="GNU General Public License v3",
     long_description=readme,
     include_package_data=True,
@@ -37,6 +37,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/AHartmaier/pyLabFEA',
-    version='3.2',
+    version='3.4',
     zip_safe=False,
 )
