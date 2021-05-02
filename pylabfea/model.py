@@ -9,12 +9,11 @@ Version: 3.4 (2021-01-07)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartma4er@rub.de
 distributed under GNU General Public License (GPLv3)'''
-from pylabfea.basic import Stress, eps_eq, ptol
 import numpy as np
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-#import sys
 import warnings
+from pylabfea.basic import Stress, eps_eq, ptol
+from matplotlib import colors, colorbar
 
 # =========================   
 # define class for FE model
@@ -1192,7 +1191,7 @@ class Model(object):
             vertical displacement
         '''
         fig, ax = plt.subplots(1)
-        cmap = mpl.cm.get_cmap(colormap, cdepth)
+        cmap = plt.cm.get_cmap(colormap, cdepth)
         def strain1():
             hh = [el.eps[0]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{tot}_{11}$ (%)'
@@ -1320,8 +1319,8 @@ class Model(object):
         #add colorbar
         axl = fig.add_axes([1.01, 0.15, 0.04, 0.7])  #[left, bottom, width, height]
         # for use in juypter note book: left = 1.01, for python: left = 0.86
-        norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
-        cb1 = mpl.colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
+        norm = colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
+        cb1 = colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
         cb1.set_label(text_cb)
         #add axis annotations
         if annot:
