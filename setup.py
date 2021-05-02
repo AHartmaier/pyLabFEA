@@ -26,7 +26,7 @@ setup(
         'Programming Language :: Python :: 3.7',
     ],
     description="Python Laboratory for Finite Element Analysis",
-    install_requires=['numpy', 'matplotlib', 'scipy', 'scikit-learn', 'pandas'],
+    install_requires=['numpy', 'matplotlib', 'scipy', 'scikit-learn', 'pandas', 'fireworks'],
     license="GNU General Public License v3",
     long_description=readme,
     include_package_data=True,
