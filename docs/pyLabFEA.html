@@ -4,8 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17: http://docutils.sourceforge.net/" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Modules &#8212; pyLabFEA 2.0.53 documentation</title>
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
@@ -32,9 +31,9 @@
 
           <div class="body" role="main">
             
-  <section id="modules">
+  <div class="section" id="modules">
 <h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<section id="module-0">
+<div class="section" id="module-0">
 <span id="module-basic"></span><h2>Module Basic<a class="headerlink" href="#module-0" title="Permalink to this headline">¶</a></h2>
 <p>Module pylabfea.basic introduces basic methods and attributes like calculation of
 equivalent stresses and strain, conversions of
@@ -424,8 +423,8 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 </dl>
 </dd></dl>
 
-</section>
-<section id="module-1">
+</div>
+<div class="section" id="module-1">
 <span id="module-model"></span><h2>Module Model<a class="headerlink" href="#module-1" title="Permalink to this headline">¶</a></h2>
 <p>Module pylabefea.model introduces global functions for mechanical quantities and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that
 contains that attributes and methods needed in FEA. Materials are defined in
@@ -1319,8 +1318,8 @@ are stored as attributes of class <code class="docutils literal notranslate"><sp
 
 </dd></dl>
 
-</section>
-<section id="module-2">
+</div>
+<div class="section" id="module-2">
 <span id="module-material"></span><h2>Module Material<a class="headerlink" href="#module-2" title="Permalink to this headline">¶</a></h2>
 <p>Module pylabfea.material introduces class <code class="docutils literal notranslate"><span class="pre">Material</span></code> that contains attributes and methods
 needed for elastic-plastic material definitions in FEA. It also enables the training of
@@ -1662,21 +1661,18 @@ Drucker-like approach for tension-compression asymmetry;
 Barlat 2004-18p model for plastic anisotropy</p>
 <dl>
 <dt>Step 1: transform input into</dt><dd><ol class="lowerroman simple">
-<li><p>sig: (N,6)-array of Voigt stresses (zeros added if input is  pric. stresses)</p></li>
+<li><p>sig: (N,6)-array of Voigt stresses (zeros added if input is princ. stresses)</p></li>
 <li><p>sp: (N,3)-array of principal stresses</p></li>
-<li><p>evec: (N,3,3)-array of stress eigenvectors/rotation matrices in principal coordinate system (None if input is princ. stresses)</p></li>
 </ol>
 <p>N=1 if input is single stress in which case return value is of type float</p>
 </dd>
 <dt>Step 2: Call appropriate subroutines for evaluation of equiv. stress. Currently supported are:</dt><dd><ol class="lowerroman simple">
 <li><p>von Mises/J2 (material independent, works also for elastic materials)</p></li>
-<li><p>Hill 3-parameter (hill_3p) or 6-parameter (hill_6p); works only in conjunction with appropriate plasticity definition</p></li>
-<li><p>Barlat Yld2004-18p (only in conjunction with appropriate plasticity)</p></li>
+<li><p>Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)</p></li>
+<li><p>Barlat Yld2004-18p</p></li>
 </ol>
 </dd>
 </dl>
-<p>Step 3: If input is full Voigt stress tensor and 3-p Hill model (hill_3p) is used,
-rotate tensor defined by Hill parameters into principal stress coordinate system</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Stress values (for dim=3 principal stresses are assumed, otherwise Voigt stress)</p>
@@ -2215,8 +2211,8 @@ produced in plastic regime (optional, default: 25)</p></li>
 
 </dd></dl>
 
-</section>
-<section id="module-3">
+</div>
+<div class="section" id="module-3">
 <span id="module-data"></span><h2>Module Data<a class="headerlink" href="#module-3" title="Permalink to this headline">¶</a></h2>
 <p>Module pylabfea.data introduces the class <code class="docutils literal notranslate"><span class="pre">Data</span></code> for handling of data resulting
 from virtual or physical mechanical tests in the pyLabFEA package. This class provides the
@@ -2396,7 +2392,7 @@ Stress-strain data (Voigt stress tensors at each PEEQ in “work_hard”)</p>
 <dt id="data.Data.Set_CSV">
 <em class="property"><span class="pre">class</span> </em><code class="sig-name descname"><span class="pre">Set_CSV</span></code><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data.Set_CSV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data.Data.Set_CSV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>Define class for handling of aCSV dataset for one individual material. At
+<p>Define class for handling of a CSV dataset for one individual material. At
 least stress data must be provided in dataset. Strain data must be provided
 for class “Flow_Stress”, if only total strain is given, plastic strain is
 assumed to be equal to total strain.</p>
@@ -2889,8 +2885,8 @@ raw data in deviatoric cyl. stress space</p>
 
 </dd></dl>
 
-</section>
-</section>
+</div>
+</div>
 
 
           </div>
@@ -2909,7 +2905,7 @@ raw data in deviatoric cyl. stress space</p>
 
 
 <h3>Navigation</h3>
-<p><span class="caption-text">Documentation:</span></p>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Technical guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Notebooks</a></li>
@@ -2956,7 +2952,7 @@ raw data in deviatoric cyl. stress space</p>
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.3</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 3.5.4</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

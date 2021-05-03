@@ -48,16 +48,15 @@
 
 <span class="kn">from</span> <span class="nn">pylabfea.basic</span> <span class="kn">import</span> <span class="n">Stress</span><span class="p">,</span> <span class="n">eps_eq</span><span class="p">,</span> <span class="n">polar_ang</span><span class="p">,</span> <span class="n">s_cyl</span><span class="p">,</span> \
                            <span class="n">seq_J2</span><span class="p">,</span> <span class="n">sp_cart</span><span class="p">,</span> <span class="n">svoigt</span>
-<span class="c1">#from pylabfea.model import Model</span>
-<span class="c1">#from pylabfea.material import Material</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
-<span class="kn">from</span> <span class="nn">fireworks</span> <span class="kn">import</span> <span class="n">LaunchPad</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">fireworks</span> <span class="kn">import</span> <span class="n">LaunchPad</span>
 
+<span class="c1"># define labels for the data columns</span>
 <span class="n">sig_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;S11&#39;</span><span class="p">,</span><span class="s1">&#39;S22&#39;</span><span class="p">,</span><span class="s1">&#39;S33&#39;</span><span class="p">,</span><span class="s1">&#39;S23&#39;</span><span class="p">,</span><span class="s1">&#39;S13&#39;</span><span class="p">,</span><span class="s1">&#39;S12&#39;</span><span class="p">]</span>
 <span class="n">theta_name</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>
 <span class="n">epl_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Ep11&#39;</span><span class="p">,</span><span class="s1">&#39;Ep22&#39;</span><span class="p">,</span><span class="s1">&#39;Ep33&#39;</span><span class="p">,</span><span class="s1">&#39;Ep23&#39;</span><span class="p">,</span><span class="s1">&#39;Ep13&#39;</span><span class="p">,</span><span class="s1">&#39;Ep12&#39;</span><span class="p">]</span>
@@ -295,7 +294,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">mat_param</span><span class="p">[</span><span class="s1">&#39;flow_seq_av&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sflow_av</span> <span class="c1"># averaged equiv. flow stresses at PEEQs in &#39;work_hard&#39; for each texture</span>
  
 <div class="viewcode-block" id="Data.Set_CSV"><a class="viewcode-back" href="../pyLabFEA.html#data.Data.Set_CSV">[docs]</a>    <span class="k">class</span> <span class="nc">Set_CSV</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Define class for handling of aCSV dataset for one individual material. At </span>
+        <span class="sd">&#39;&#39;&#39;Define class for handling of a CSV dataset for one individual material. At </span>
 <span class="sd">        least stress data must be provided in dataset. Strain data must be provided </span>
 <span class="sd">        for class &quot;Flow_Stress&quot;, if only total strain is given, plastic strain is </span>
 <span class="sd">        assumed to be equal to total strain.</span>
@@ -350,36 +349,7 @@
 <span class="sd">            around yield point (index space: [0,Ndat])</span>
 <span class="sd">    </span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="sd">&#39;&#39;&#39;def prop_elastic():</span>
-<span class="sd">                &#39;calculate estimates for elastic properties E, nu associated to data set&#39;</span>
-<span class="sd">                ssig = 1.e-1</span>
-<span class="sd">                seps = 1.e3</span>
-<span class="sd">                a = seps*self.eps[ind,:]</span>
-<span class="sd">                b = ssig*self.sig[ind,:]</span>
-<span class="sd">                x = np.linalg.lstsq(a, b, rcond=None)</span>
-<span class="sd">                c = x[0]*seps/ssig</span>
-<span class="sd">                self.C11 = c[0,0]</span>
-<span class="sd">                self.C12 = c[1,0]</span>
-<span class="sd">                self.C13 = c[2,0]</span>
-<span class="sd">                self.C21 = c[0,1]</span>
-<span class="sd">                self.C22 = c[1,1]</span>
-<span class="sd">                self.C23 = c[2,1]</span>
-<span class="sd">                self.C31 = c[0,2]</span>
-<span class="sd">                self.C32 = c[1,2]</span>
-<span class="sd">                self.C33 = c[2,2]</span>
-<span class="sd">                </span>
-<span class="sd">                #self.nu = self.C12/(self.C11 + self.C12) # estimate for isotropic materials</span>
-<span class="sd">                #self.E = self.C12*(1.+self.nu)*(1.-2.*self.nu)/self.nu</span>
-<span class="sd">                </span>
-<span class="sd">                print(&#39;Estimated elasic tensor C_ij (GPa): \n%8.2f, %8.2f, %8.2f&#39; </span>
-<span class="sd">                       % (self.C11/1000, self.C12/1000, self.C13/1000))</span>
-<span class="sd">                print(&#39;%8.2f, %8.2f, %8.2f&#39; </span>
-<span class="sd">                       % (self.C21/1000, self.C22/1000, self.C23/1000))</span>
-<span class="sd">                print(&#39;%8.2f, %8.2f, %8.2f&#39; </span>
-<span class="sd">                       % (self.C31/1000, self.C32/1000, self.C33/1000))</span>
-<span class="sd">                print(&#39;Residuals of fitting elastic parameters: &#39;,x[1])&#39;&#39;&#39;</span>
-            
+        <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>        
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
             <span class="n">eps_0</span> <span class="o">=</span> <span class="mf">0.</span>
@@ -741,35 +711,6 @@
 <span class="sd">    </span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-            <span class="sd">&#39;&#39;&#39;def prop_elastic():</span>
-<span class="sd">                &#39;calculate estimates for elastic properties E, nu associated to data set&#39;</span>
-<span class="sd">                ssig = 1.e-1</span>
-<span class="sd">                seps = 1.e3</span>
-<span class="sd">                a = seps*self.eps[ind,:]</span>
-<span class="sd">                b = ssig*self.sig[ind,:]</span>
-<span class="sd">                x = np.linalg.lstsq(a, b, rcond=None)</span>
-<span class="sd">                c = x[0]*seps/ssig</span>
-<span class="sd">                self.C11 = c[0,0]</span>
-<span class="sd">                self.C12 = c[1,0]</span>
-<span class="sd">                self.C13 = c[2,0]</span>
-<span class="sd">                self.C21 = c[0,1]</span>
-<span class="sd">                self.C22 = c[1,1]</span>
-<span class="sd">                self.C23 = c[2,1]</span>
-<span class="sd">                self.C31 = c[0,2]</span>
-<span class="sd">                self.C32 = c[1,2]</span>
-<span class="sd">                self.C33 = c[2,2]</span>
-<span class="sd">                </span>
-<span class="sd">                #self.nu = self.C12/(self.C11 + self.C12) # estimate for isotropic materials</span>
-<span class="sd">                #self.E = self.C12*(1.+self.nu)*(1.-2.*self.nu)/self.nu</span>
-<span class="sd">                </span>
-<span class="sd">                print(&#39;Estimated elasic tensor C_ij (GPa): \n%8.2f, %8.2f, %8.2f&#39; </span>
-<span class="sd">                       % (self.C11/1000, self.C12/1000, self.C13/1000))</span>
-<span class="sd">                print(&#39;%8.2f, %8.2f, %8.2f&#39; </span>
-<span class="sd">                       % (self.C21/1000, self.C22/1000, self.C23/1000))</span>
-<span class="sd">                print(&#39;%8.2f, %8.2f, %8.2f&#39; </span>
-<span class="sd">                       % (self.C31/1000, self.C32/1000, self.C33/1000))</span>
-<span class="sd">                print(&#39;Residuals of fitting elastic parameters: &#39;,x[1])&#39;&#39;&#39;</span>
-            
             <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
             <span class="n">eps_0</span> <span class="o">=</span> <span class="mf">0.</span>
@@ -814,23 +755,12 @@
             
             <span class="n">cursor</span> <span class="o">=</span> <span class="n">fireworks_db</span><span class="o">.</span><span class="n">aggregate</span><span class="p">(</span><span class="n">pipeline</span><span class="p">)</span>
             <span class="n">joined_queried_data</span><span class="o">=</span><span class="nb">list</span><span class="p">(</span><span class="n">cursor</span><span class="p">)</span>
-            <span class="sd">&#39;&#39;&#39;col_names = [&#39;S11&#39;,&#39;S22&#39;,&#39;S33&#39;,&#39;S12&#39;,&#39;S13&#39;,&#39;S23&#39;, \</span>
-<span class="sd">                         &#39;Ee11&#39;,&#39;Ee22&#39;,&#39;Ee33&#39;,&#39;Ee12&#39;,&#39;Ee13&#39;,&#39;Ee23&#39;, \</span>
-<span class="sd">                         &#39;Ep11&#39;,&#39;Ep22&#39;,&#39;Ep33&#39;,&#39;Ep12&#39;,&#39;Ep13&#39;,&#39;Ep23&#39;, \</span>
-<span class="sd">                         &#39;E11&#39;,&#39;E22&#39;,&#39;E33&#39;,&#39;E12&#39;,&#39;E13&#39;,&#39;E23&#39;, \</span>
-<span class="sd">                         &#39;F11&#39;,&#39;F22&#39;,&#39;F33&#39;,&#39;F23&#39;,&#39;F13&#39;,&#39;F12&#39;]&#39;&#39;&#39;</span>
             <span class="n">tot_df</span><span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">joined_queried_data</span><span class="p">)</span>
             <span class="n">tot_df</span><span class="p">[</span><span class="s2">&quot;material_inp_id&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">tot_df</span><span class="p">[</span><span class="s2">&quot;spec&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">d</span><span class="p">:</span> <span class="n">d</span><span class="p">[</span><span class="s2">&quot;material_inp_id&quot;</span><span class="p">])</span>
             <span class="n">data</span> <span class="o">=</span> <span class="n">tot_df</span><span class="o">.</span><span class="n">results_json</span>
-            <span class="sd">&#39;&#39;&#39;self.meta = {</span>
-<span class="sd">                &#39;Class&#39;         : &#39;Flow_Stress&#39;,</span>
-<span class="sd">                &#39;Texture_index&#39; : 1.0, </span>
-<span class="sd">                &#39;Texture_name&#39;  : tot_df[&quot;material_inp_id&quot;][0],</span>
-<span class="sd">                &#39;Texture_type&#39;  : tot_df[&quot;material_inp_id&quot;][0],</span>
-<span class="sd">                &#39;Prop_E&#39;        : 151220.0,</span>
-<span class="sd">                &#39;Prop_nu&#39;       : 0.3</span>
-<span class="sd">                }&#39;&#39;&#39;</span>
+            
             <span class="c1">#define texture parameters</span>
+            <span class="c1">#should be read from meta data in database</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">texture_param</span> <span class="o">=</span> <span class="mf">1.0</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">texture_name</span>  <span class="o">=</span> <span class="n">tot_df</span><span class="p">[</span><span class="s2">&quot;material_inp_id&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">texture_type</span>  <span class="o">=</span> <span class="n">tot_df</span><span class="p">[</span><span class="s2">&quot;material_inp_id&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>

@@ -37,7 +37,7 @@ The correct implementation can be tested with
 $ pytest tests
 ```
 
-After this, the package can be used within python, e.g. be importing the entire package with
+After this, the package can be used within python, e.g. by importing the entire package with
 
 ```python
 import pylabfea as FE
@@ -78,6 +78,7 @@ pyLabFEA requires the following packages as imports:
  - [scikit-learn](https://scikit-learn.org/stable/) for machine learning algorithms
  - [MatPlotLib](https://matplotlib.org/) for graphical output
  - [pandas](https://pandas.pydata.org/) for data import
+ - [fireworks](https://materialsproject.github.io/fireworks/) direct import of data resulting from fireworks workflows
 
 ## License
 

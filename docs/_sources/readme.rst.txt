@@ -88,12 +88,14 @@ pyLabFEA requires the following packages as imports:
   - scikit-learn_ for machine learning algorithms
   - MatPlotLib_ for graphical output
   - pandas_ for data import
+  - fireworks_ direct import of data resulting from fireworks workflows
   
 .. _NumPy: http://numpy.scipy.org
 .. _Scipy: https://www.scipy.org/
 .. _scikit-learn: https://scikit-learn.org/stable/
 .. _MatPlotLib: https://matplotlib.org/
 .. _pandas: https://pandas.pydata.org/
+.. _fireworks: https://materialsproject.github.io/fireworks/
 
 License
 -------
