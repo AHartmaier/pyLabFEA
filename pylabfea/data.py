@@ -8,7 +8,7 @@ module pylabfea.material based on the analyzed data of this module.
 
 uses NumPy, SciPy, MatPlotLib, Pandas
 
-Version: 3.4 (2021-04-07)
+Version: 3.5 (2021-05-03)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -80,11 +80,10 @@ class Data(object):
     sy_av : float
     E_av  : float
     nu_av : float
-    flow_stress : Boolean
     mat_param : dictionary
         Contains available data for microstructural parameters ("texture", "work_hard", 
-       "flow_stress") to be transfered to material.microstructure
-        flow_stress : (N,6)-array
+        "flow_stress") to be transfered to material.microstructure
+    flow_stress : (N,6)-array
         Stress-strain data (Voigt stress tensors at each PEEQ in "work_hard")
     '''
     def __init__(self, msl, path_data=None, path_json=None, 

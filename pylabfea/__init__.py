@@ -4,7 +4,8 @@
            
 from pylabfea.basic import Strain, Stress, a_vec, b_vec, \
                            eps_eq, polar_ang, ptol, s_cyl, \
-                           seq_J2, sp_cart, svoigt, sprinc
+                           seq_J2, sp_cart, svoigt, sprinc, \
+                           pckl2mat
 from pylabfea.model import Model
 from pylabfea.material import Material
 from pylabfea.data import Data

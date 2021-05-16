@@ -6,7 +6,7 @@ for efficient operations with these quantities.
 
 uses NumPy
 
-Version: 3.4 (2021-04-07)
+Version: 3.5 (2021-05-03)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -14,11 +14,7 @@ distributed under GNU General Public License (GPLv3)'''
 
 import numpy as np
 import sys
-'''try:
-    import quaternion
-    av_quater = True
-except:
-    av_quater = False'''
+import pickle
 
 #===================================
 #define global methods and variables
@@ -50,7 +46,7 @@ def seq_J2(sig):
         sp = np.array([sig])
     elif sh==(6,):
         N = 1 # sig is single Voigt stress
-        sp = [sprinc(sig)[0]]
+        sp = np.array([sprinc(sig)[0]])
     elif sh==(N,6):
         sp = sprinc(sig)[0]
     elif sh==(N,3):
@@ -515,3 +511,28 @@ class Strain(object):
             if np.abs(self.voigt[i])>1.e-9 : inv[i] = 1./self.voigt[i]
         return inv
  
+#=================================================
+#define subroutines for reading objects from files
+#=================================================
+def pckl2mat(self, name, path='./'):
+    '''Read pickled material file.
+    
+    
+    Parameters
+    ----------
+    name : string
+        File name of pickled material to be read. 
+    path : string
+        Path under which pckl-files are stored (optional, default: './')
+
+    Returns
+    -------
+    pckl : Material object
+        Unpickled material
+
+    '''
+    if name is None:
+        name = self.name + '.pckl'
+    with open(path+name, 'rb') as input:
+        pckl = pickle.load(input)
+    return pckl
