@@ -1,0 +1,194 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Technical guide &#8212; pyLabFEA 2.0.53 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Notebooks" href="examples.html" />
+    <link rel="prev" title="Python Laboratory for Finite Element Analysis (pyLabFEA)" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="technical-guide">
+<h1>Technical guide<a class="headerlink" href="#technical-guide" title="Permalink to this headline">¶</a></h1>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>The pyLabFEA package requires an <a class="reference external" href="https://www.anaconda.com/products/individual">Anaconda</a> or <a class="reference external" href="https://docs.conda.io/en/latest/miniconda.html">Miniconda</a> environment with a recent Python
+version. It can be installed directly from its <a class="reference external" href="https://github.com/AHartmaier/pyLabFEA.git">GitHub repository</a>  with
+the following command</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ python -m pip install git+https://github.com/AHartmaier/pyLabFEA.git
+</pre></div>
+</div>
+<p>Alternatively, the repository can be cloned locally and installed via</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ git clone https://github.com/AHartmaier/pyLabFEA.git
+$ cd pyLabFEA.git/trunk/
+$ conda env create -f environment.yml
+$ conda activate pylabfea$ python -m pip install . --user
+</pre></div>
+</div>
+<p>The correct implementation can be tested with</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ pytest tests
+</pre></div>
+</div>
+<p>After this, the package can by imported into python scripts with</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pylabfea</span> <span class="k">as</span> <span class="nn">FE</span>
+</pre></div>
+</div>
+</section>
+<section id="jupyter-notebooks">
+<h2>Jupyter notebooks<a class="headerlink" href="#jupyter-notebooks" title="Permalink to this headline">¶</a></h2>
+<p>The pyLabFEA package is conveniently used with Jupyter notebooks.
+Available notebooks with tutorials on linear and non-linear FEA,
+homogenization of elastic and elastic-plastic material behavior, and
+constitutive models based on machine learning algorithms are contained in
+the subfolder ‘notebooks’ and can be accessed via <code class="docutils literal notranslate"><span class="pre">ìndex.ipynb</span></code>.
+An overview on the contents of the notebooks
+is available <a class="reference external" href="https://ahartmaier.github.io/pyLabFEA/examples.html">here</a> .</p>
+<p>The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on <a class="reference external" href="https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master">Binder</a></p>
+<a class="reference external image-reference" href="https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master"><img alt="https://mybinder.org/badge_logo.svg" src="https://mybinder.org/badge_logo.svg" /></a>
+</section>
+<section id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>Online documentations for pyLabFEA is found
+under <a class="reference external" href="https://ahartmaier.github.io/pyLabFEA">https://ahartmaier.github.io/pyLabFEA</a>, for offline use
+open pyLabFEA/doc/index.html to browse through the contents.
+The documentation is generated using <a class="reference external" href="http://www.sphinx-doc.org/en/master/">Sphinx</a>.</p>
+</section>
+<section id="contributions">
+<h2>Contributions<a class="headerlink" href="#contributions" title="Permalink to this headline">¶</a></h2>
+<p>Contributions to the pyLabFEA package are highly welcome, either in form of new
+notebooks with application examples or tutorials, or in form of new functionalities
+to the Python code. Furthermore, bug reports or any comments on possible improvements of
+the code or its documentation are greatly appreciated.</p>
+<p>The latest version of the pyLabFEA package can be found on GitHub:
+<a class="reference external" href="https://github.com/AHartmaier/pyLabFEA.git">https://github.com/AHartmaier/pyLabFEA.git</a></p>
+</section>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p>pyLabFEA requires the following packages as imports:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference external" href="http://numpy.scipy.org">NumPy</a> for array handling</p></li>
+<li><p><a class="reference external" href="https://www.scipy.org/">Scipy</a> for numerical solutions</p></li>
+<li><p><a class="reference external" href="https://scikit-learn.org/stable/">scikit-learn</a> for machine learning algorithms</p></li>
+<li><p><a class="reference external" href="https://matplotlib.org/">MatPlotLib</a> for graphical output</p></li>
+<li><p><a class="reference external" href="https://pandas.pydata.org/">pandas</a> for data import</p></li>
+<li><p><a class="reference external" href="https://materialsproject.github.io/fireworks/">fireworks</a> direct import of data resulting from fireworks workflows</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>The pyLabFEA package comes with ABSOLUTELY NO WARRANTY.
+This is free software, and you are welcome to redistribute it
+under the conditions of the GNU General Public License (<a class="reference external" href="http://www.fsf.org/licensing/licenses/gpl.html">GPLv3</a>)</p>
+<p>The contents of the examples and notebooks are published under the
+Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+(<a class="reference external" href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>)</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="index.html">pyLabFEA</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Documentation:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Technical guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#jupyter-notebooks">Jupyter notebooks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#documentation">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#contributions">Contributions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Notebooks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyLabFEA.html">Modules</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">Python Laboratory for Finite Element Analysis (pyLabFEA)</a></li>
+      <li>Next: <a href="examples.html" title="next chapter">Notebooks</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="_sources/readme.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
