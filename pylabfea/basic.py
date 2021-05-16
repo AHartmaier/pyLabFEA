@@ -514,7 +514,7 @@ class Strain(object):
 #=================================================
 #define subroutines for reading objects from files
 #=================================================
-def pckl2mat(self, name, path='./'):
+def pckl2mat(name, path='./'):
     '''Read pickled material file.
     
     
