@@ -1001,13 +1001,13 @@ class Data(object):
             drh = 0.08*dr
             plt.arrow(0, 0, 0, dr, head_width=0.05, width=0.004, 
                      head_length=drh, color='r', length_includes_head=True)
-            plt.text(-0.12, dr*0.87, '$\sigma_1$', color='r',fontsize=22)
+            plt.text(-0.12, dr*0.87, r'$\sigma_1$', color='r',fontsize=22)
             plt.arrow(2.0944, 0, 0, dr, head_width=0.05,
                      width=0.004, head_length=drh, color='r', length_includes_head=True)
-            plt.text(2.26, dr*0.92, '$\sigma_2$', color='r',fontsize=22)
+            plt.text(2.26, dr*0.92, r'$\sigma_2$', color='r',fontsize=22)
             plt.arrow(-2.0944, 0, 0, dr, head_width=0.05,
                      width=0.004, head_length=drh, color='r', length_includes_head=True)
-            plt.text(-2.04, dr*0.95, '$\sigma_3$', color='r',fontsize=22)
+            plt.text(-2.04, dr*0.95, r'$\sigma_3$', color='r',fontsize=22)
         if title is not None:
             plt.title(title)
         if file is not None:

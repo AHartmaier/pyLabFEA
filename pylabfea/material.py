@@ -902,8 +902,8 @@ class Material(object):
             self.plot_data(Z, ax, xx, yy, c='black')
             ax.scatter(X_train[:,1], X_train[:,0], s=10, c=y_train, cmap=plt.cm.Paired)
             ax.set_title('extended SVM yield function in training')
-            ax.set_xlabel('$theta/\pi$')
-            ax.set_ylabel('$\sigma_{eq}/\sigma_y$')
+            ax.set_xlabel(r'$\theta/\pi$')
+            ax.set_ylabel(r'$\sigma_{eq}/\sigma_y$')
             plt.show()
         return train_sc, test_sc
 
@@ -1036,8 +1036,8 @@ class Material(object):
             self.plot_data(Z, ax, xx, yy, c='black')
             ax.scatter(X_train[:,1], X_train[:,0], s=10, c=y_train, cmap=plt.cm.Paired)
             ax.set_title('extended SVM yield function in training')
-            ax.set_xlabel('$theta/\pi$')
-            ax.set_ylabel('$\sigma_{eq}/\sigma_y$')
+            ax.set_xlabel(r'$\theta/\pi$')
+            ax.set_ylabel(r'$\sigma_{eq}/\sigma_y$')
             plt.show()
         return train_sc, test_sc
  
@@ -1902,31 +1902,31 @@ class Material(object):
             #first axis
             if axis1[j]==0:
                 s1 = xx.ravel()
-                title = '$\sigma_1$'
+                title = r'$\sigma_1$'
                 if scaling:
-                    xlab = '$\sigma_1 / \sigma_y$'
+                    xlab = r'$\sigma_1 / \sigma_y$'
                 else:
-                    xlab = '$\sigma_1$ (MPa)'
+                    xlab = r'$\sigma_1$ (MPa)'
             elif axis1[j]==1:
                 s2 = xx.ravel()
-                title = '$\sigma_2$'
+                title = r'$\sigma_2$'
                 if scaling:
-                    xlab = '$\sigma_2 / \sigma_y$'
+                    xlab = r'$\sigma_2 / \sigma_y$'
                 else:
-                    xlab = '$\sigma_2$ (MPa)'
+                    xlab = r'$\sigma_2$ (MPa)'
             elif axis1[j]==2:
                 s3 = xx.ravel()
-                title = '$\sigma_3$'
+                title = r'$\sigma_3$'
                 if scaling:
-                    xlab = '$\sigma_3 / \sigma_y$'
+                    xlab = r'$\sigma_3 / \sigma_y$'
                 else:
-                    xlab = '$\sigma_3$ (MPa)'
+                    xlab = r'$\sigma_3$ (MPa)'
             elif axis1[j]==3:
                 s1 = xx.ravel()
                 s2 = xx.ravel()
-                title = '$p=\sigma_1=\sigma_2$'
+                title = r'$p=\sigma_1=\sigma_2$'
                 if scaling:
-                    xlab = '$p / \sigma_y$'
+                    xlab = r'$p / \sigma_y$'
                 else:
                     xlab = '$p$ (MPa)'
                 ref_mat = False
@@ -1934,49 +1934,49 @@ class Material(object):
             else:
                 print('Warning in plot_yield_locus: axis1 not defined properly, set to sig_1', axis1, j)
                 s1 = xx.ravel()
-                title = '$\sigma_1$'
+                title = r'$\sigma_1$'
                 if scaling:
-                    xlab = '$\sigma_1 / \sigma_y$'
+                    xlab = r'$\sigma_1 / \sigma_y$'
                 else:
-                    xlab = '$\sigma_1$ (MPa)'
+                    xlab = r'$\sigma_1$ (MPa)'
             #second axis
             if axis2[j]==0:
                 s1 = yy.ravel()
-                title += '-$\sigma_1$ slice'
+                title += r'-$\sigma_1$ slice'
                 if scaling:
-                    ylab = '$\sigma_1 / \sigma_y$'
+                    ylab = r'$\sigma_1 / \sigma_y$'
                 else:
-                    ylab = '$\sigma_1$ (MPa)'
+                    ylab = r'$\sigma_1$ (MPa)'
             elif axis2[j]==1:
                 s2 = yy.ravel()
-                title += '-$\sigma_2$ slice'
+                title += r'-$\sigma_2$ slice'
                 if scaling:
-                    ylab = '$\sigma_2 / \sigma_y$'
+                    ylab = r'$\sigma_2 / \sigma_y$'
                 else:
-                    ylab = '$\sigma_2$ (MPa)'
+                    ylab = r'$\sigma_2$ (MPa)'
             elif axis2[j]==2:
                 s3 = yy.ravel()
-                title += '-$\sigma_3$ slice'
+                title += r'-$\sigma_3$ slice'
                 if scaling:
-                    ylab = '$\sigma_3 / \sigma_y$'
+                    ylab = r'$\sigma_3 / \sigma_y$'
                 else:
-                    ylab = '$\sigma_3$ (MPa)'
+                    ylab = r'$\sigma_3$ (MPa)'
             elif axis2[j]==3:
                 s3 = yy.ravel()
-                title += '-$\sigma_3$ slice'
+                title += r'-$\sigma_3$ slice'
                 if scaling:
-                    ylab = '$\sigma_3 / \sigma_y$'
+                    ylab = r'$\sigma_3 / \sigma_y$'
                 else:
-                    ylab = '$\sigma_3$ (MPa)'
+                    ylab = r'$\sigma_3$ (MPa)'
                 axis2[j]=2
             else:
                 print('Warning in plot_yield_locus: axis2 not defined properly, set to sig_2', axis2, j)
                 s2 = yy.ravel()
-                title += '-$\sigma_2$ slice'
+                title += r'-$\sigma_2$ slice'
                 if scaling:
-                    ylab = '$\sigma_2 / \sigma_y$'
+                    ylab = r'$\sigma_2 / \sigma_y$'
                 else:
-                    ylab = '$\sigma_2$ (MPa)'
+                    ylab = r'$\sigma_2$ (MPa)'
             si3 = 1  # slice for data
             if s1 is None:
                 s1 = np.zeros(Nm2)
@@ -2280,13 +2280,13 @@ class Material(object):
             drh = 0.08*dr
             ax.arrow(0, 0, 0, dr, head_width=0.05, width=0.004, 
                      head_length=drh, color='r', length_includes_head=True)
-            ax.text(-0.12, dr*0.89, '$\sigma_1$', color='r',fontsize=22)
+            ax.text(-0.12, dr*0.89, r'$\sigma_1$', color='r',fontsize=22)
             ax.arrow(2.0944, 0, 0, dr, head_width=0.05,
                      width=0.004, head_length=drh, color='r', length_includes_head=True)
-            ax.text(2.24, dr*0.94, '$\sigma_2$', color='r',fontsize=22)
+            ax.text(2.24, dr*0.94, r'$\sigma_2$', color='r',fontsize=22)
             ax.arrow(-2.0944, 0, 0, dr, head_width=0.05,
                      width=0.004, head_length=drh, color='r', length_includes_head=True)
-            ax.text(-2.04, dr*0.97, '$\sigma_3$', color='r',fontsize=22)
+            ax.text(-2.04, dr*0.97, r'$\sigma_3$', color='r',fontsize=22)
         plt.legend(loc=(.9,0.95),fontsize=18)
         if file is not None:
             plt.savefig(file+'.pdf', format='pdf', dpi=300)
