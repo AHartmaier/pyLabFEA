@@ -32,6 +32,13 @@ def test_workhard():
     assert np.abs(mat3.sigeps['et2']['sig'][-1][0] - 307.1334214002634) < 1E-5
     assert np.abs(mat3.sigeps['ect']['sig'][-1][0] + 192.15895530336059) < 1E-5
     
+def test_hill_6p():
+    # check if sdim=6 and hill_6p works fine
+    assert np.abs(mat4.propJ2['stx']['peeq'][-1] - 0.05039661) < 1E-5
+    assert np.abs(mat4.propJ2['sty']['seq'][-1] - 114.28035811) < 1E-5
+    assert np.abs(mat4.sigeps['et2']['sig'][-1][1] - 102.534840) < 1E-5
+    assert np.abs(mat4.sigeps['ect']['sig'][-1][0] + 54.6031702) < 1E-5
+    
 #define model for elasticity tests
 fem_v = FE.Model(dim=2, planestress=True)   # call class to generate container for finite element model
 fem_v.geom([2, 1, 2, 1, 2], LY=4.) # define sections in absolute lengths
@@ -77,3 +84,9 @@ mat3 = FE.Material()               # define  material
 mat3.elasticity(E=300.e3, nu=0.3)
 mat3.plasticity(sy=150., khard=2000.)   # define material with ideal isotropic plasticity
 mat3.calc_properties(eps=0.1, sigeps=True) #, sigeps=True, min_step=2, verb=True) # calculate the stress-strain curves up to a total strain of 5%
+
+#test plasticity for full stress tensor
+mat4 = FE.Material()               # define  material
+mat4.elasticity(E=200.e3, nu=0.3)
+mat4.plasticity(sy=100., hill=[0.7,1.,1.4,1.,1.2,0.8], khard=100., sdim=6)
+mat4.calc_properties(eps=0.05, sigeps=True)

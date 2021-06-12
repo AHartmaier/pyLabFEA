@@ -54,6 +54,7 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 <span class="kn">import</span> <span class="nn">sys</span><span class="o">,</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
 <span class="kn">import</span> <span class="nn">pickle</span>
 
 <span class="s1">&#39;==========================&#39;</span>
@@ -369,8 +370,8 @@
         <span class="k">return</span> <span class="n">f</span></div>
 
 <div class="viewcode-block" id="Material.ML_full_yf"><a class="viewcode-back" href="../pyLabFEA.html#material.Material.ML_full_yf">[docs]</a>    <span class="k">def</span> <span class="nf">ML_full_yf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">ld</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Calculate full ML yield function as distance of given stress to </span>
-<span class="sd">        yield locus in loading direction.</span>
+        <span class="sd">&#39;&#39;&#39;Calculate full ML yield function as distance of a single given stress</span>
+<span class="sd">        tensor to the yield locus in loading direction.</span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -443,7 +444,7 @@
 <span class="sd">        ----------</span>
 <span class="sd">        x : (N,)-array</span>
 <span class="sd">            Multiplyer for stress</span>
-<span class="sd">        su : (N,3) or (N,6) array</span>
+<span class="sd">        su : (N,sdim) array</span>
 <span class="sd">            Unit stress</span>
 <span class="sd">        peeq : float</span>
 <span class="sd">            Equivalent plastic strain (optional, default: 0)</span>
@@ -463,9 +464,9 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        x : (N,)-array</span>
+<span class="sd">        x  : float</span>
 <span class="sd">            Multiplyer for stress</span>
-<span class="sd">        su : (N,3) or (N,6) array</span>
+<span class="sd">        su : (sdim,) array</span>
 <span class="sd">            Unit stress</span>
 <span class="sd">        peeq : float</span>
 <span class="sd">            Equivalent plastic strain (optional, default: 0)</span>
@@ -485,7 +486,8 @@
 <span class="sd">        equivalent J2 stress for isotropic flow behavior and tension compression invariance;</span>
 <span class="sd">        Hill-type approach for anisotropic plastic yielding;</span>
 <span class="sd">        Drucker-like approach for tension-compression asymmetry;</span>
-<span class="sd">        Barlat 2004-18p model for plastic anisotropy</span>
+<span class="sd">        Barlat 2004-18p model for plastic anisotropy;</span>
+<span class="sd">        Tresca equivalent stress</span>
 <span class="sd">        </span>
 <span class="sd">        Step 1: transform input into </span>
 <span class="sd">          (i)   sig: (N,6)-array of Voigt stresses (zeros added if input is princ. stresses)  </span>
@@ -494,9 +496,11 @@
 <span class="sd">          N=1 if input is single stress in which case return value is of type float</span>
 <span class="sd">        </span>
 <span class="sd">        Step 2: Call appropriate subroutines for evaluation of equiv. stress. Currently supported are: </span>
-<span class="sd">          (i)   von Mises/J2 (material independent, works also for elastic materials)  </span>
-<span class="sd">          (ii)  Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)</span>
-<span class="sd">          (iii) Barlat Yld2004-18p</span>
+<span class="sd">          (i)   Tresca</span>
+<span class="sd">          (ii)  Barlat Yld2004-18p</span>
+<span class="sd">          (iii) Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)</span>
+<span class="sd">          (iv) von Mises/J2 (special case of Hill with all coefficients equal 1, </span>
+<span class="sd">                             material independent, works also for elastic and ML materials)  </span>
 <span class="sd">        </span>
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -513,7 +517,7 @@
         <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
         <span class="c1">#Step 1: Transform input</span>
         <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
-            <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sp is single principle stress vector</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sp is single principal stress vector</span>
             <span class="n">sp</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">sig</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">sig</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">sig</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]])</span>
         <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
@@ -521,7 +525,7 @@
             <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">)),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
             <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">sp</span><span class="p">,</span> <span class="n">evec</span> <span class="o">=</span> <span class="n">sprinc</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
+            <span class="n">sp</span> <span class="o">=</span> <span class="n">sprinc</span><span class="p">(</span><span class="n">sig</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">sp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sp</span><span class="p">])</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
@@ -553,15 +557,12 @@
             <span class="c1"># consider anisotropy in flow behavior in second invariant in Hill-type approach</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill_6p</span><span class="p">:</span>
                 <span class="c1"># equiv. stress for full 6-parameter Hill model</span>
-                <span class="n">hh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
-                <span class="n">hh</span><span class="p">[:,</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">I1</span><span class="p">[:,</span><span class="kc">None</span><span class="p">]</span>
-                <span class="n">sd</span> <span class="o">=</span> <span class="n">sig</span> <span class="o">-</span> <span class="n">hh</span> <span class="c1"># deviatoric stress tensor</span>
-                <span class="n">I2</span> <span class="o">=</span> <span class="n">hp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> \
-                     <span class="n">hp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> \
-                     <span class="n">hp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
-                     <span class="mf">6.</span><span class="o">*</span><span class="n">hp</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">3</span><span class="p">])</span>      <span class="o">+</span> \
-                     <span class="mf">6.</span><span class="o">*</span><span class="n">hp</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">4</span><span class="p">])</span>      <span class="o">+</span> \
-                     <span class="mf">6.</span><span class="o">*</span><span class="n">hp</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sd</span><span class="p">[:,</span><span class="mi">5</span><span class="p">])</span>
+                <span class="n">I2</span> <span class="o">=</span> <span class="n">hp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span> <span class="o">+</span> \
+                     <span class="n">hp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span> <span class="o">+</span> \
+                     <span class="n">hp</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span><span class="o">-</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
+                     <span class="mf">6.</span><span class="o">*</span><span class="n">hp</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">3</span><span class="p">])</span>       <span class="o">+</span> \
+                     <span class="mf">6.</span><span class="o">*</span><span class="n">hp</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">4</span><span class="p">])</span>       <span class="o">+</span> \
+                     <span class="mf">6.</span><span class="o">*</span><span class="n">hp</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">5</span><span class="p">])</span>
                 <span class="n">I2</span> <span class="o">*=</span> <span class="mf">0.5</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">msg</span><span class="p">[</span><span class="s1">&#39;equiv&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;6-parameter Hill, full Voigt stress&#39;</span>
                 <span class="c1">#print(&#39;Full stress&#39;, np.sqrt(I2))</span>
@@ -614,7 +615,7 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        sig : (3,), (6,), (N,3) or (N,6) array</span>
-<span class="sd">            Stress value</span>
+<span class="sd">            Stress value (Pricipal stress or full stress tensor)</span>
 <span class="sd">        seq : float or (N,) array</span>
 <span class="sd">            Equivalent stresses (optional)</span>
 <span class="sd">        ana : Boolean</span>
@@ -622,13 +623,13 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        fgrad : (3,) or (N,3) array</span>
-<span class="sd">            Gradient to yield surface at given position in princ. stress space</span>
+<span class="sd">        fgrad : (sdim,), (N,sdim) array</span>
+<span class="sd">            Gradient to yield surface at given position in stress space, same dimension as sdim</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">N</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
         <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
-            <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is vector of principle stresses</span>
+            <span class="n">N</span> <span class="o">=</span> <span class="mi">1</span> <span class="c1"># sig is vector of principal stresses</span>
             <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">sig</span><span class="p">])</span>
         <span class="k">elif</span> <span class="n">sh</span><span class="o">!=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="ow">and</span> <span class="n">sh</span><span class="o">!=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown format of stress in calc_fgrad&#39;</span><span class="p">)</span>
@@ -695,27 +696,29 @@
             <span class="c1"># as special case.</span>
             <span class="c1"># currently implemented: J2, 3-parameter Hill (only principal stresses), 6-parameter Hill full stress tensor</span>
             <span class="c1"># no gradient yet for Barlat and Tresca, numerical gradient</span>
-            <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">6</span><span class="p">,):</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;calc_fgrad: analytical gradient for full stress trensor not implemented&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">barlat</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;calc_fgrad: analytical gradient for Barlat not implemented&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tresca</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;calc_fgrad: analytical gradient for Tresca not implemented&#39;</span><span class="p">)</span>
             <span class="n">h0</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">h1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
             <span class="n">h2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill_6p</span><span class="p">:</span>
-                <span class="n">h3</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
-                <span class="n">h4</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
-                <span class="n">h5</span> <span class="o">=</span> <span class="mf">2.</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+                <span class="n">h3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+                <span class="n">h4</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+                <span class="n">h5</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
             <span class="n">d3</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">drucker</span><span class="o">/</span><span class="mf">3.</span>
             <span class="k">if</span> <span class="p">(</span><span class="n">seq</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
                 <span class="n">seq</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_seq</span><span class="p">(</span><span class="n">sig</span><span class="p">)</span>
-            <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">h0</span><span class="o">+</span><span class="n">h2</span><span class="p">)</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h0</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">h2</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="n">seq</span> <span class="o">+</span> <span class="n">d3</span>
-            <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">h1</span><span class="o">+</span><span class="n">h0</span><span class="p">)</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">h0</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h1</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="n">seq</span> <span class="o">+</span> <span class="n">d3</span>
-            <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">h2</span><span class="o">+</span><span class="n">h1</span><span class="p">)</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">h2</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h1</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="n">seq</span> <span class="o">+</span> <span class="n">d3</span>
+            <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">h0</span><span class="o">+</span><span class="n">h2</span><span class="p">)</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h0</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">h2</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">seq</span><span class="p">)</span> <span class="o">+</span> <span class="n">d3</span>
+            <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">h1</span><span class="o">+</span><span class="n">h0</span><span class="p">)</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">h0</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h1</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">seq</span><span class="p">)</span> <span class="o">+</span> <span class="n">d3</span>
+            <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">((</span><span class="n">h2</span><span class="o">+</span><span class="n">h1</span><span class="p">)</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">h2</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">h1</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">1</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="mf">2.</span><span class="o">*</span><span class="n">seq</span><span class="p">)</span> <span class="o">+</span> <span class="n">d3</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdim</span><span class="o">==</span><span class="mi">6</span><span class="p">:</span>
+                <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6.</span><span class="o">*</span><span class="n">h3</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">3</span><span class="p">]</span><span class="o">/</span><span class="n">seq</span>
+                <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6.</span><span class="o">*</span><span class="n">h4</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">4</span><span class="p">]</span><span class="o">/</span><span class="n">seq</span>
+                <span class="n">fgrad</span><span class="p">[:,</span><span class="mi">5</span><span class="p">]</span> <span class="o">=</span> <span class="mf">6.</span><span class="o">*</span><span class="n">h5</span><span class="o">*</span><span class="n">sig</span><span class="p">[:,</span><span class="mi">5</span><span class="p">]</span><span class="o">/</span><span class="n">seq</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill_6p</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;calc_fgrad: analytical gradient for 6-p Hill not implemented&#39;</span><span class="p">)</span>
-            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hill_6p</span><span class="p">:</span>
-                <span class="k">if</span> <span class="n">h0</span><span class="o">==</span><span class="n">h1</span><span class="o">==</span><span class="n">h2</span><span class="o">==</span><span class="mf">1.</span> <span class="ow">and</span> <span class="n">h3</span><span class="o">==</span><span class="n">h4</span><span class="o">==</span><span class="n">h5</span><span class="o">==</span><span class="mf">6.</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">h0</span><span class="o">==</span><span class="n">h1</span><span class="o">==</span><span class="n">h2</span><span class="o">==</span><span class="mf">1.</span> <span class="ow">and</span> <span class="n">h3</span><span class="o">==</span><span class="n">h4</span><span class="o">==</span><span class="n">h5</span><span class="o">==</span><span class="mf">3.</span><span class="p">:</span>
                     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;analytical, J2 isotropic, 6-parameter Hill&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">label</span> <span class="o">=</span> <span class="s1">&#39;analytical, 6-parameter Hill&#39;</span>
@@ -796,7 +799,7 @@
                 <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fgrad</span><span class="p">(</span><span class="n">sprinc</span><span class="p">(</span><span class="n">sig</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fgrad</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">)</span>
-            <span class="n">hh</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Cel</span> <span class="o">@</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">khard</span>
+            <span class="n">hh</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Cel</span> <span class="o">@</span> <span class="n">a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">khard</span>
             <span class="n">lam_dot</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Cel</span> <span class="o">@</span> <span class="n">deps</span> <span class="o">/</span> <span class="n">hh</span>  <span class="c1"># deps must not contain elastic strain components</span>
             <span class="n">pdot</span> <span class="o">=</span> <span class="n">lam_dot</span> <span class="o">*</span> <span class="n">a</span>
         <span class="k">return</span> <span class="n">pdot</span></div>
@@ -825,7 +828,7 @@
             <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fgrad</span><span class="p">(</span><span class="n">sprinc</span><span class="p">(</span><span class="n">sig</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">calc_fgrad</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">peeq</span><span class="o">=</span><span class="n">peeq</span><span class="p">)</span>
-        <span class="n">hh</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Cel</span> <span class="o">@</span> <span class="n">a</span> <span class="o">+</span> <span class="mi">4</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">khard</span>
+        <span class="n">hh</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">T</span> <span class="o">@</span> <span class="n">Cel</span> <span class="o">@</span> <span class="n">a</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">khard</span>
         <span class="n">ca</span> <span class="o">=</span> <span class="n">Cel</span> <span class="o">@</span> <span class="n">a</span>
         <span class="n">Ct</span> <span class="o">=</span> <span class="n">Cel</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">kron</span><span class="p">(</span><span class="n">ca</span><span class="p">,</span> <span class="n">ca</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">)</span><span class="o">/</span><span class="n">hh</span>
         <span class="k">return</span> <span class="n">Ct</span></div>
@@ -836,7 +839,7 @@
 
 <div class="viewcode-block" id="Material.setup_yf_SVM_voigt"><a class="viewcode-back" href="../pyLabFEA.html#material.Material.setup_yf_SVM_voigt">[docs]</a>    <span class="k">def</span> <span class="nf">setup_yf_SVM_voigt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test</span>
-<span class="sd">        data (features) are accepted as either 3D principle stresses or cylindrical stresses, but principal stresses will</span>
+<span class="sd">        data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will</span>
 <span class="sd">        be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. </span>
 <span class="sd">        stress at yield onset and polar angle as degrees of freedom. Graphical output on the trained SVC yield function is </span>
 <span class="sd">        possible.</span>
@@ -935,15 +938,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Paired</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;extended SVM yield function in training&#39;</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$theta/\pi$&#39;</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;$\sigma_</span><span class="si">{eq}</span><span class="s1">/\sigma_y$&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\theta/\pi$&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma_</span><span class="si">{eq}</span><span class="s1">/\sigma_y$&#39;</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">train_sc</span><span class="p">,</span> <span class="n">test_sc</span></div>
 
 <div class="viewcode-block" id="Material.setup_yf_SVM_cyl"><a class="viewcode-back" href="../pyLabFEA.html#material.Material.setup_yf_SVM_cyl">[docs]</a>    <span class="k">def</span> <span class="nf">setup_yf_SVM_cyl</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">x_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">y_test</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">10.</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="mf">1.</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
                      <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cyl</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test</span>
-<span class="sd">        data (features) are accepted as either 3D principle stresses or cylindrical stresses, but principal stresses will</span>
+<span class="sd">        data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will</span>
 <span class="sd">        be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. </span>
 <span class="sd">        stress at yield onset and polar angle as degrees of freedom. Graphical output on the trained SVC yield function is </span>
 <span class="sd">        possible.</span>
@@ -999,7 +1002,7 @@
             <span class="c1">#princ. stresses</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">seq_J2</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_seq</span> <span class="o">-</span> <span class="mf">1.</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">polar_ang</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converting principle stresses to cylindrical stresses for training&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Converting principal stresses to cylindrical stresses for training&#39;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="c1">#cylindrical stresses</span>
             <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">scale_seq</span> <span class="o">-</span> <span class="mf">1.</span>
@@ -1069,8 +1072,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="n">Z</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s1">&#39;black&#39;</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">X_train</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="n">X_train</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">s</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">y_train</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Paired</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;extended SVM yield function in training&#39;</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;$theta/\pi$&#39;</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;$\sigma_</span><span class="si">{eq}</span><span class="s1">/\sigma_y$&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\theta/\pi$&#39;</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\sigma_</span><span class="si">{eq}</span><span class="s1">/\sigma_y$&#39;</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">train_sc</span><span class="p">,</span> <span class="n">test_sc</span></div>
  
@@ -1179,6 +1182,7 @@
             <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning: result vector for yield function contains more categories than &quot;-1&quot; and &quot;+1&quot;. Will result in higher dimensional SVC.&#39;</span><span class="p">)</span>
         <span class="c1">#Train SVC with data from all microstructures in data</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdim</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="c1">#assuming cylindrical stresses if sdim=3</span>
             <span class="n">train_sc</span><span class="p">,</span> <span class="n">test_sc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_yf_SVM_cyl</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">yt</span><span class="p">,</span> <span class="n">cyl</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">,</span> <span class="n">fs</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="n">plot</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">train_sc</span><span class="p">,</span> <span class="n">test_sc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setup_yf_SVM_voigt</span><span class="p">(</span><span class="n">xt</span><span class="p">,</span> <span class="n">yt</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="n">C</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">)</span>
@@ -1488,7 +1492,7 @@
               <span class="s2">&quot;Format&quot;</span>   <span class="p">:</span> <span class="p">(</span><span class="n">nlin</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
               <span class="s2">&quot;Names&quot;</span> <span class="p">:</span> <span class="p">[</span><span class="s1">&#39;nsv&#39;</span><span class="p">,</span> <span class="s1">&#39;nsd&#39;</span><span class="p">,</span> <span class="s1">&#39;Emod&#39;</span><span class="p">,</span> <span class="s1">&#39;nu&#39;</span><span class="p">,</span> <span class="s1">&#39;rho&#39;</span><span class="p">,</span> <span class="s1">&#39;gamma&#39;</span><span class="p">,</span> <span class="s1">&#39;epc&#39;</span><span class="p">,</span> \
                             <span class="s1">&#39;scale_seq&#39;</span><span class="p">,</span> <span class="s1">&#39;scale_wh&#39;</span><span class="p">,</span> <span class="s1">&#39;Nset&#39;</span><span class="p">,</span> <span class="s1">&#39;scale_text[0:Nset]&#39;</span><span class="p">,</span> \
-                            <span class="s1">&#39;20: dual_coef[0:nsv]&#39;</span><span class="p">,</span> <span class="s1">&#39;sup_vec[0:nsv,0:nsd]&#39;</span><span class="p">],</span>
+                            <span class="s1">&#39;dual_coef[0:nsv]&#39;</span><span class="p">,</span> <span class="s1">&#39;sup_vec[0:nsv,0:nsd]&#39;</span><span class="p">],</span>
               <span class="s2">&quot;Units&quot;</span> <span class="p">:</span> <span class="p">{</span> 
                   <span class="s1">&#39;Stress&#39;</span> <span class="p">:</span> <span class="s1">&#39;MPa&#39;</span><span class="p">,</span>
                   <span class="s1">&#39;Strain&#39;</span> <span class="p">:</span> <span class="s1">&#39;None&#39;</span><span class="p">,</span>
@@ -1518,7 +1522,7 @@
 
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pckl&#39;</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
         <span class="k">return</span></div>
@@ -1584,7 +1588,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Error: Inconsistent definition of material parameters&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Material.plasticity"><a class="viewcode-back" href="../pyLabFEA.html#material.Material.plasticity">[docs]</a>    <span class="k">def</span> <span class="nf">plasticity</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sy</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hill</span><span class="o">=</span><span class="p">[</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">],</span> <span class="n">drucker</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">khard</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">tresca</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">barlat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> \
-                   <span class="n">barlat_exp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hill_3p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hill_6p</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">sdim</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+                   <span class="n">barlat_exp</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hill_3p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hill_6p</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sdim</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Define plastic material parameters; anisotropic Hill-like and Drucker-like</span>
 <span class="sd">        behavior is supported</span>
 
@@ -1608,7 +1612,7 @@
 <span class="sd">            Indicate if 3-parameter Hill model shall be applied (optional, default: None)</span>
 <span class="sd">            Will be set True automatically if 3 Hill paramaters != 1 are provided </span>
 <span class="sd">        hill_6p : Boolean</span>
-<span class="sd">            Indicate if 6-parameter Hill model shall be applied (optional, default: False)</span>
+<span class="sd">            Indicate if 6-parameter Hill model shall be applied (optional, default: None)</span>
 <span class="sd">            Will be set True automatically if 6 Hill parameters are provided</span>
 <span class="sd">        sdim : int</span>
 <span class="sd">            Dimensionality of stress tensor to be used for plasticity, must be either 3 </span>
@@ -1625,24 +1629,32 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdim</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">sdim</span><span class="o">!=</span><span class="n">sdim</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;plasticity: Parameter sdim is changed. New value:&#39;</span><span class="p">,</span><span class="n">sdim</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sdim</span> <span class="o">=</span> <span class="n">sdim</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hill</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span>  <span class="c1"># Hill anisotropic parameters</span>
-        <span class="c1"># determine if 6-Hill parameters are provided</span>
-        <span class="k">if</span> <span class="n">hill_6p</span><span class="p">:</span>
-            <span class="c1"># Hill 6p set True by user</span>
-            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span><span class="o">!=</span><span class="mi">6</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;When hill_6p is set True, 6 Hill parameters must be provided&#39;</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="c1"># set hill_6p automatically</span>
-            <span class="n">hill_6p</span> <span class="o">=</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span><span class="o">==</span><span class="mi">6</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">hill_6p</span> <span class="o">=</span> <span class="n">hill_6p</span>
-        <span class="c1"># determine if 3p-Hill model needs to be used</span>
-        <span class="k">if</span> <span class="n">hill_3p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">lh</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hill_6p</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">hill_3p</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># determine if 3 or 6 Hill parameters are provided</span>
+            <span class="n">hill_6p</span> <span class="o">=</span> <span class="p">(</span><span class="n">lh</span><span class="o">==</span><span class="mi">6</span><span class="p">)</span>
             <span class="n">hill_3p</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">hill_6p</span>
             <span class="k">if</span> <span class="n">hill_3p</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hill</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">==</span><span class="mf">1.</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hill</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">==</span><span class="mf">1.</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">hill</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">==</span><span class="mf">1.</span><span class="p">):</span>
                 <span class="n">hill_3p</span> <span class="o">=</span> <span class="kc">False</span>
-        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span><span class="o">!=</span><span class="mi">3</span> <span class="ow">and</span> <span class="n">hill_3p</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;When hill_3p is set True, only 3 Hill parameters can be provided&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hill_6p</span> <span class="ow">and</span> <span class="n">lh</span><span class="o">!=</span><span class="mi">6</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;plasticity: When hill_6p is set True, 6 Hill parameters must be provided&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hill_3p</span> <span class="ow">and</span> <span class="n">lh</span><span class="o">!=</span><span class="mi">3</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;plasticity: When hill_3p is set True, only 3 Hill parameters can be provided&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">hill_6p</span> <span class="ow">and</span> <span class="n">sdim</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;plasticity: 6 Hill parameters are provided, but sdim=3; ignoring shear parameters&#39;</span><span class="p">)</span>
+            <span class="n">hill_6p</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">hill_3p</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">hill</span> <span class="o">=</span> <span class="n">hill</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">hill_3p</span> <span class="ow">and</span> <span class="n">sdim</span><span class="o">==</span><span class="mi">6</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;plasticity: 3 Hill parameters are provided, but sdim=6; shear parameters set to 1&#39;</span><span class="p">)</span>
+            <span class="n">hill_3p</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">hill_6p</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">hill</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">sdim</span><span class="o">==</span><span class="mi">6</span> <span class="ow">and</span> <span class="n">lh</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
+            <span class="n">hill</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hill_6p</span> <span class="o">=</span> <span class="n">hill_6p</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">hill_3p</span> <span class="o">=</span> <span class="n">hill_3p</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hill</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">hill</span><span class="p">)</span>  <span class="c1"># Hill anisotropic parameters</span>
         <span class="c1"># set Trseca flag</span>
         <span class="k">if</span> <span class="n">tresca</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">tresca</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1854,7 +1866,7 @@
 <div class="viewcode-block" id="Material.plot_yield_locus"><a class="viewcode-back" href="../pyLabFEA.html#material.Material.plot_yield_locus">[docs]</a>    <span class="k">def</span> <span class="nf">plot_yield_locus</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fun</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">trange</span><span class="o">=</span><span class="mf">1.e-2</span><span class="p">,</span>
                          <span class="n">xstart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">xend</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">axis1</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis2</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">iso</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">ref_mat</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                          <span class="n">field</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">Nmesh</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">scaling</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;Plot different cuts through yield locus in 3D principle stress space.</span>
+        <span class="sd">&#39;&#39;&#39;Plot different cuts through yield locus in 3D principal stress space.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1863,7 +1875,7 @@
 <span class="sd">        label : str</span>
 <span class="sd">            Label for yield function (optional, default: own name)</span>
 <span class="sd">        data  : (N,3) array</span>
-<span class="sd">            Principle stress data to be used for scatter plot (optional)</span>
+<span class="sd">            principal stress data to be used for scatter plot (optional)</span>
 <span class="sd">        trange : float</span>
 <span class="sd">            Cut-off for data to be plotted on slice (optional, default: 1.e-2)</span>
 <span class="sd">        xstart : float</span>
@@ -1935,31 +1947,31 @@
             <span class="c1">#first axis</span>
             <span class="k">if</span> <span class="n">axis1</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
                 <span class="n">s1</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1$&#39;</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1$&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1 / \sigma_y$&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1$ (MPa)&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1$ (MPa)&#39;</span>
             <span class="k">elif</span> <span class="n">axis1</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
                 <span class="n">s2</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2$&#39;</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2$&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2 / \sigma_y$&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2$ (MPa)&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2$ (MPa)&#39;</span>
             <span class="k">elif</span> <span class="n">axis1</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
                 <span class="n">s3</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3$&#39;</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3$&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3 / \sigma_y$&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3$ (MPa)&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3$ (MPa)&#39;</span>
             <span class="k">elif</span> <span class="n">axis1</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
                 <span class="n">s1</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
                 <span class="n">s2</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;$p=\sigma_1=\sigma_2$&#39;</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$p=\sigma_1=\sigma_2$&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$p / \sigma_y$&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$p / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$p$ (MPa)&#39;</span>
                 <span class="n">ref_mat</span> <span class="o">=</span> <span class="kc">False</span>
@@ -1967,49 +1979,49 @@
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning in plot_yield_locus: axis1 not defined properly, set to sig_1&#39;</span><span class="p">,</span> <span class="n">axis1</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
                 <span class="n">s1</span> <span class="o">=</span> <span class="n">xx</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1$&#39;</span>
+                <span class="n">title</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1$&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1 / \sigma_y$&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">xlab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1$ (MPa)&#39;</span>
+                    <span class="n">xlab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1$ (MPa)&#39;</span>
             <span class="c1">#second axis</span>
             <span class="k">if</span> <span class="n">axis2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
                 <span class="n">s1</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">+=</span> <span class="s1">&#39;-$\sigma_1$ slice&#39;</span>
+                <span class="n">title</span> <span class="o">+=</span> <span class="sa">r</span><span class="s1">&#39;-$\sigma_1$ slice&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1 / \sigma_y$&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_1$ (MPa)&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1$ (MPa)&#39;</span>
             <span class="k">elif</span> <span class="n">axis2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
                 <span class="n">s2</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">+=</span> <span class="s1">&#39;-$\sigma_2$ slice&#39;</span>
+                <span class="n">title</span> <span class="o">+=</span> <span class="sa">r</span><span class="s1">&#39;-$\sigma_2$ slice&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2 / \sigma_y$&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2$ (MPa)&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2$ (MPa)&#39;</span>
             <span class="k">elif</span> <span class="n">axis2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">2</span><span class="p">:</span>
                 <span class="n">s3</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">+=</span> <span class="s1">&#39;-$\sigma_3$ slice&#39;</span>
+                <span class="n">title</span> <span class="o">+=</span> <span class="sa">r</span><span class="s1">&#39;-$\sigma_3$ slice&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3 / \sigma_y$&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3$ (MPa)&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3$ (MPa)&#39;</span>
             <span class="k">elif</span> <span class="n">axis2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">==</span><span class="mi">3</span><span class="p">:</span>
                 <span class="n">s3</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">+=</span> <span class="s1">&#39;-$\sigma_3$ slice&#39;</span>
+                <span class="n">title</span> <span class="o">+=</span> <span class="sa">r</span><span class="s1">&#39;-$\sigma_3$ slice&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3 / \sigma_y$&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_3$ (MPa)&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3$ (MPa)&#39;</span>
                 <span class="n">axis2</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">=</span><span class="mi">2</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Warning in plot_yield_locus: axis2 not defined properly, set to sig_2&#39;</span><span class="p">,</span> <span class="n">axis2</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
                 <span class="n">s2</span> <span class="o">=</span> <span class="n">yy</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
-                <span class="n">title</span> <span class="o">+=</span> <span class="s1">&#39;-$\sigma_2$ slice&#39;</span>
+                <span class="n">title</span> <span class="o">+=</span> <span class="sa">r</span><span class="s1">&#39;-$\sigma_2$ slice&#39;</span>
                 <span class="k">if</span> <span class="n">scaling</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2 / \sigma_y$&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2 / \sigma_y$&#39;</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="n">ylab</span> <span class="o">=</span> <span class="s1">&#39;$\sigma_2$ (MPa)&#39;</span>
+                    <span class="n">ylab</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2$ (MPa)&#39;</span>
             <span class="n">si3</span> <span class="o">=</span> <span class="mi">1</span>  <span class="c1"># slice for data</span>
             <span class="k">if</span> <span class="n">s1</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">s1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Nm2</span><span class="p">)</span>
@@ -2313,13 +2325,13 @@
             <span class="n">drh</span> <span class="o">=</span> <span class="mf">0.08</span><span class="o">*</span><span class="n">dr</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span> 
                      <span class="n">head_length</span><span class="o">=</span><span class="n">drh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">length_includes_head</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.12</span><span class="p">,</span> <span class="n">dr</span><span class="o">*</span><span class="mf">0.89</span><span class="p">,</span> <span class="s1">&#39;$\sigma_1$&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">0.12</span><span class="p">,</span> <span class="n">dr</span><span class="o">*</span><span class="mf">0.89</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_1$&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="mf">2.0944</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
                      <span class="n">width</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="n">drh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">length_includes_head</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">2.24</span><span class="p">,</span> <span class="n">dr</span><span class="o">*</span><span class="mf">0.94</span><span class="p">,</span> <span class="s1">&#39;$\sigma_2$&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="mf">2.24</span><span class="p">,</span> <span class="n">dr</span><span class="o">*</span><span class="mf">0.94</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_2$&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
             <span class="n">ax</span><span class="o">.</span><span class="n">arrow</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0944</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dr</span><span class="p">,</span> <span class="n">head_width</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
                      <span class="n">width</span><span class="o">=</span><span class="mf">0.004</span><span class="p">,</span> <span class="n">head_length</span><span class="o">=</span><span class="n">drh</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">length_includes_head</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">2.04</span><span class="p">,</span> <span class="n">dr</span><span class="o">*</span><span class="mf">0.97</span><span class="p">,</span> <span class="s1">&#39;$\sigma_3$&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="o">-</span><span class="mf">2.04</span><span class="p">,</span> <span class="n">dr</span><span class="o">*</span><span class="mf">0.97</span><span class="p">,</span> <span class="sa">r</span><span class="s1">&#39;$\sigma_3$&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;r&#39;</span><span class="p">,</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">22</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="p">(</span><span class="mf">.9</span><span class="p">,</span><span class="mf">0.95</span><span class="p">),</span><span class="n">fontsize</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">file</span><span class="o">+</span><span class="s1">&#39;.pdf&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
@@ -2384,7 +2396,7 @@
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.1</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

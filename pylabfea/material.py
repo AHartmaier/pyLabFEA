@@ -21,6 +21,7 @@ from sklearn import svm
 import numpy as np
 import matplotlib.pyplot as plt
 import sys, os
+import warnings
 import pickle
 
 '=========================='
@@ -336,8 +337,8 @@ class Material(object):
         return f
 
     def ML_full_yf(self, sig, peeq=0., ld=None, verb=True):
-        '''Calculate full ML yield function as distance of given stress to 
-        yield locus in loading direction.
+        '''Calculate full ML yield function as distance of a single given stress
+        tensor to the yield locus in loading direction.
         
         Parameters
         ----------
@@ -410,7 +411,7 @@ class Material(object):
         ----------
         x : (N,)-array
             Multiplyer for stress
-        su : (N,3) or (N,6) array
+        su : (N,sdim) array
             Unit stress
         peeq : float
             Equivalent plastic strain (optional, default: 0)
@@ -430,9 +431,9 @@ class Material(object):
 
         Parameters
         ----------
-        x : (N,)-array
+        x  : float
             Multiplyer for stress
-        su : (N,3) or (N,6) array
+        su : (sdim,) array
             Unit stress
         peeq : float
             Equivalent plastic strain (optional, default: 0)
@@ -452,7 +453,8 @@ class Material(object):
         equivalent J2 stress for isotropic flow behavior and tension compression invariance;
         Hill-type approach for anisotropic plastic yielding;
         Drucker-like approach for tension-compression asymmetry;
-        Barlat 2004-18p model for plastic anisotropy
+        Barlat 2004-18p model for plastic anisotropy;
+        Tresca equivalent stress
         
         Step 1: transform input into 
           (i)   sig: (N,6)-array of Voigt stresses (zeros added if input is princ. stresses)  
@@ -461,9 +463,11 @@ class Material(object):
           N=1 if input is single stress in which case return value is of type float
         
         Step 2: Call appropriate subroutines for evaluation of equiv. stress. Currently supported are: 
-          (i)   von Mises/J2 (material independent, works also for elastic materials)  
-          (ii)  Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)
-          (iii) Barlat Yld2004-18p
+          (i)   Tresca
+          (ii)  Barlat Yld2004-18p
+          (iii) Hill 3-parameter (hill_3p) or 6-parameter (hill_6p)
+          (iv) von Mises/J2 (special case of Hill with all coefficients equal 1, 
+                             material independent, works also for elastic and ML materials)  
         
         Parameters
         ----------
@@ -480,7 +484,7 @@ class Material(object):
         sh = np.shape(sig)
         #Step 1: Transform input
         if sh==(3,):
-            N = 1 # sp is single principle stress vector
+            N = 1 # sp is single principal stress vector
             sp=np.array([sig])
             sig = np.array([[sig[0], sig[1], sig[2], 0, 0,0]])
         elif sh==(N,3):
@@ -488,7 +492,7 @@ class Material(object):
             sig = np.append(sig,np.zeros((N,3)), axis=1)
         elif sh==(6,):
             N = 1
-            sp, evec = sprinc(sig)
+            sp = sprinc(sig)[0]
             sp = np.array([sp])
             sig = np.array([sig])
         elif sh==(N,6):
@@ -520,15 +524,12 @@ class Material(object):
             # consider anisotropy in flow behavior in second invariant in Hill-type approach
             if self.hill_6p:
                 # equiv. stress for full 6-parameter Hill model
-                hh = np.zeros((N,6))
-                hh[:,0:3] = I1[:,None]
-                sd = sig - hh # deviatoric stress tensor
-                I2 = hp[0]*np.square(sd[:,0]-sd[:,1]) + \
-                     hp[1]*np.square(sd[:,1]-sd[:,2]) + \
-                     hp[2]*np.square(sd[:,2]-sd[:,0]) + \
-                     6.*hp[3]*np.square(sd[:,3])      + \
-                     6.*hp[4]*np.square(sd[:,4])      + \
-                     6.*hp[5]*np.square(sd[:,5])
+                I2 = hp[0]*np.square(sig[:,0]-sig[:,1]) + \
+                     hp[1]*np.square(sig[:,1]-sig[:,2]) + \
+                     hp[2]*np.square(sig[:,2]-sig[:,0]) + \
+                     6.*hp[3]*np.square(sig[:,3])       + \
+                     6.*hp[4]*np.square(sig[:,4])       + \
+                     6.*hp[5]*np.square(sig[:,5])
                 I2 *= 0.5
                 self.msg['equiv'] = '6-parameter Hill, full Voigt stress'
                 #print('Full stress', np.sqrt(I2))
@@ -581,7 +582,7 @@ class Material(object):
         Parameters
         ----------
         sig : (3,), (6,), (N,3) or (N,6) array
-            Stress value
+            Stress value (Pricipal stress or full stress tensor)
         seq : float or (N,) array
             Equivalent stresses (optional)
         ana : Boolean
@@ -589,13 +590,13 @@ class Material(object):
 
         Returns
         -------
-        fgrad : (3,) or (N,3) array
-            Gradient to yield surface at given position in princ. stress space
+        fgrad : (sdim,), (N,sdim) array
+            Gradient to yield surface at given position in stress space, same dimension as sdim
         '''
         N = len(sig)
         sh = np.shape(sig)
         if sh==(3,) or sh==(6,):
-            N = 1 # sig is vector of principle stresses
+            N = 1 # sig is vector of principal stresses
             sig = np.array([sig])
         elif sh!=(N,3) and sh!=(N,6):
             raise ValueError('Unknown format of stress in calc_fgrad')
@@ -662,27 +663,29 @@ class Material(object):
             # as special case.
             # currently implemented: J2, 3-parameter Hill (only principal stresses), 6-parameter Hill full stress tensor
             # no gradient yet for Barlat and Tresca, numerical gradient
-            if sh==(N,6) or sh==(6,):
-                raise ValueError('calc_fgrad: analytical gradient for full stress trensor not implemented')
             if self.barlat:
                 raise ValueError('calc_fgrad: analytical gradient for Barlat not implemented')
+            if self.tresca:
+                raise ValueError('calc_fgrad: analytical gradient for Tresca not implemented')
             h0 = self.hill[0]
             h1 = self.hill[1]
             h2 = self.hill[2]
             if self.hill_6p:
-                h3 = 2.*self.hill[3]
-                h4 = 2.*self.hill[4]
-                h5 = 2.*self.hill[5]
+                h3 = self.hill[3]
+                h4 = self.hill[4]
+                h5 = self.hill[5]
             d3 = self.drucker/3.
             if (seq is None):
                 seq = self.calc_seq(sig)
-            fgrad[:,0] = ((h0+h2)*sig[:,0] - h0*sig[:,1] - h2*sig[:,2])/seq + d3
-            fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/seq + d3
-            fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/seq + d3
+            fgrad[:,0] = ((h0+h2)*sig[:,0] - h0*sig[:,1] - h2*sig[:,2])/(2.*seq) + d3
+            fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/(2.*seq) + d3
+            fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/(2.*seq) + d3
+            if self.sdim==6:
+                fgrad[:,3] = 6.*h3*sig[:,3]/seq
+                fgrad[:,4] = 6.*h4*sig[:,4]/seq
+                fgrad[:,5] = 6.*h5*sig[:,5]/seq
             if self.hill_6p:
-                raise ValueError('calc_fgrad: analytical gradient for 6-p Hill not implemented')
-            if self.hill_6p:
-                if h0==h1==h2==1. and h3==h4==h5==6.:
+                if h0==h1==h2==1. and h3==h4==h5==3.:
                     label = 'analytical, J2 isotropic, 6-parameter Hill'
                 else:
                     label = 'analytical, 6-parameter Hill'
@@ -763,7 +766,7 @@ class Material(object):
                 a[0:3] = self.calc_fgrad(sprinc(sig)[0], peeq=peeq)
             else:
                 a = self.calc_fgrad(sig, peeq=peeq)
-            hh = a.T @ Cel @ a + 4*self.khard
+            hh = a.T @ Cel @ a + self.khard
             lam_dot = a.T @ Cel @ deps / hh  # deps must not contain elastic strain components
             pdot = lam_dot * a
         return pdot
@@ -792,7 +795,7 @@ class Material(object):
             a[0:3] = self.calc_fgrad(sprinc(sig)[0], peeq=peeq)
         else:
             a = self.calc_fgrad(sig, peeq=peeq)
-        hh = a.T @ Cel @ a + 4*self.khard
+        hh = a.T @ Cel @ a + self.khard
         ca = Cel @ a
         Ct = Cel - np.kron(ca, ca).reshape(6,6)/hh
         return Ct
@@ -803,7 +806,7 @@ class Material(object):
 
     def setup_yf_SVM_voigt(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., plot=False):
         '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
-        data (features) are accepted as either 3D principle stresses or cylindrical stresses, but principal stresses will
+        data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
         be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. 
         stress at yield onset and polar angle as degrees of freedom. Graphical output on the trained SVC yield function is 
         possible.
@@ -910,7 +913,7 @@ class Material(object):
     def setup_yf_SVM_cyl(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1,
                      plot=False, cyl=False):
         '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
-        data (features) are accepted as either 3D principle stresses or cylindrical stresses, but principal stresses will
+        data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
         be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. 
         stress at yield onset and polar angle as degrees of freedom. Graphical output on the trained SVC yield function is 
         possible.
@@ -966,7 +969,7 @@ class Material(object):
             #princ. stresses
             X_train[:,0] = seq_J2(x)/self.scale_seq - 1.
             X_train[:,1] = polar_ang(x)/np.pi
-            print('Converting principle stresses to cylindrical stresses for training')
+            print('Converting principal stresses to cylindrical stresses for training')
         else:
             #cylindrical stresses
             X_train[:,0] = x[:,0]/self.scale_seq - 1.
@@ -1146,6 +1149,7 @@ class Material(object):
             print('Warning: result vector for yield function contains more categories than "-1" and "+1". Will result in higher dimensional SVC.')
         #Train SVC with data from all microstructures in data
         if self.sdim==3:
+            #assuming cylindrical stresses if sdim=3
             train_sc, test_sc = self.setup_yf_SVM_cyl(xt, yt, cyl=True, C=C, gamma=gamma, fs=0.3, plot=False)
         else:
             train_sc, test_sc = self.setup_yf_SVM_voigt(xt, yt, C=C, gamma=gamma)
@@ -1455,7 +1459,7 @@ class Material(object):
               "Format"   : (nlin,8),
               "Names" : ['nsv', 'nsd', 'Emod', 'nu', 'rho', 'gamma', 'epc', \
                             'scale_seq', 'scale_wh', 'Nset', 'scale_text[0:Nset]', \
-                            '20: dual_coef[0:nsv]', 'sup_vec[0:nsv,0:nsd]'],
+                            'dual_coef[0:nsv]', 'sup_vec[0:nsv,0:nsd]'],
               "Units" : { 
                   'Stress' : 'MPa',
                   'Strain' : 'None',
@@ -1551,7 +1555,7 @@ class Material(object):
             raise ValueError('Error: Inconsistent definition of material parameters')
 
     def plasticity(self, sy=None, hill=[1., 1., 1.], drucker=0., khard=0., tresca=False, barlat=None, \
-                   barlat_exp=None, hill_3p=None, hill_6p=False, sdim=3):
+                   barlat_exp=None, hill_3p=None, hill_6p=None, sdim=3):
         '''Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
 
@@ -1575,7 +1579,7 @@ class Material(object):
             Indicate if 3-parameter Hill model shall be applied (optional, default: None)
             Will be set True automatically if 3 Hill paramaters != 1 are provided 
         hill_6p : Boolean
-            Indicate if 6-parameter Hill model shall be applied (optional, default: False)
+            Indicate if 6-parameter Hill model shall be applied (optional, default: None)
             Will be set True automatically if 6 Hill parameters are provided
         sdim : int
             Dimensionality of stress tensor to be used for plasticity, must be either 3 
@@ -1592,24 +1596,32 @@ class Material(object):
             if self.sdim is not None and self.sdim!=sdim:
                 print('plasticity: Parameter sdim is changed. New value:',sdim)
             self.sdim = sdim
-        self.hill = np.array(hill)  # Hill anisotropic parameters
-        # determine if 6-Hill parameters are provided
-        if hill_6p:
-            # Hill 6p set True by user
-            if len(hill)!=6:
-                raise ValueError('When hill_6p is set True, 6 Hill parameters must be provided')
-        else:
-            # set hill_6p automatically
-            hill_6p = (len(hill)==6)
-        self.hill_6p = hill_6p
-        # determine if 3p-Hill model needs to be used
-        if hill_3p is None:
+        lh = len(hill)
+        if hill_6p is None and hill_3p is None:
+            # determine if 3 or 6 Hill parameters are provided
+            hill_6p = (lh==6)
             hill_3p = not hill_6p
             if hill_3p and (hill[0]==1.) and (hill[1]==1.) and (hill[2]==1.):
                 hill_3p = False
-        elif len(hill)!=3 and hill_3p:
-            raise ValueError('When hill_3p is set True, only 3 Hill parameters can be provided')
+        if hill_6p and lh!=6:
+                raise ValueError('plasticity: When hill_6p is set True, 6 Hill parameters must be provided')
+        if hill_3p and lh!=3:
+            raise ValueError('plasticity: When hill_3p is set True, only 3 Hill parameters can be provided')
+        if hill_6p and sdim==3:
+            warnings.warn('plasticity: 6 Hill parameters are provided, but sdim=3; ignoring shear parameters')
+            hill_6p = False
+            hill_3p = True
+            hill = hill[0:3]
+        if hill_3p and sdim==6:
+            warnings.warn('plasticity: 3 Hill parameters are provided, but sdim=6; shear parameters set to 1')
+            hill_3p = False
+            hill_6p = True
+            hill.extend([1., 1., 1.])
+        if sdim==6 and lh==3:
+            hill.extend([1., 1., 1.])
+        self.hill_6p = hill_6p
         self.hill_3p = hill_3p
+        self.hill = np.array(hill)  # Hill anisotropic parameters
         # set Trseca flag
         if tresca is None:
             tresca = False
@@ -1821,7 +1833,7 @@ class Material(object):
     def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2,
                          xstart=None, xend=None, axis1=[0], axis2=[1], iso=False, ref_mat=None,
                          field=False, Nmesh=100, file=None, fontsize=20, scaling=True):
-        '''Plot different cuts through yield locus in 3D principle stress space.
+        '''Plot different cuts through yield locus in 3D principal stress space.
 
         Parameters
         ----------
@@ -1830,7 +1842,7 @@ class Material(object):
         label : str
             Label for yield function (optional, default: own name)
         data  : (N,3) array
-            Principle stress data to be used for scatter plot (optional)
+            principal stress data to be used for scatter plot (optional)
         trange : float
             Cut-off for data to be plotted on slice (optional, default: 1.e-2)
         xstart : float

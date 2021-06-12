@@ -375,23 +375,24 @@ class Stress(object):
         self.h = self.hydrostatic = np.sum(self.p)/3.
         self.d = self.dev = sv - np.array([self.h, self.h, self.h, 0., 0., 0.])
             
-    def seq(self, mat):
+    def seq(self, mat=None):
         '''calculate Hill-type equivalent stress, invokes corresponding method of class ``Material``
         
         Parameters
         ----------
         mat: object of class ``Material``
-            containes Hill parameters and method needed for Hill-type equivalent stress
+            containes Hill parameters and method needed for Hill-type equivalent stress (optional, defaul=None)
         
         Returns
         -------
         seq : float
-            equivalent stress of Hill-type
+            equivalent stress; material specific (J2, Hill, Tresca, Barlat) if mat is provided, 
+            J2 equivalent stress otherwise
         '''
-        if mat.hill_6p:
+        if mat is None:
+            seq = seq_J2(self.p) # give princ. stress as parameter to avoid re-calculation
+        else: 
             seq = mat.calc_seq(self.v)
-        else:
-            seq = mat.calc_seq(self.p)
         return seq
     
     def theta(self):
