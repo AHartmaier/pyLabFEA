@@ -452,7 +452,7 @@ J2 equivalent stress otherwise</p>
 contains that attributes and methods needed in FEA. Materials are defined in
 module pylabfea.material</p>
 <p>uses NumPy, SciPy, MatPlotLib</p>
-<p>Version: 3.5 (2021-05-03)
+<p>Version: 3.5.2 (2021-06-12)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: <a class="reference external" href="mailto:alexander&#46;hartma4er&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartma4er<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
@@ -463,7 +463,19 @@ distributed under GNU General Public License (GPLv3)</p>
 <p>Class for finite element model. Defines necessary attributes and methods
 for pre-processing (defining geometry, material assignments, mesh and boundary conditions);
 solution (invokes numerical solver for non-linear problems);
-and post-processing (visualization of results on meshed geometry, homogenization of results into global quantities)</p>
+and post-processing (visualization of results on meshed geometry,
+homogenization of results into global quantities).</p>
+<p><em>Boundary conditions</em> on left-hand-side and bottom nodes are always assumed to be static (typically with values of zero);
+Boundary conditions on right-hand-side and top nodes are considered as load steps starting from zero.
+Default boundary conditions are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>lhs: fixed in x-direction (ux=0), free in y-direction (fy=0)</p></li>
+<li><p>bot: fixed in y-direction (uy=0), free in x-direction (fx=0)</p></li>
+<li><p>rhs: free (fx=fy=0)</p></li>
+<li><p>top: free (fx=fy=0)</p></li>
+</ul>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -572,23 +584,45 @@ and post-processing (visualization of results on meshed geometry, homogenization
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="model.Model.ubot">
-<span class="sig-name descname"><span class="pre">ubot</span></span><a class="headerlink" href="#model.Model.ubot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacements in x-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcbot</span></code>)</p>
+<dt class="sig sig-object py" id="model.Model.ubcbot">
+<span class="sig-name descname"><span class="pre">ubcbot</span></span><a class="headerlink" href="#model.Model.ubcbot" title="Permalink to this definition">¶</a></dt>
+<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p>dim-array of Boolean</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="model.Model.uleft">
-<span class="sig-name descname"><span class="pre">uleft</span></span><a class="headerlink" href="#model.Model.uleft" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacement in x-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcleft</span></code>)</p>
+<dt class="sig sig-object py" id="model.Model.bcb">
+<span class="sig-name descname"><span class="pre">bcb</span></span><a class="headerlink" href="#model.Model.bcb" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nodal displacements in x or y-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcbot</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p>dim-array</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.Model.ubcleft">
+<span class="sig-name descname"><span class="pre">ubcleft</span></span><a class="headerlink" href="#model.Model.ubcleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dim-array of Boolean</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.Model.bcl">
+<span class="sig-name descname"><span class="pre">bcl</span></span><a class="headerlink" href="#model.Model.bcl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Nodal displacement in x or y-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcleft</span></code>)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>dim-array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -599,7 +633,7 @@ and post-processing (visualization of results on meshed geometry, homogenization
 <dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p>Boolean</p>
+<dd class="field-odd"><p>dim-array of Boolean</p>
 </dd>
 </dl>
 </dd></dl>
@@ -607,10 +641,10 @@ and post-processing (visualization of results on meshed geometry, homogenization
 <dl class="py attribute">
 <dt class="sig sig-object py" id="model.Model.bcr">
 <span class="sig-name descname"><span class="pre">bcr</span></span><a class="headerlink" href="#model.Model.bcr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacements/forces in x-direction for rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
+<dd><p>Nodal displacements/forces in x or y-direction for rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p>dim-array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -629,10 +663,10 @@ and post-processing (visualization of results on meshed geometry, homogenization
 <dl class="py attribute">
 <dt class="sig sig-object py" id="model.Model.bct">
 <span class="sig-name descname"><span class="pre">bct</span></span><a class="headerlink" href="#model.Model.bct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacements/forces in y-direction for top nodes (defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
+<dd><p>Nodal displacements/forces in x or y-direction for top nodes (defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p>dim-array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1129,39 +1163,59 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd class="field-odd"><p><strong>mats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of materials, must have same dimensions as Model.LS</p>
 </dd>
 </dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="model.Model.material.mat">
+<span class="sig-prename descclassname"><span class="pre">material.</span></span><span class="sig-name descname"><span class="pre">mat</span></span><a class="headerlink" href="#model.Model.material.mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Internal variable for materials assigned to each section of the geometry</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>List of material objects</p>
+</dd>
+</dl>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="model.Model.bcbot">
-<span class="sig-name descname"><span class="pre">bcbot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcbot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bcbot" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">bcbot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcbot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bcbot" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on bottom nodes, always displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>u0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement in x direction</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement in x direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
+<li><p><strong>dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="model.Model.bcleft">
-<span class="sig-name descname"><span class="pre">bcleft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">u0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcleft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bcleft" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define boundary conditions on lhs nodes, always displacement type</p>
+<span class="sig-name descname"><span class="pre">bcleft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcleft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bcleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define boundary conditions on lhs nodes, either force or displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>u0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement in x direction of lhs nodes</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force of lhs nodes in bc_dir direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="model.Model.bcright">
-<span class="sig-name descname"><span class="pre">bcright</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcright"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bcright" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">bcright</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bcright"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bcright" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on rhs nodes, either force or displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>h0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force in x direction</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force on rhs nodes in bc_dir direction</p></li>
 <li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1169,13 +1223,14 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 
 <dl class="py method">
 <dt class="sig sig-object py" id="model.Model.bctop">
-<span class="sig-name descname"><span class="pre">bctop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">h1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bctop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bctop" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">bctop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.bctop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.bctop" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define boundary conditions on top nodes, either force or displacement type</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>h0</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force in x direction</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force in x direction</p></li>
 <li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1268,10 +1323,13 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>strain1</strong> – total strain in horizontal direction</p></li>
 <li><p><strong>strain2</strong> – total strain in vertical direction</p></li>
+<li><p><strong>strain12</strong> – total shear strain, xy-component</p></li>
 <li><p><strong>stress1</strong> – horizontal stress component</p></li>
 <li><p><strong>stress2</strong> – vertical stress component</p></li>
+<li><p><strong>stress12</strong> – xy-shear stress component</p></li>
 <li><p><strong>plastic1</strong> – plastic strain in horizontal direction</p></li>
 <li><p><strong>plastic2</strong> – plastic strain in vertical direction</p></li>
+<li><p><strong>plastic12</strong> – plastic strain, xy-component</p></li>
 <li><p><strong>seq</strong> – equivalent stress (Hill-formulation for anisotropic plasticity)</p></li>
 <li><p><strong>seqJ2</strong> – equivalent J2 stress</p></li>
 <li><p><strong>peeq</strong> – equivalent plastic strain</p></li>

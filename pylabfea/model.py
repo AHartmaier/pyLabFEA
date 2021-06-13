@@ -5,7 +5,7 @@ module pylabfea.material
 
 uses NumPy, SciPy, MatPlotLib
 
-Version: 3.5 (2021-05-03)
+Version: 3.5.2 (2021-06-12)
 Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
 Email: alexander.hartma4er@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -23,7 +23,17 @@ class Model(object):
     '''Class for finite element model. Defines necessary attributes and methods
     for pre-processing (defining geometry, material assignments, mesh and boundary conditions);
     solution (invokes numerical solver for non-linear problems);
-    and post-processing (visualization of results on meshed geometry, homogenization of results into global quantities)
+    and post-processing (visualization of results on meshed geometry, 
+    homogenization of results into global quantities).
+    
+    *Boundary conditions* on left-hand-side and bottom nodes are always assumed to be static (typically with values of zero);
+    Boundary conditions on right-hand-side and top nodes are considered as load steps starting from zero.
+    Default boundary conditions are: 
+    
+      * lhs: fixed in x-direction (ux=0), free in y-direction (fy=0)
+      * bot: fixed in y-direction (uy=0), free in x-direction (fx=0)
+      * rhs: free (fx=fy=0)
+      * top: free (fx=fy=0)
     
     Parameters
     ----------
@@ -51,18 +61,22 @@ class Model(object):
         Indicates non-linearity of model (defined in ``assign``)
     mat   : list of objects to class Material
         List of materials assigned to sections of model, same dimensions as LS (defined in ``assign``)
-    ubot  : float
-        Nodal displacements in x-direction for lhs nodes (defined in ``bcbot``)
-    uleft : float
-        Nodal displacement in x-direction for lhs nodes (defined in ``bcleft``)
-    ubcright: Boolean
+    ubcbot: dim-array of Boolean
         True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in ``bcright``)
-    bcr   : float
-        Nodal displacements/forces in x-direction for rhs nodes (defined in ``bcright``)
+    bcb  : dim-array
+        Nodal displacements in x or y-direction for lhs nodes (defined in ``bcbot``)
+    ubcleft: dim-array of Boolean
+        True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in ``bcright``)
+    bcl : dim-array
+        Nodal displacement in x or y-direction for lhs nodes (defined in ``bcleft``)
+    ubcright: dim-array of Boolean
+        True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in ``bcright``)
+    bcr   : dim-array
+        Nodal displacements/forces in x or y-direction for rhs nodes (defined in ``bcright``)
     ubctop: Boolean
         True: displacement BC on top nodes; False: force BC on top nodes (defined in ``bctop``)
-    bct   : float 
-        Nodal displacements/forces in y-direction for top nodes (defined in ``bctop``)
+    bct   : dim-array 
+        Nodal displacements/forces in x or y-direction for top nodes (defined in ``bctop``)
     Nnode : int
         Total number of nodes in Model (defined in ``mesh``)
     NnodeX, NnodeY : int
@@ -109,12 +123,14 @@ class Model(object):
             planestress = False
         self.planestress = planestress
         #print('Model initialized')
-        self.uleft = None  # create warning if user sets no value
-        self.ubot = None  
-        self.bct = None
-        self.bcr = None
-        self.ubctop = False # default free boundary on top
-        self.ubcright = False # default free boundary on rhs
+        self.bcl = np.zeros(dim)
+        self.bcb = np.zeros(dim)  
+        self.bct = np.zeros(dim)
+        self.bcr = np.zeros(dim)
+        self.ubctop = [False, False] # default free boundary on top
+        self.ubcright = [False, False] # default free boundary on rhs
+        self.ubcleft = [True, False]  # default fixed boundary in x-direction on lhs
+        self.ubcbot = [False, True] # default fixed boundary in y-direction on bottom
         self.nonlin = False # default is linear elastic model
         self.sgl = np.zeros((1,6))  # list for time evolution of global stresses
         self.egl = np.zeros((1,6))  # list for time evolution of global strains
@@ -465,7 +481,8 @@ class Model(object):
             
         Attributes
         ----------
-        
+        material.mat : List of material objects
+            Internal variable for materials assigned to each section of the geometry
         '''
         self.mat = mats
         for i in range(len(mats)):
@@ -473,65 +490,121 @@ class Model(object):
                 self.nonlin = True   # nonlinear model if at least one material is plastic
 
     #subroutines to define boundary conditions, top/bottom only needed for 2-d models
-    def bcleft(self, u0):
-        '''Define boundary conditions on lhs nodes, always displacement type
+    def bcleft(self, val, bctype='disp', bcdir='x'):
+        '''Define boundary conditions on lhs nodes, either force or displacement type
         
         Parameters
         ----------
-        u0   : float
-            Displacement in x direction of lhs nodes
+        val : float
+            Displacement or force of lhs nodes in bc_dir direction
+        bctype : str
+            Type of boundary condition ('disp' or 'force') (optional, default: 'disp')
+        bcdir : str or int
+            Direction of boundary load (optional, default: 'x')
         '''
-        self.uleft = u0
+        if bcdir=='x' or bcdir==0:
+            self.bcl[0] = val
+            j = 0
+        elif bcdir=='y' or bcdir==1:
+            self.bcl[1] = val
+            j = 1
+        else:
+            print('bcleft: wrong value for dir:', dir)
+            raise ValueError('bcleft: Unknown value for dir (direction)')
+        if (bctype=='disp'):
+            #type of boundary conditions (BC)
+            self.ubcleft[j] = True   # True: displacement BC on lhs node
+        elif (bctype=='force'):
+            self.ubcleft[j] = False   # False: force BC on lhs node
+        else:
+            raise ValueError('bcleft: Unknown BC: %s'%bctype)
         
-    def bcright(self, h1, bctype):
+    def bcright(self, val, bctype, bcdir='x'):
         '''Define boundary conditions on rhs nodes, either force or displacement type
         
         Parameters
         ----------
-        h0     : float
-            Displacement or force in x direction 
+        val     : float
+            Displacement or force on rhs nodes in bc_dir direction 
         bctype : str
             Type of boundary condition ('disp' or 'force')
+        bcdir : str or int
+            Direction of boundary load (optional, default: 'x')
         '''
-        self.bcr  = h1
-        self.namebcr = bctype
+        if bcdir=='x' or bcdir==0:
+            self.bcr[0] = val
+            j = 0
+        elif bcdir=='y' or bcdir==1:
+            self.bcr[1] = val
+            j = 1
+        else:
+            print('bcright: wrong value for dir:', dir)
+            raise ValueError('bcright: Unknown value for dir (direction)')
         if (bctype=='disp'):
             #type of boundary conditions (BC)
-            self.ubcright = True   # True: displacement BC on rhs node
+            self.ubcright[j] = True   # True: displacement BC on rhs node
         elif (bctype=='force'):
-            self.ubcright = False   # False: force BC on rhs node
+            self.ubcright[j] = False   # False: force BC on rhs node
         else:
-            raise TypeError('Unknown BC: %s'%bctype)
+            raise TypeError('bcright: Unknown BC: %s'%bctype)
         
-    def bcbot(self, u0):
+    def bcbot(self, val, bctype='disp', bcdir='y'):
         '''Define boundary conditions on bottom nodes, always displacement type
         
         Parameters
         ----------
-        u0  : float
-            Displacement in x direction 
+        val  : float
+            Displacement in x direction
+        bctype : str
+            Type of boundary condition ('disp' or 'force') (optional, default: 'disp')
+        dir : str or int
+            Direction of boundary load (optional, default: 'y')
         '''
-        self.ubot = u0
+        if bcdir=='x' or bcdir==0:
+            self.bcb[0] = val
+            j = 0
+        elif bcdir=='y' or bcdir==1:
+            self.bcb[1] = val
+            j = 1
+        else:
+            print('bcbot: wrong value for dir:', dir)
+            raise ValueError('bcleft: Unknown value for dir (direction)')
+        if (bctype=='disp'):
+            #type of boundary conditions (BC)
+            self.ubcbot[j] = True   # True: displacement BC on bottom node
+        elif (bctype=='force'):
+            self.ubcbot[j] = False   # False: force BC on bottom node
+        else:
+            raise ValueError('bcbot: Unknown BC: %s'%bctype)
         
-    def bctop(self, h1, bctype):
+    def bctop(self, val, bctype, bcdir='y'):
         '''Define boundary conditions on top nodes, either force or displacement type
         
         Parameters
         ----------
-        h0     : float
+        val     : float
             Displacement or force in x direction 
         bctype : str
             Type of boundary condition ('disp' or 'force')
+        bcdir : str or int
+            Direction of boundary load (optional, default: 'y')
         '''
-        self.bct  = h1
-        self.namebct = bctype
+        if bcdir=='x' or bcdir==0:
+            self.bct[0] = val
+            j = 0
+        elif bcdir=='y' or bcdir==1:
+            self.bct[1] = val
+            j = 1
+        else:
+            print('bctop: wrong value for dir:', dir)
+            raise ValueError('bcleft: Unknown value for dir (direction)')
         if (bctype=='disp'):
             'type of boundary conditions (BC)'
-            self.ubctop = True   # True: displacement BC on rhs node
+            self.ubctop[j] = True   # True: displacement BC on rhs node
         elif (bctype=='force'):
-            self.ubctop = False   # False: force BC on rhs node
+            self.ubctop[j] = False   # False: force BC on rhs node
         else:
-            raise TypeError('Unknown BC: %s'%bctype)
+            raise TypeError('bctop: Unknown BC: %s'%bctype)
 
             
     def mesh(self, NX=10, NY=1, SF=1):
@@ -731,10 +804,10 @@ class Model(object):
                             #for categorial ML yield function, calculate yf0 as distance to yield surface
                             #construct normal stress vector in loading direction for search of yield point
                             hs = np.zeros(3)
-                            if np.abs(max_dbcr)>1.e-6:
-                                hs[0] = el.Mat.sy*np.sign(max_dbcr)
-                            if np.abs(max_dbct)>1.e-6:
-                                hs[1] = el.Mat.sy*np.sign(max_dbct)
+                            if np.abs(max_dbcr[0])>1.e-6:
+                                hs[0] = el.Mat.sy*np.sign(max_dbcr[0])
+                            if np.abs(max_dbct[1])>1.e-6:
+                                hs[1] = el.Mat.sy*np.sign(max_dbct[1])
                             yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=hs, verb=verb)
                         hh = np.minimum(1., -yf0/sref)
                         sc_list.append(hh)
@@ -756,95 +829,100 @@ class Model(object):
             return scf
 
         #define BC: modify stiffness matrix for displacement BC, calculate consistent force BC
-        def calc_BC(K, ul, ub, dbcr, dbct):
-            # BC on lhs nodes is always x-displacement 
-            # apply BC by adding known boundary forces to solution vector
-            # to reduce rank of system of equations by 1 (one row eliminated)
-            # Paramaters:
-            # K : stiffness matrix
-            # ul, ub : fixed displacement on lhs and bottom nodes
-            # dbcr, dbct : increment of BC on rhs and top noes
+        def calc_BC(K, bcl0, bcb0, dbcr, dbct):
+            '''BC on lhs and bpttom nodes nodes is always static.  
+            Displacement type BC are applied by adding known boundary forces to solution vector
+            to reduce rank of system of equations by 1 (one row eliminated)
+            
+            Paramaters
+            ----------
+            K : (Ndof, Ndof)-array
+                stiffness matrix
+            bcl0, bcb0 : dim-arrays
+                static BC on lhs and bottom nodes
+            dbcr, dbct : dim-arrays
+                increment of BC on rhs and top nodes
+                
+            Returns
+            -------
+            du : (Ndof)-array
+                Increment of nodal displacements at bpundary
+            df : (Ndof)-array
+                Increment of nodal forces at boundary 
+            ind : list
+                List of all nodal DOF for which solution must be calculated, 
+                i.e. for which no displacement-type BC are given.
+            '''
             du = np.zeros(self.Ndof)
             df = np.zeros(self.Ndof)
             ind = list(range(self.Ndof))  # list of all nodal DOF, will be shortened according to BC
-            for j in self.noleft:
-                i = j*self.dim   # postion of x-values of node #j in u/f vector
-                ind.remove(i)
-                du[i] = ul
-                df[ind] -= K[ind,i]*ul
+            for k in range(self.dim):
+                if self.ubcleft[k]:
+                    for j in self.noleft:
+                        i = j*self.dim + k   # postion of x or y-values of node #j in u/f vector
+                        ind.remove(i)
+                        du[i] = bcl0[k]
+                        df[ind] -= K[ind,i]*bcl0[k]
             
-            if (self.dim==2):
-                # BC on bottom nodes is always y-displacement 
+            if self.dim==2:
+                # BC on bottom nodes is always static
                 # apply BC by adding known boundary forces to solution vector
                 # to reduce rank of system of equations by 1 (one row eliminated)
-                for j in self.nobot:
-                    i = j*self.dim + 1   # postion of y-values of node #j in u/f vector
-                    ind.remove(i)
-                    du[i] = ub
-                    df[ind] -= K[ind,i]*ub
+                for k in range(self.dim):
+                    if self.ubcbot[k]:
+                        for j in self.nobot:
+                            i = j*self.dim + k   # postion of x or y-values of node #j in u/f vector
+                            ind.remove(i)
+                            du[i] = bcb0[k]
+                            df[ind] -= K[ind,i]*bcb0[k]
 
             # rhs node BC can be force or displacement
             # apply BC and solve corresponding system of equations
-            if (self.ubcright):
-                # displacement BC
-                # add known boundary force to solution vector to
-                # eliminate row Ndof from system of equations
-                for j in self.noright:
-                    i = j*self.dim
-                    ind.remove(i)
-                    hh = list(range(self.Ndof))
-                    hh.remove(i)
-                    du[i] = dbcr
-                    df[hh] -= K[i, hh]*dbcr
-            else:
-                # force bc on rhs nodes
-                for j in self.noright:
-                    i = j*self.dim
-                    hh=1./(self.NnodeY-1)
-                    hy = self.npos[i+1] #y-position of node
-                    if hy<1.e-3 or hy>self.leny-1.e-3:
-                        hh*=0.5  # reduce force on corner nodes
-                    df[i] += dbcr*hh
-                
-            # BC on top nodes can be force or displacement
-            # apply BC and solve corresponding system of equations
-            if (self.dim==2):
-                if (self.ubctop):
+            for k in range(self.dim):
+                if self.ubcright[k]:
                     # displacement BC
                     # add known boundary force to solution vector to
                     # eliminate row Ndof from system of equations
-                    for j in self.notop:
-                        i = j*self.dim + 1
+                    for j in self.noright:
+                        i = j*self.dim + k
                         ind.remove(i)
-                        du[i] = dbct
-                        df[ind] -= K[ind,i]*dbct
+                        hh = list(range(self.Ndof))
+                        hh.remove(i)
+                        du[i] = dbcr[k]
+                        df[hh] -= K[i, hh]*dbcr[k]
                 else:
-                    # force bc on top nodes
-                    for j in self.notop:
-                        i = j*self.dim + 1
-                        hh=1./(self.NnodeX-1)
-                        hx = self.npos[i-1] #x-position of node
-                        if hx<1.e-3 or hx>self.lenx-1.e-3:
+                    # force bc on rhs nodes
+                    for j in self.noright:
+                        i = j*self.dim + k
+                        hh=1./(self.NnodeY-1) # calculate share of force on nodes
+                        hy = self.npos[j*self.dim+1] #y-position of node
+                        if hy<1.e-3 or hy>self.leny-1.e-3:
                             hh*=0.5  # reduce force on corner nodes
-                        df[i] += dbct*hh
+                        df[i] += dbcr[k]*hh
+                
+            # BC on top nodes can be force or displacement
+            # apply BC and solve corresponding system of equations
+            if self.dim==2:
+                for k in range(self.dim):
+                    if self.ubctop[k]:
+                        # displacement BC
+                        # add known boundary force to solution vector to
+                        # eliminate row Ndof from system of equations
+                        for j in self.notop:
+                            i = j*self.dim + k
+                            ind.remove(i)
+                            du[i] = dbct[k]
+                            df[ind] -= K[ind,i]*dbct[k]
+                    else:
+                        # force bc on top nodes
+                        for j in self.notop:
+                            i = j*self.dim + k
+                            hh=1./(self.NnodeX-1) # share of force for each node
+                            hx = self.npos[j*self.dim] #x-position of node
+                            if hx<1.e-3 or hx>self.lenx-1.e-3:
+                                hh*=0.5  # reduce force on corner nodes
+                            df[i] += dbct[k]*hh
             return du, df, ind
-            
-        # test if all necessary BC have been set
-        if self.uleft is None:
-            self.uleft = 0.
-            warnings.warn('Warning: BC on lhs nodes has been set to 0')
-        if self.bcr is None:
-            self.bcr = 0.
-            self.ubrtop = False
-            self.namebcr = 'force'
-        if self.dim>1:
-            if (self.ubot==None):
-                self.ubot = 0.
-                warnings.warn('Warning: BC on bottom nodes has been set to 0')
-            if self.bct is None:
-                self.bct = 0.
-                self.ubctop = False
-                self.namebct = 'force'
                 
         jin = []
         for j in self.noinner:
@@ -865,15 +943,15 @@ class Model(object):
                 el.eps = np.zeros(6)
                 el.sig = np.zeros(6)
                 el.epl = np.zeros(6)
-            bcr0 = 0.
-            bct0 = 0.
-            self.bct_mem = 0.
-            self.bcr_mem = 0.
+            bcr0 = np.zeros(self.dim)
+            bct0 = np.zeros(self.dim)
+            self.bct_mem = np.zeros(self.dim)
+            self.bcr_mem = np.zeros(self.dim)
         else:
             bcr0 = self.bcr_mem
             bct0 = self.bct_mem
-        ul = self.uleft
-        ub = self.ubot
+        bcl0 = self.bcl
+        bcb0 = self.bcb
         K = self.setupK()  # assemble system stiffness matrix from element stiffness matrices
                 
         #define loop for external load steps (BC subdivision)
@@ -888,25 +966,18 @@ class Model(object):
         nconv = 0
         while bc_inc:
             #define global increments for boundary conditions
-            if min_step is None:
-                if self.dim==1:
-                    max_dbct = None
-                else:
-                    max_dbct = self.bct - bct0
-                max_dbcr = self.bcr - bcr0
-            else:
+            max_dbct = self.bct - bct0
+            max_dbcr = self.bcr - bcr0
+            if min_step is not None:
                 sc = np.maximum(1, min_step-il)
-                if self.dim==1:
-                    max_dbct = None
-                else:
-                    max_dbct = (self.bct-bct0)/sc
-                max_dbcr = (self.bcr-bcr0)/sc
+                max_dbct /= sc
+                max_dbcr /= sc
             #calculate du and df fulfilling mech. equil. for max. load step consistent with stiffness matrix K
             dbcr = max_dbcr
             dbct = max_dbct
             
             # linear model can be solved directly in one step, elastic predictor for nonlinear models
-            self.du, df, ind = calc_BC(K, ul, ub, dbcr, dbct) # consider BC for system of equ. 
+            self.du, df, ind = calc_BC(K, bcl0, bcb0, dbcr, dbct) # consider BC for system of equ. 
             self.du[ind] = np.linalg.solve(Kred(K, ind), df[ind]) # Solve reduced system of equations
             
             if self.nonlin:
@@ -927,22 +998,23 @@ class Model(object):
                     if il < 6 and nit>1:
                         # start reducing load increments to reach convergence
                         hs = 0.5
-                        if max_dbcr >= 0:
-                            hh = np.minimum(self.bcr-bcr0, dbcr*hs)
-                            dbcr = np.maximum(0.05*max_dbcr, hh)
-                        else:
-                            hh = np.maximum(self.bcr-bcr0, dbcr*hs)
-                            dbcr = np.minimum(0.05*max_dbcr, hh)
-                        if max_dbct >= 0:
-                            hh = np.minimum(self.bct-bct0, dbct*hs)
-                            dbct = np.maximum(0.05*max_dbct, hh)
-                        else:
-                            hh = np.maximum(self.bct-bct0, dbct*hs)
-                            dbct = np.minimum(0.05*max_dbct, hh)
+                        for k in range(self.dim):
+                            if max_dbcr[k] >= 0:
+                                hh = np.minimum(self.bcr[k]-bcr0[k], dbcr[k]*hs)
+                                dbcr[k] = np.maximum(0.05*max_dbcr[k], hh)
+                            else:
+                                hh = np.maximum(self.bcr[k]-bcr0[k], dbcr[k]*hs)
+                                dbcr[k] = np.minimum(0.05*max_dbcr[k], hh)
+                            if max_dbct[k] >= 0:
+                                hh = np.minimum(self.bct[k]-bct0[k], dbct[k]*hs)
+                                dbct[k] = np.maximum(0.05*max_dbct[k], hh)
+                            else:
+                                hh = np.maximum(self.bct[k]-bct0[k], dbct[k]*hs)
+                                dbct[k] = np.minimum(0.05*max_dbct[k], hh)
                         
                     # solve system with current K matrix
                     K = self.setupK()  # assemble updated tangent stiffness matrix
-                    self.du, df, ind = calc_BC(K, ul, ub, dbcr, dbct)
+                    self.du, df, ind = calc_BC(K, bcl0, bcb0, dbcr, dbct)
                     self.du[ind] = np.linalg.solve(Kred(K, ind), df[ind]) # solve du with current stiffness matrix
                     
                     # evaluate material response in each element
@@ -1016,13 +1088,17 @@ class Model(object):
             niter.append(nit-1)
             co_nconv.append(nconv)
             bcr0 += dbcr
-            hl = np.abs(bcr0-self.bcr)>1.e-6 and np.abs(self.bcr)>1.e-9
+            hl0 = np.abs(bcr0[0]-self.bcr[0])>1.e-6 and np.abs(self.bcr[0])>1.e-9
             if self.dim>1:
+                hl1 = np.abs(bcr0[1]-self.bcr[1])>1.e-6 and np.abs(self.bcr[1])>1.e-9
                 bct0 += dbct
-                hr = np.abs(bct0-self.bct)>1.e-6 and np.abs(self.bct)>1.e-9
+                hr0 = np.abs(bct0[0]-self.bct[0])>1.e-6 and np.abs(self.bct[0])>1.e-9
+                hr1 = np.abs(bct0[1]-self.bct[1])>1.e-6 and np.abs(self.bct[1])>1.e-9
             else:
-                hr = False
-            bc_inc = hr or hl
+                hl1 = False
+                hr0 = False
+                hr1 = False
+            bc_inc = hr0 or hr1 or hl0 or hl1
             #store time dependent quantities
             self.calc_global()  # calculate global values for solution
             self.sgl  = np.append(self.sgl, [self.glob['sig']], axis=0)
@@ -1030,8 +1106,8 @@ class Model(object):
             self.epgl = np.append(self.epgl,[self.glob['epl']], axis=0)
             if verb:
                 print('Iteration step #',nit)
-                print('Load increment ', il, 'total',self.namebct,'top ',bct0,'/',self.bct,'; last step ',dbct)
-                print('Load increment ', il, 'total',self.namebcr,'rhs',bcr0,'/',self.bcr,'; last step ',dbcr)
+                print('Load increment ', il, 'total',self.ubctop,'top ',bct0,'/',self.bct,'; last step ',dbct)
+                print('Load increment ', il, 'total',self.ubcright,'rhs',bcr0,'/',self.bcr,'; last step ',dbcr)
                 #fres = K@self.du  # residual forces
                 #print('Yield function after ',nit,'steps: f=',f, '; norm(f_node)=',np.linalg.norm(fres[jin],1))
 #                 ih = np.array(self.notop)*self.dim
@@ -1058,10 +1134,10 @@ class Model(object):
                 hh =  np.abs(self.glob['sbc1'] - self.glob['sig'][0])
                 hh += np.abs(self.glob['sbc2'] - self.glob['sig'][1])
                 if hh > 1.e-6:
-                    print('\n ***Inconstistent stiffness matrix!\n\n')
+                    warnings.warn('\n ***Inconstistent stiffness matrix!\n\n')
                 hh = [el.sig-el.CV@(el.eps-el.epl) for el in self.element]
                 if np.abs(np.amax(hh)) > 1.:
-                    print('\n ***TEST failed: ', hh,'\n\n')
+                    warnings.warn('\n ***TEST failed: ', hh,'\n\n')
 #                 hh = sig - sig0 - grad_stiff @ deps
 #                 if (seq_J2(hh)>0.1):
 #                     print('\n\n######################################')
@@ -1169,14 +1245,20 @@ class Model(object):
             total strain in horizontal direction
         strain2  :
             total strain in vertical direction
+        strain12  :
+            total shear strain, xy-component
         stress1  : 
             horizontal stress component
         stress2  : 
             vertical stress component
+        stress12  : 
+            xy-shear stress component
         plastic1 :
             plastic strain in horizontal direction
         plastic2 :
             plastic strain in vertical direction
+        plastic12 :
+            plastic strain, xy-component
         seq      :
             equivalent stress (Hill-formulation for anisotropic plasticity)
         seqJ2    :
@@ -1200,6 +1282,10 @@ class Model(object):
             hh = [el.eps[1]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{tot}_{22}$ (%)'
             return hh, text_cb
+        def strain12():
+            hh = [el.eps[5]*100 for el in self.element]
+            text_cb = r'$\epsilon^\mathrm{tot}_{12}$ (%)'
+            return hh, text_cb
         def stress1():
             hh = [el.sig[0] for el in self.element]
             text_cb = r'$\sigma_{11}$ (MPa)'
@@ -1208,6 +1294,10 @@ class Model(object):
             hh = [el.sig[1] for el in self.element]
             text_cb = r'$\sigma_{22}$ (MPa)'
             return hh, text_cb
+        def stress12():
+            hh = [el.sig[5] for el in self.element]
+            text_cb = r'$\sigma_{12}$ (MPa)'
+            return hh, text_cb
         def plastic1():
             hh = [el.epl[0]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{pl}_{11}$ (%)'
@@ -1215,6 +1305,10 @@ class Model(object):
         def plastic2():
             hh = [el.epl[1]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{pl}_{22}$ (%)'
+            return hh, text_cb
+        def plastic12():
+            hh = [el.epl[5]*100 for el in self.element]
+            text_cb = r'$\epsilon^\mathrm{pl}_{12}$ (%)'
             return hh, text_cb
         def stress_eq():
             hh = [Stress(el.sig).seq(el.Mat) for el in self.element]
@@ -1241,18 +1335,21 @@ class Model(object):
             text_cb = r'$u_y$ (mm)'
             return hh, text_cb
         field={
-            'strain1' : strain1(),
-            'strain2' : strain2(),
-            'stress1' : stress1(),
-            'stress2' : stress2(),
-            'plastic1': plastic1(),
-            'plastic2': plastic2(),
-            'seq'     : stress_eq(),
-            'seqJ2'   : stress_eqJ2(),
-            'peeq'    : strain_peeq(),
-            'etot'    : strain_etot(),
-            'ux'      : disp_x(),
-            'uy'      : disp_y()
+            'strain1'  : strain1(),
+            'strain2'  : strain2(),
+            'strain12' : strain12(),
+            'stress1'  : stress1(),
+            'stress2'  : stress2(),
+            'stress12' : stress12(),
+            'plastic1' : plastic1(),
+            'plastic2' : plastic2(),
+            'plastic12': plastic12(),
+            'seq'      : stress_eq(),
+            'seqJ2'    : stress_eqJ2(),
+            'peeq'     : strain_peeq(),
+            'etot'     : strain_etot(),
+            'ux'       : disp_x(),
+            'uy'       : disp_y()
         }
         
         #define color value by mapping field value of element to interval [0,1]

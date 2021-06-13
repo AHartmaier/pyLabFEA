@@ -670,10 +670,6 @@ class Material(object):
             h0 = self.hill[0]
             h1 = self.hill[1]
             h2 = self.hill[2]
-            if self.hill_6p:
-                h3 = self.hill[3]
-                h4 = self.hill[4]
-                h5 = self.hill[5]
             d3 = self.drucker/3.
             if (seq is None):
                 seq = self.calc_seq(sig)
@@ -681,14 +677,16 @@ class Material(object):
             fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/(2.*seq) + d3
             fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/(2.*seq) + d3
             if self.sdim==6:
+                h3 = self.hill[3]
+                h4 = self.hill[4]
+                h5 = self.hill[5]
                 fgrad[:,3] = 6.*h3*sig[:,3]/seq
                 fgrad[:,4] = 6.*h4*sig[:,4]/seq
                 fgrad[:,5] = 6.*h5*sig[:,5]/seq
-            if self.hill_6p:
-                if h0==h1==h2==1. and h3==h4==h5==3.:
-                    label = 'analytical, J2 isotropic, 6-parameter Hill'
+                if h0==h1==h2==h3==h4==h5==1.:
+                    label = 'analytical, J2 isotropic, full stress'
                 else:
-                    label = 'analytical, 6-parameter Hill'
+                    label = 'analytical, 6-parameter Hill, full stress'
             else:
                 if h0==h1==h2==1.:
                     label = 'analytical, J2 isotropic, princ. stress'
