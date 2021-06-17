@@ -21,10 +21,10 @@ The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/in
 $ python -m pip install git+https://github.com/AHartmaier/pyLabFEA.git
 ```
 
-Alternatively, the repository can be cloned and installed locally. It is recommended to create a conda environment before installation. This can be done by the following the command line instructions
+Alternatively, the complete repository, including the source code, documentation and examples, can be cloned and installed locally. It is recommended to create a conda environment before installation. This can be done by the following the command line instructions
 
 ```
-$ git clone https://github.com/AHartmaier/pyLabFEA.git
+$ git clone https://github.com/AHartmaier/pyLabFEA.git ./pyLabFEA.git
 $ cd pyLabFEA.git/trunk/
 $ conda env create -f environment.yml
 $ conda activate pylabfea
@@ -47,7 +47,7 @@ import pylabfea as FE
 ## Documentation
 
 Online documentation for pyLabFEA can be found under [https://ahartmaier.github.io/pyLabFEA/](https://ahartmaier.github.io/pyLabFEA/).
-For offline use, open docs/index.html to browse through the contents.
+For offline use, open docs/index.html in your local copy to browse through the contents.
 The documentation has been generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
 ## Jupyter notebooks
