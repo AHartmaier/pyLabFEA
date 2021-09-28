@@ -283,7 +283,7 @@ class Material(object):
 
         Parameters
         ----------
-        sig  : (3,), (6,), (6,N) or (3,N) array
+        sig  : (3,), (6,), (N,3) or (N,6) array
             Stresses (arrays of Voigt or principal stresses)
         peeq : float or array
             Equivalent plastic strain (scalar or same length as sig) (optional, default: 0)
@@ -399,8 +399,8 @@ class Material(object):
                 if verb:
                     ys = self.find_yloc2(xs, su, peeq)
                     print('Warning in ML_full_yf')
-                    print('*** detection not successful. yf=',yf,', seq=',seq, 'ld=',ld,'su:',su)
-                    print('*** optimization result (x1,y1,ier,msg):', xs, ys, r)
+                    print('*** detection not successful. yf={}, seq={}, ld={}, su:{}'.format(yf, seq,ld, su))
+                    print('*** optimization result (x1={},y1={},msg={}):'.format(xs, ys, r))
         return yf
 
     def find_yloc(self, x, su, peeq=0.):
@@ -498,7 +498,7 @@ class Material(object):
         elif sh==(N,6):
             sp = sprinc(sig)[0]
         else:
-            print('*** calc_seq: N, sh', N, sh, sys._getframe().f_back.f_code.co_name)
+            print('*** calc_seq: N={}, sh={}, caller={}'.format(N, sh, sys._getframe().f_back.f_code.co_name))
             raise TypeError('Unknown format of stress in calc_seq')
             
         #Step 2: call subroutines or evaluate von Mises/J2 equiv stress
@@ -1100,7 +1100,7 @@ class Material(object):
                 # based on given yield stresses
                 self.sdim = len(sdata[0,:])
                 Nlc = len(sdata[:,0])
-                xt, yt = self.create_sig_data(N=Nlc, sdata=sdata,  Nseq=Nseq, extend=extend)
+                xt, yt = self.create_sig_data(sdata=sdata,  Nseq=Nseq, extend=extend)
                 print('Training data created from',self.sdim,'-dimensional yield stresses with',Nlc,'load cases.')
             self.Ndof = self.sdim-1
         else:
