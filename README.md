@@ -24,8 +24,8 @@ $ python -m pip install git+https://github.com/AHartmaier/pyLabFEA.git
 Alternatively, the complete repository, including the source code, documentation and examples, can be cloned and installed locally. It is recommended to create a conda environment before installation. This can be done by the following the command line instructions
 
 ```
-$ git clone https://github.com/AHartmaier/pyLabFEA.git ./pyLabFEA.git
-$ cd pyLabFEA.git/trunk/
+$ git clone https://github.com/AHartmaier/pyLabFEA.git ./pyLabFEA
+$ cd pyLabFEA
 $ conda env create -f environment.yml
 $ conda activate pylabfea
 $ python -m pip install . --user
