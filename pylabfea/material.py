@@ -1346,7 +1346,7 @@ class Material(object):
         self.svm_grad2.fit(X_grad_train, y_grad_train2)
         self.ML_grad = True
         
-    def export_MLparam(self, sname, source=None, file=None, path='', \
+    def export_MLparam(self, sname, source=None, file=None, path='../../models/', \
                        descr=[], param=[]):
         """The parameters of the trained Ml flow rule (support vectors, dual 
         coefficients, offset and scaling parameters) are written to a csv file
@@ -1392,7 +1392,7 @@ class Material(object):
         if len(descr)!=len(param):
             raise ValueError('Lists for descr and param must have the same lengths.')
         if file is None:
-            file = self.name
+            file = 'abq_'+self.name
         file = path+file
         
         # write parameters of trained SVC to file readable to Abaqus
@@ -1468,7 +1468,7 @@ class Material(object):
         with open(file+'-svm_meta.json','w') as fp:
             dump(meta, fp, indent=2)
             
-    def pckl(self, name=None, path=''):
+    def pckl(self, name=None, path='../../materials'):
         '''Write material into pickle file. Usefull for materials with trained machine 
         learning flow rules to avoid time-consuming re-training.
         
@@ -1487,7 +1487,7 @@ class Material(object):
 
         '''
         if name is None:
-            name = self.name + '.pkl'
+            name = 'mat_'+self.name + '.pkl'
         with open(path+name, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
         return
@@ -1611,6 +1611,7 @@ class Material(object):
             hill_3p = True
             hill = hill[0:3]
         if hill_3p and sdim==6:
+            print('Material', self.name)
             warnings.warn('plasticity: 3 Hill parameters are provided, but sdim=6; shear parameters set to 1')
             hill_3p = False
             hill_6p = True
