@@ -1468,7 +1468,7 @@ class Material(object):
         with open(file+'-svm_meta.json','w') as fp:
             dump(meta, fp, indent=2)
             
-    def pckl(self, name=None, path='../../materials'):
+    def pckl(self, name=None, path='../../materials/'):
         '''Write material into pickle file. Usefull for materials with trained machine 
         learning flow rules to avoid time-consuming re-training.
         
