@@ -1183,17 +1183,17 @@ class Material(object):
                     iel = np.nonzero(y_test<0.)[0]
                     ipl = np.nonzero(np.logical_and(y_test>=0., x_test[:,0]<sflow*1.5))[0]
                     plt.subplot(nrow, ncol, j+k*Npl+1, projection='polar')
-                    plt.polar(x_test[ipl,1], x_test[ipl,0], 'r.', label='test data above yield point')
-                    plt.polar(x_test[iel,1], x_test[iel,0], 'b.', label='test data below yield point')
+                    plt.gca().plot(x_test[ipl,1], x_test[ipl,0], 'r.', label='test data above yield point')
+                    plt.gca().plot(x_test[iel,1], x_test[iel,0], 'b.', label='test data below yield point')
                     if self.msparam is not None:
                         syc = self.msparam[0]['flow_stress'][k,j,:,:]
-                        plt.polar(syc[:,1], syc[:,0], '-c', label='reference yield locus')
+                        plt.gca().plot(syc[:,1], syc[:,0], '-c', label='reference yield locus')
                     #ML yield fct: find norm of princ. stess vector lying on yield surface
                     snorm = sp_cart(np.array([sflow*np.ones(36)*np.sqrt(1.5), theta]).T)
                     x1 = fsolve(self.find_yloc, np.ones(36), args=(snorm,peeq), xtol=1.e-5)
                     sig = snorm*np.array([x1,x1,x1]).T
                     s_yld = seq_J2(sig)
-                    plt.polar(theta, s_yld, '-k', label='ML yield locus', linewidth=2)
+                    plt.gca().plot(theta, s_yld, '-k', label='ML yield locus', linewidth=2)
                     if self.msparam is None:
                         plt.title=self.name
                     else:
@@ -2240,10 +2240,13 @@ class Material(object):
         ax = fig.add_axes([0,0,1,1,], projection='polar')
         if field and self.ML_yf:
             xx, yy = np.meshgrid(np.linspace(-1., 1., Np),np.linspace(-1, 1., Np))
-            #hh = []
-            #for i in range(2,self.Ndof):
-            #    hh.append(np.zeros(Np*Np))
-            feat = np.c_[yy.ravel(),xx.ravel()]
+            if self.Ndof == 2:
+                feat = np.c_[yy.ravel(),xx.ravel()]
+            elif self.Ndof == 3:
+                hh = -np.ones(Np*Np)
+                feat = np.c_[yy.ravel(),xx.ravel(),hh]
+            else:
+                raise ValueError('"polar_plot_yl" currently does not support texture as degree of freedom for field plots.')
             cmap = plt.cm.get_cmap('PuOr_r')  #'bwr' and 'PuOr_r' are good choices
             if predict:
                 Z = self.svm_yf.predict(feat)
@@ -2257,7 +2260,8 @@ class Material(object):
             else:
                 Z[np.nonzero(Z<-zmax)] = -zmax
             Z = Z.reshape(xx.shape)
-            im = ax.pcolormesh(xx*np.pi,(yy+1.)*self.scale_seq*sf,Z, cmap=cmap)
+            im = ax.pcolormesh(xx*np.pi,(yy+1.)*self.scale_seq*sf,Z, cmap=cmap, 
+                               shading='auto')
             if cbar:
                 cbar = ax.figure.colorbar(im, ax=ax)
                 cbar.ax.set_ylabel("yield function (MPa)", rotation=-90)

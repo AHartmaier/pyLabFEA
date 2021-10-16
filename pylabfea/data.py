@@ -953,7 +953,7 @@ class Data(object):
         fontsize : int
             specifies fontsize used in plot (optional, default: 18)
         '''
-        plt.figure(figsize=(15, 8))
+        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(15, 8))
         cmap = plt.cm.get_cmap('viridis', 10)
         #ms_max = np.amax(self.mat_param[active])
         Ndat = len(self.mat_param[active])
@@ -982,17 +982,17 @@ class Data(object):
                 color = (hc,0,1-hc)
             elif active=='flow_stress':
                 sc = self.mat_param['flow_stress'][0,0,:,:]
-                plt.polar(sc[:,1], sc[:,0], '.r', label='shear')
+                ax.plot(sc[:,1], sc[:,0], '.r', label='shear')
                 sc = self.mat_param['flow_stress'][0,0,:,:]
                 label = 'Flow Stress'
                 color = 'b'
             else:
                 raise ValueError('Undefined value for active field in "plot_yield_locus"')
             if scatter:
-                plt.polar(sc[:,1], sc[:,0], '.m', label=label)
+                ax.plot(sc[:,1], sc[:,0], '.m', label=label)
             if data is not None:
-                plt.polar(data[:,1], data[:,0], '.r', label=data_label)
-            plt.polar(sc[:,1], sc[:,0], label=label, color=color)
+                ax.plot(data[:,1], data[:,0], '.r', label=data_label)
+            ax.plot(sc[:,1], sc[:,0], label=label, color=color)
         plt.legend(loc=(1.04,0.7),fontsize=fontsize-2)
         plt.tick_params(axis="x", labelsize=fontsize-4)
         plt.tick_params(axis="y", labelsize=fontsize-4)
