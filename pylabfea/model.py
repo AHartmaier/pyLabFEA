@@ -1137,7 +1137,7 @@ class Model(object):
                     warnings.warn('\n ***Inconstistent stiffness matrix!\n\n')
                 hh = [el.sig-el.CV@(el.eps-el.epl) for el in self.element]
                 if np.abs(np.amax(hh)) > 1.:
-                    warnings.warn('\n ***TEST failed: ', hh,'\n\n')
+                    warnings.warn('\n ***TEST failed: {}\n\n'.format(hh))
 #                 hh = sig - sig0 - grad_stiff @ deps
 #                 if (seq_J2(hh)>0.1):
 #                     print('\n\n######################################')
