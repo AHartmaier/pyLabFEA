@@ -1829,7 +1829,7 @@ class Material(object):
         line = contour.collections
         return line
 
-    def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2,
+    def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2, peeq=0.,
                          xstart=None, xend=None, axis1=[0], axis2=[1], iso=False, ref_mat=None,
                          field=False, Nmesh=100, file=None, fontsize=20, scaling=True):
         '''Plot different cuts through yield locus in 3D principal stress space.
@@ -1844,6 +1844,8 @@ class Material(object):
             principal stress data to be used for scatter plot (optional)
         trange : float
             Cut-off for data to be plotted on slice (optional, default: 1.e-2)
+        peeq   : float
+            Level of plastic strain for which yield locus is plotted (isotropic hardening)
         xstart : float
             Smallest value on x-axis (optional, default: -2)
         xend   : float
@@ -2007,7 +2009,7 @@ class Material(object):
             else:
                 sf = 1.
             if fun is None:
-                Z = self.calc_yf(sig, pred=True)*sf
+                Z = self.calc_yf(sig, peeq=peeq, pred=True)*sf
             else:
                 Z = fun(sig, pred=True)*sf
             if label is None:
@@ -2017,7 +2019,7 @@ class Material(object):
             labels.extend([label])
             #plot reference function if provided
             if ref_mat is not None:
-                Z = ref_mat.calc_yf(sig, pred=True)*sf
+                Z = ref_mat.calc_yf(sig, peeq=peeq, pred=True)*sf
                 labels.extend([ref_mat.name])
                 hl = self.plot_data(Z, ax, xx, yy, field=False, c='black')
                 lines.extend(hl)
@@ -2037,7 +2039,7 @@ class Material(object):
                 dsel = np.nonzero(np.logical_and(np.abs(dat[:,si3])<trange,
                     np.logical_and(dat[:,axis1[j]]>xstart, dat[:,axis1[j]]<xend)))
                 ir = dsel[0]
-                yf = np.sign(self.calc_yf(data[ir,:]))
+                yf = np.sign(self.calc_yf(data[ir,:], peeq=peeq))
                 ax.scatter(dat[ir,axis1[j]], dat[ir,axis2[j]], s=60, c=yf,
                            cmap=plt.cm.Paired, edgecolors='k')
             ax.legend(lines,labels,loc='upper left',fontsize=fontsize-4)
