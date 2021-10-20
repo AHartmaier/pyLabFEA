@@ -255,7 +255,10 @@ class Data(object):
         else:
             sflow_av = np.array([[self.set[0].sy]]) # average flow stress
             sf = np.zeros((1,1,Nlc_min,self.sdim))
-            sf[0,0,:,:] = dset.syld[0:Nlc_min,0:self.sdim]
+            if self.sdim==3:
+                sf[0,0,:,:] = s_cyl(dset.syld[0:Nlc_min,:])
+            else:
+                sf[0,0,:,:] = dset.syld[0:Nlc_min,:]
         self.mat_param['flow_stress'] = sf       #  flow stresses at PEEQs in 'work_hard' for each texture
         self.mat_param['flow_seq_av'] = sflow_av # averaged equiv. flow stresses at PEEQs in 'work_hard' for each texture
  
