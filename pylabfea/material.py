@@ -25,6 +25,8 @@ import warnings
 import pickle
 from sklearn.model_selection import GridSearchCV
 from sklearn.model_selection import RandomizedSearchCV
+import platform
+import getpass
 
 '=========================='
 'define class for materials'
@@ -885,7 +887,7 @@ class Material(object):
         # self.ML_yf = True
         if GridSearch:
             print('The hyperparameter optimization with Gridsearch to find best c and gamma...')
-            param_grid = {'C': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15], 'gamma': [0.5, 1, 1.5, 2, 2.5, 3]}
+            param_grid = {'C': [1, 2, 5, 10, 20, 50, 100], 'gamma': [0.5, 1, 1.5, 2, 2.5, 3]}
             self.grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
             self.grid.fit(X_train, y_train)
             print('The best hyperparameters are:',self.grid.best_params_)
@@ -1442,8 +1444,8 @@ class Material(object):
         
         # paramaters for metadata
         today = str(date.today())  # date
-        owner = os.getlogin()  # username
-        sys_info = os.uname()  # system information
+        owner = getpass.getuser()  # username
+        sys_info = platform.uname()  # system information
         descr.extend(['Ndata', 'gamma', 'C'])
         param.extend([Ndata, self.gam_yf, self.C_yf])
         
