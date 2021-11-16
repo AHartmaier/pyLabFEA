@@ -806,7 +806,7 @@ class Material(object):
     # subroutines for ML flow rule, training
     #==============================================================
 
-    def setup_yf_SVM_voigt(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., plot=False, GridSearch = False):
+    def setup_yf_SVM_voigt(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., plot=False, gridsearch=False):
         '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
         data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
         be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. 
@@ -831,6 +831,8 @@ class Material(object):
             Parameter for kernel function of SVC (optional, default: 1)
         plot : Boolean
             Indicates if plot of decision function should be generated (optional, default: False)
+        gridsearch : Boolean
+            Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)
 
         Returns
         -------
@@ -885,16 +887,19 @@ class Material(object):
         # self.svm_yf = svm.SVC(kernel='rbf',C=C,gamma=gamma)
         # self.svm_yf.fit(X_train, y_train)
         # self.ML_yf = True
-        if GridSearch:
-            print('The hyperparameter optimization with Gridsearch to find best c and gamma...')
-            param_grid = {'C': [1, 2, 5, 10, 20, 50, 100], 'gamma': [0.5, 1, 1.5, 2, 2.5, 3]}
-            self.grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
-            self.grid.fit(X_train, y_train)
+
+        if gridsearch:
+            print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
+            param_grid = {'C': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15], 'gamma': [0.5, 1, 1.5, 2, 2.5, 3]}
+            grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
+            grid.fit(X_train, y_train)
             print('The best hyperparameters are:',self.grid.best_params_)
-            self.svm_yf = svm.SVC(kernel='rbf' ,C=self.grid.best_params_["C"],gamma=self.grid.best_params_["gamma"])
+            self.gam_yf = grid.best_params_["gamma"]
+            self.C_yf = grid.best_params_["C"]
+            self.svm_yf = svm.SVC(kernel='rbf' ,C=self.C_yf, gamma=self.gamma_yf)
             self.svm_yf.fit(X_train, y_train)
             self.ML_yf = True
-            print (C, gamma)
+            print ('Original values: C={}, gamma={}'.format(C,gamma))
         else:
             self.svm_yf = svm.SVC(kernel='rbf',C=C,gamma=gamma)
             self.svm_yf.fit(X_train, y_train)
@@ -926,7 +931,7 @@ class Material(object):
         return train_sc, test_sc
 
     def setup_yf_SVM_cyl(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1,
-                     plot=False, cyl=False):
+                     plot=False, cyl=False, gridsearch=False, cvals=None, gvals=None):
         '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
         data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
         be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. 
@@ -954,6 +959,8 @@ class Material(object):
             Parameters for size of periodic continuation of training data (optional, default:0.1)
         plot : Boolean
             Indicates if plot of decision function should be generated (optional, default: False)
+        gridsearch : Boolean
+            Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)
 
         Returns
         -------
@@ -1029,8 +1036,29 @@ class Material(object):
                 for i in range(self.Nset):
                     X_test[:,ih+i] = x_test[:,ih+i]/self.scale_text[i] - 1.
         #define and fit SVC
-        self.svm_yf = svm.SVC(kernel='rbf',C=C,gamma=gamma)
-        self.svm_yf.fit(X_train, y_train)
+        if gridsearch:
+            print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
+            # define search grid and add user parameters if not present in grid
+            if cvals is None:
+                cvals = [2, 4, 6, 8, 10, 20]
+                if not C in cvals:
+                    cvals.append(C)
+            if gvals is None:
+                gvals =  [1, 1.5, 2, 2.5, 3]
+                if not gamma in gvals:
+                    gvals.append(gamma)
+            param_grid = {'C': cvals, 'gamma': gvals}
+            grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
+            grid.fit(X_train, y_train)
+            print('The best hyperparameters are:',grid.best_params_)
+            self.gam_yf = grid.best_params_["gamma"]
+            self.C_yf = grid.best_params_["C"]
+            self.svm_yf = svm.SVC(kernel='rbf', C=self.C_yf, gamma=self.gam_yf)
+            self.svm_yf.fit(X_train, y_train)
+            print ('Original values: C={}, gamma={}'.format(C, gamma))
+        else:
+            self.svm_yf = svm.SVC(kernel='rbf',C=C,gamma=gamma)
+            self.svm_yf.fit(X_train, y_train)
         self.ML_yf = True
 
         #calculate scores
@@ -1060,7 +1088,7 @@ class Material(object):
         return train_sc, test_sc
  
     def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=True, 
-                  mat_ref=None, sdata=None, plot=False, fontsize=16, Gridsearch = False):
+                  mat_ref=None, sdata=None, plot=False, fontsize=16, gridsearch=False, cvals=None, gvals=None):
         '''Train SVC for all yield functions of the microstructures provided in msparam and for flow stresses to capture 
         work hardening. In first step, the 
         training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
@@ -1094,6 +1122,8 @@ class Material(object):
             Indicate if graphical output should be performed (optional, default: False)
         fontsize : int
             Fontsize for graph annotations (optional, default: 16)
+        gridsearch : Boolean
+            Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)
         '''
         print('\n---------------------------\n')
         print('SVM classification training')
@@ -1157,25 +1187,15 @@ class Material(object):
                         yt[i0:i1] = yf_train
             print('%i training data sets created from %i microstructures, with %i load cases each' % (Nt, self.Nset, Nlc))
 
-        '''nth = int(N0/18)
-        x_test = xt[::nth,0:2]
-        y_test = yt[::nth]'''
         if np.any(np.abs(yt)<=0.99):
             print('Warning: result vector for yield function contains more categories than "-1" and "+1". Will result in higher dimensional SVC.')
         #Train SVC with data from all microstructures in data
-        if Gridsearch:
-            if self.sdim == 3:
-                # assuming cylindrical stresses if sdim=3
-                train_sc, test_sc = self.setup_yf_SVM_cyl(xt, yt, cyl=True, C=C, gamma=gamma, fs=0.3, plot=False)
-            else:
-                train_sc, test_sc = self.setup_yf_SVM_voigt(xt, yt, C=C, gamma=gamma, GridSearch= True)
+        if self.sdim == 3:
+            # assuming cylindrical stresses if sdim=3
+            train_sc, test_sc = self.setup_yf_SVM_cyl(xt, yt, cyl=True, C=C, gamma=gamma, \
+                                fs=0.3, plot=False, gridsearch=gridsearch, cvals=cvals, gvals=gvals)
         else:
-            if self.sdim == 3:
-                # assuming cylindrical stresses if sdim=3
-                train_sc, test_sc = self.setup_yf_SVM_cyl(xt, yt, cyl=True, C=C, gamma=gamma, fs=0.3, plot=False)
-            else:
-                train_sc, test_sc = self.setup_yf_SVM_voigt(xt, yt, C=C, gamma=gamma)
-
+            train_sc, test_sc = self.setup_yf_SVM_voigt(xt, yt, C=C, gamma=gamma, gridsearch=gridsearch)
 
         print(self.svm_yf)
         print("Training set score: {} %".format(train_sc))
