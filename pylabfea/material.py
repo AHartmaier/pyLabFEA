@@ -891,11 +891,11 @@ class Material(object):
         if gridsearch:
             print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
             param_grid = {'C': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15], 'gamma': [0.5, 1, 1.5, 2, 2.5, 3]}
-            grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
-            grid.fit(X_train, y_train)
+            self.grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
+            self.grid.fit(X_train, y_train)
             print('The best hyperparameters are:',self.grid.best_params_)
-            self.gam_yf = grid.best_params_["gamma"]
-            self.C_yf = grid.best_params_["C"]
+            self.gamma_yf = self.grid.best_params_["gamma"]
+            self.C_yf = self.grid.best_params_["C"]
             self.svm_yf = svm.SVC(kernel='rbf' ,C=self.C_yf, gamma=self.gamma_yf)
             self.svm_yf.fit(X_train, y_train)
             self.ML_yf = True
