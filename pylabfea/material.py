@@ -20,11 +20,11 @@ from scipy.optimize import bisect
 from sklearn import svm
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, os
+import sys #, os
 import warnings
 import pickle
 from sklearn.model_selection import GridSearchCV
-from sklearn.model_selection import RandomizedSearchCV
+#from sklearn.model_selection import RandomizedSearchCV
 import platform
 import getpass
 
@@ -894,9 +894,9 @@ class Material(object):
             self.grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
             self.grid.fit(X_train, y_train)
             print('The best hyperparameters are:',self.grid.best_params_)
-            self.gamma_yf = self.grid.best_params_["gamma"]
+            self.gam_yf = self.grid.best_params_["gamma"]
             self.C_yf = self.grid.best_params_["C"]
-            self.svm_yf = svm.SVC(kernel='rbf' ,C=self.C_yf, gamma=self.gamma_yf)
+            self.svm_yf = svm.SVC(kernel='rbf' ,C=self.C_yf, gamma=self.gam_yf)
             self.svm_yf.fit(X_train, y_train)
             self.ML_yf = True
             print ('Original values: C={}, gamma={}'.format(C,gamma))
@@ -1443,23 +1443,33 @@ class Material(object):
         # write parameters of trained SVC to file readable to Abaqus
         dc = self.svm_yf.dual_coef_[0] # dual coefficients
         nsv = len(dc)   # number of support vectors
-        nlin = int((nsv*(self.Ndof+1)+20)/8) + 1
+        nlin = int((nsv*(self.Ndof+1)+30)/8) + 1
         Ndata = nlin*8 # Number of data points to write
         props = np.zeros(Ndata)
         props[0] = nsv
         props[1] = self.Ndof
-        props[2] = self.E
-        props[3] = self.nu
-        props[4] = self.svm_yf.intercept_[0]
-        props[5] = self.gam_yf
-        props[6] = self.epc
-        props[7] = self.scale_seq
-        props[8] = self.scale_wh
-        props[9] = self.Nset
-        props[10:10+self.Nset] = self.scale_text
-        props[19:19+nsv] = dc
-        nl = (self.Ndof+1)*nsv+19 # last entry of support vectors
-        props[19+nsv:nl] = self.svm_yf.support_vectors_.flatten()
+        props[2] = self.C11
+        props[3] = self.C12
+        props[4] = self.C44
+        props[5] = self.svm_yf.intercept_[0]
+        props[6] = self.gam_yf
+        props[7] = self.epc
+        props[8] = self.scale_seq
+        props[9] = self.scale_wh
+        if self.CV is None:
+            props[10:16] = -1
+        else:
+            props[10] = self.CV[1,1]
+            props[11] = self.CV[2,2]
+            props[12] = self.CV[0,2]
+            props[13] = self.CV[1,2]
+            props[14] = self.CV[4,4]
+            props[15] = self.CV[5,5]
+        props[16] = self.Nset
+        props[16:16+self.Nset] = self.scale_text
+        props[29:29+nsv] = dc
+        nl = (self.Ndof+1)*nsv+29 # last entry of support vectors
+        props[29+nsv:nl] = self.svm_yf.support_vectors_.flatten()
         np.savetxt(file+'-svm.csv', props.reshape((nlin,8)), delimiter=', ', newline='\n')
         
         # paramaters for metadata
@@ -1500,8 +1510,9 @@ class Material(object):
               "Separator": ',',
               "Header"   : None,
               "Format"   : (nlin,8),
-              "Names" : ['nsv', 'nsd', 'Emod', 'nu', 'rho', 'gamma', 'epc', \
-                            'scale_seq', 'scale_wh', 'Nset', 'scale_text[0:Nset]', \
+              "Names" : ['nsv', 'nsd', 'C11', 'C12', 'C44', 'rho', 'gamma', 'epc', \
+                            'scale_seq', 'scale_wh', 'C22', 'C33', 'C13', 'C23', \
+                            'C55', 'C66', 'Nset', 'scale_text[0:Nset]', \
                             'dual_coef[0:nsv]', 'sup_vec[0:nsv,0:nsd]'],
               "Units" : { 
                   'Stress' : 'MPa',
@@ -1591,8 +1602,11 @@ class Material(object):
             print('***Warning: E and nu calculated from anisotropic elastic parameters')
         elif (CV is not None):
             self.CV = np.array(CV)
-            self.nu = self.CV[0,1]/(self.CV[0,0]+self.CV[0,1])
-            self.E = 2*self.CV[3,3]*(1+self.nu) # only for isotropy
+            self.C11 = self.CV[0,0]
+            self.C12 = self.CV[0,1]
+            self.C44 = self.CV[3,3]
+            self.nu = self.C12/(self.C11+self.C12)
+            self.E = 2*self.C44*(1+self.nu) # only for isotropy
             #print('Warning: E and nu calculated from anisotropic elastic parameters')
         else:
             raise ValueError('Error: Inconsistent definition of material parameters')
@@ -1634,7 +1648,7 @@ class Material(object):
         self.khard = khard # strain hardening slope (d flow stress / d plastic strain)
         self.drucker = drucker   # Drucker-Prager parameter: weight of hydrostatic stress
         if sdim!=3 and sdim!=6:
-            raise ValueError('plasticity: sdim must be either 3 or 6')
+            raise ValueError('{} in plasticity: sdim must be either 3 or 6'.format(self.name))
         else:
             if self.sdim is not None and self.sdim!=sdim:
                 print('plasticity: Parameter sdim is changed. New value:',sdim)
@@ -2246,7 +2260,7 @@ class Material(object):
     
     def polar_plot_yl(self, Na=72, cmat=None, data=None, dname='reference', scaling=None, 
                       field=False, predict=False, cbar=False, Np=100, file=None, arrow=False,
-                      sJ2=False):
+                      sJ2=False, show=True):
         '''Plot yield locus as polar plot in deviatoric stress plane
         
         Parameters
@@ -2321,12 +2335,11 @@ class Material(object):
             s_yld = seq_J2(sig)
         else:
             s_yld = self.calc_seq(sig)
-        ax.plot(theta, s_yld*sf, '-k', linewidth=2, label=self.name)
+        ax.plot(theta, s_yld*sf, '-r', linewidth=2, label=self.name)
         if cmat is not None:
             N = len(cmat)
-            cmap = plt.cm.get_cmap('gist_rainbow')
-            i=0
-            for mat in cmat:
+            cmap = plt.cm.get_cmap('copper')
+            for i, mat in enumerate(cmat):
                 x1 = fsolve(mat.find_yloc, np.ones(Na), args=snorm, xtol=1.e-5)
                 sig = snorm*np.array([x1,x1,x1]).T
                 if sJ2:
@@ -2334,7 +2347,6 @@ class Material(object):
                 else:
                     s_yld = self.calc_seq(sig)
                 ax.plot(theta, s_yld*sf, color=cmap(i/N), linewidth=2, label=mat.name)
-                i += 1
         if data is not None:
             ax.plot(data[:,1],data[:,0]*sf,'.b', label=dname)
         if arrow:
@@ -2349,7 +2361,10 @@ class Material(object):
             ax.arrow(-2.0944, 0, 0, dr, head_width=0.05,
                      width=0.004, head_length=drh, color='r', length_includes_head=True)
             ax.text(-2.04, dr*0.97, r'$\sigma_3$', color='r',fontsize=22)
-        plt.legend(loc=(.9,0.95),fontsize=18)
         if file is not None:
+            plt.legend(loc=(.9,0.95),fontsize=18)
             plt.savefig(file+'.pdf', format='pdf', dpi=300)
-        plt.show()
+        if show:
+            plt.legend(loc=(.9,0.95),fontsize=18)
+            plt.show()
+        return ax
