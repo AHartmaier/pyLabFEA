@@ -1392,7 +1392,7 @@ class Material(object):
         self.ML_grad = True
         
     def export_MLparam(self, sname, source=None, file=None, path='../../models/', \
-                       descr=[], param=[]):
+                       descr=None, param=None):
         """The parameters of the trained Ml flow rule (support vectors, dual 
         coefficients, offset and scaling parameters) are written to a csv file
         that is readable to Abaqus (8 numbers per line).
@@ -1476,6 +1476,10 @@ class Material(object):
         today = str(date.today())  # date
         owner = getpass.getuser()  # username
         sys_info = platform.uname()  # system information
+        if descr is None:
+            descr = []
+        if param is None:
+            param = []
         descr.extend(['Ndata', 'gamma', 'C'])
         param.extend([Ndata, self.gam_yf, self.C_yf])
         
