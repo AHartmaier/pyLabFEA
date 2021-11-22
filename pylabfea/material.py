@@ -1434,7 +1434,7 @@ class Material(object):
             self.scale_text = [1.]
         if self.Nset>9:
             raise ValueError('export_MLparam: Too many sets to export.')
-        if len(descr)!=len(param):
+        if (descr is not None and param is not None) and len(descr)!=len(param):
             raise ValueError('Lists for descr and param must have the same lengths.')
         if file is None:
             file = 'abq_'+self.name
