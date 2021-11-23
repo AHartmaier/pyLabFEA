@@ -313,8 +313,9 @@ class Material(object):
                 x[:,0] = seq_J2(sig)/self.scale_seq - 1.
                 x[:,1] = polar_ang(sig)/np.pi
             else:
-                p = np.sum(sig[:,0:3], axis=1)/3.
-                sig[:,0:3] -= p[:,None]
+                #p = np.sum(sig[:,0:3], axis=1)/3.
+                #sig[:,0:3] -= p[:,None]
+                sig = sdev(sig)
                 if sh==(N,6):
                     x[:,0:5] = sig[:,1:6]/self.scale_seq
                 else:
@@ -613,7 +614,7 @@ class Material(object):
             fgrad[:,2] = self.svm_grad2.predict(sig)*self.gscale[2]
             self.msg['gradient'] = 'SVR gradient'
         elif self.ML_yf and not ana:
-            #use numerical gradient of SVC yield fct. in stress space
+            #use gradient of SVC yield fct. in stress space
             #gradient of SVC kernel function w.r.t. feature vector
             def grad_rbf(x,xp):
                 hv = x-xp
@@ -642,7 +643,7 @@ class Material(object):
                 x[:,0] = seq_J2(sig)/self.scale_seq - 1.
                 x[:,1] = polar_ang(sig)/np.pi
             else:
-                x[:,0:5] = sig[:,1:6]/self.scale_seq
+                x[:,0:5] = sdev(sig[:,1:6])/self.scale_seq
             if self.whdat:
                 x[:,self.ind_wh] = peeq/self.scale_wh - 1.
             if self.txdat:
@@ -650,16 +651,18 @@ class Material(object):
                 x[:,ih:ih+self.Nset] = [self.tx_cur[i]/self.scale_text[i] - 1. for i in range(self.Nset)]
             dc = self.svm_yf.dual_coef_[0,:]
             sv = self.svm_yf.support_vectors_
+            hk = 0.
             for i in range(N):
                 hh = grad_rbf(x[i,:],sv)
                 dKdx = np.sum(dc[:,None]*hh,axis=0)
                 if self.whdat:
-                    self.khard = -dKdx[self.ind_wh]*self.scale_seq/self.scale_wh
+                    hk -= dKdx[self.ind_wh]*self.scale_seq/self.scale_wh
                 if self.sdim==3:
                     fgrad[i,:] = Jac(sig[i,:]) @ np.array([1,dKdx[1],0])
                 else:
                     fgrad[i,1:6] = dKdx[0:5]
                     fgrad[i,0] = -dKdx[0] - dKdx[1]
+            self.khard = hk/N
             self.msg['gradient'] = 'gradient to ML_yf'
         else:
             # calculate analytical gradient based on the active material formulation 
@@ -677,6 +680,7 @@ class Material(object):
             d3 = self.drucker/3.
             if (seq is None):
                 seq = self.calc_seq(sig)
+            sig = sdev(sig)
             fgrad[:,0] = ((h0+h2)*sig[:,0] - h0*sig[:,1] - h2*sig[:,2])/(2.*seq) + d3
             fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/(2.*seq) + d3
             fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/(2.*seq) + d3
