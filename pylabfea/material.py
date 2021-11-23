@@ -313,10 +313,8 @@ class Material(object):
                 x[:,0] = seq_J2(sig)/self.scale_seq - 1.
                 x[:,1] = polar_ang(sig)/np.pi
             else:
-                #p = np.sum(sig[:,0:3], axis=1)/3.
-                #sig[:,0:3] -= p[:,None]
                 sig = sdev(sig)
-                if sh==(N,6):
+                if sh==(N,6) or sh==(6,):
                     x[:,0:5] = sig[:,1:6]/self.scale_seq
                 else:
                     x[:,0:2] = sig[:,1:3]/self.scale_seq
