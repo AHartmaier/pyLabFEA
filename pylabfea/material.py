@@ -315,9 +315,9 @@ class Material(object):
             else:
                 sig = sdev(sig)
                 if sh==(N,6) or sh==(6,):
-                    x[:,0:5] = sig[:,1:6]/self.scale_seq
+                    x[:,0:6] = sig[:,0:6]/self.scale_seq
                 else:
-                    x[:,0:2] = sig[:,1:3]/self.scale_seq
+                    x[:,0:3] = sig[:,0:3]/self.scale_seq
             if self.whdat:
                 x[:,self.ind_wh] = peeq/self.scale_wh - 1.
             if self.txdat:
@@ -615,11 +615,16 @@ class Material(object):
             #use gradient of SVC yield fct. in stress space
             #gradient of SVC kernel function w.r.t. feature vector
             def grad_rbf(x,xp):
+                # x.shape=(5,)
+                # xp.shape=(Nsv,5)
+                # grad.shape=(Nsv,5)
                 hv = x-xp
                 hh = np.sum(hv*hv,axis=1) # ||x-x'||^2=sum_i(x_i-x'_i)^2
                 k = np.exp(-self.gam_yf*hh)
                 arg = -2.*self.gam_yf*hv
                 grad = k[:,None]*arg
+                #arg = -2.*self.gam_yf*np.sqrt(hh)/np.linalg.norm(hv,axis=1)
+                #grad = (k*arg)[:,None]*hv
                 return grad            #define Jacobian of coordinate transformation
             def Jac(sig):
                 J = np.ones((3,3))
@@ -641,7 +646,7 @@ class Material(object):
                 x[:,0] = seq_J2(sig)/self.scale_seq - 1.
                 x[:,1] = polar_ang(sig)/np.pi
             else:
-                x[:,0:5] = sdev(sig[:,1:6])/self.scale_seq
+                x[:,0:6] = sdev(sig)[:,0:6]/self.scale_seq
             if self.whdat:
                 x[:,self.ind_wh] = peeq/self.scale_wh - 1.
             if self.txdat:
@@ -658,8 +663,7 @@ class Material(object):
                 if self.sdim==3:
                     fgrad[i,:] = Jac(sig[i,:]) @ np.array([1,dKdx[1],0])
                 else:
-                    fgrad[i,1:6] = dKdx[0:5]
-                    fgrad[i,0] = -dKdx[0] - dKdx[1]
+                    fgrad[i,0:6] = dKdx[0:6] / self.scale_seq
             self.khard = hk/N
             self.msg['gradient'] = 'gradient to ML_yf'
         else:
@@ -861,7 +865,7 @@ class Material(object):
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
         X_train = np.zeros((N,self.Ndof))
-        X_train[:,0:5] = x[:,0:5]/self.scale_seq
+        X_train[:,0:6] = x[:,0:6]/self.scale_seq
         if self.whdat:
             X_train[:,self.ind_wh] = x[:,self.ind_wh]/self.scale_wh - 1.
             print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f' 
@@ -878,7 +882,7 @@ class Material(object):
         if x_test is not None:
             Ntest = len(x_test)
             X_test = np.zeros((Ntest,self.Ndof))
-            X_test[:,0:5] = x_test[:,0:5]/self.scale_seq 
+            X_test[:,0:6] = x_test[:,0:6]/self.scale_seq 
             if self.whdat:
                 X_test[:,self.ind_wh] = x_test[:,self.ind_wh]/self.scale_wh - 1.
             if self.txdat:
@@ -1150,8 +1154,9 @@ class Material(object):
                 self.sdim = len(sdata[0,:])
                 Nlc = len(sdata[:,0])
                 xt, yt = self.create_sig_data(sdata=sdata,  Nseq=Nseq, extend=extend)
-                print('Training data created from',self.sdim,'-dimensional yield stresses with',Nlc,'load cases.')
-            self.Ndof = self.sdim-1
+                print('Training data created from {}-dimensional yield stresses with {} load cases.'\
+                      .format(self.sdim,Nlc))
+            self.Ndof = 2 if self.sdim==3 else 6 
         else:
             Nlc   = self.msparam[0]['Nlc']
             Npl   = self.msparam[0]['Npl']
@@ -1178,7 +1183,7 @@ class Material(object):
                         #sc_test, yf_test   = self.create_sig_data(sdata=self.msparam['flow_stress'][k,j,::12,:], Nseq=15, rand=False)
                         i0 = (j + k*Npl + m*Ntext)*N0
                         i1 = i0 + N0
-                        xt[i0:i1,0:self.sdim-1] = sc_train
+                        xt[i0:i1,0:self.sdim] = sc_train
                         if self.whdat:
                             #Add DOF for work hardening parameter, corrected for offset
                             xt[i0:i1,self.ind_wh] = ms['work_hard'][j] - self.epc
@@ -1328,16 +1333,16 @@ class Material(object):
                 sc    = sdata[:,0]
                 theta = sdata[:,1]
             else:
-                # make sure stresses are purely deviatoric
-                p = np.sum(sdata[:,0:3], axis=1)/3.
-                sdata[:,0:3] -= p[:,None]
+                # make sure training stresses are purely deviatoric
+                sdata = sdev(sdata)
             seq = np.linspace(offs, 0.95, Nseq)
             seq = np.append(seq, np.linspace(1.05, 2., Nseq))
         if extend:
             # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
             seq = np.append(seq, np.array([2.4, 3., 4., 5.]))
         Nd = len(seq)  # numberof training stresses per load case
-        st = np.zeros((N*Nd,self.sdim-1))  # input vector with training stresses
+        Ns = 2 if self.sdim==2 else 6
+        st = np.zeros((N*Nd,Ns))  # input vector with training stresses
         yt = np.zeros(N*Nd)  # result vector for supervised learning
         for i in range(Nd):
             j0 = i*N
@@ -1348,7 +1353,7 @@ class Material(object):
                 st[j0:j1,1] = theta
             else:
                 # scale sdata into elastic regime (seq<1) or into plastic regime (seq>=1)
-                st[j0:j1,:] = sdata[:,1:6]*seq[i]
+                st[j0:j1,:] = sdata[:,0:6]*seq[i]
             if sdata is None:
                 yt[j0:j1] = np.sign(mat_ref.calc_yf(sp_cart(st[j0:j1,:])))
             else:
@@ -1752,7 +1757,7 @@ class Material(object):
                 print('***Warning in microscture: Inconsistent definition of yield onset in texture',i,'. Using eps_cr=',self.epc)
         self.whdat=False if Npl==1 else True    # work hardening data exists
         self.txdat=False if Ntext==1 else True  # texture variations exist
-        self.Ndof = self.sdim-1
+        self.Ndof = 2 if self.sdim==3 else 6 
         if self.whdat:
             self.ind_wh = self.Ndof  # index for dof associated with work hardening
             self.Ndof += 1           # add dof for work hardening parameter if data exists
