@@ -1,0 +1,72 @@
+{
+  "Info": {
+    "Owner": "alexander",
+    "Institution": "ICAMS, Ruhr University Bochum, Germany",
+    "Date": "2021-11-28",
+    "Description": "SVC-parameters for plasticity model",
+    "Method": "Support Vector Classification",
+    "System": {
+      "sysname": "Darwin",
+      "nodename": "Alexanders-iMac.fritz.box",
+      "release": "21.1.0",
+      "version": "Darwin Kernel Version 21.1.0: Wed Oct 13 17:33:23 PDT 2021; root:xnu-8019.41.5~1/RELEASE_X86_64",
+      "machine": "x86_64"
+    }
+  },
+  "Model": {
+    "Creator": "pylabfea",
+    "Version": "4.0",
+    "Repository": "https://github.com/AHartmaier/pyLabFEA.git",
+    "Input": null,
+    "Script": "/Users/alexander/Codes/pyLabFEA/examples/Train-Goss_Barlat-v1.py",
+    "Names": [
+      "Ndata",
+      "gamma",
+      "C"
+    ],
+    "Parameters": [
+      1680,
+      2.5,
+      15.0
+    ]
+  },
+  "Data": {
+    "Class": "SVC_parameters",
+    "Type": "CSV",
+    "File": "../models/abq_ML-Goss-Barlat_C15_G25-svm.csv",
+    "Separator": ",",
+    "Header": null,
+    "Format": [
+      210,
+      8
+    ],
+    "Names": [
+      "nsv",
+      "nsd",
+      "C11",
+      "C12",
+      "C44",
+      "rho",
+      "gamma",
+      "epc",
+      "scale_seq",
+      "scale_wh",
+      "C22",
+      "C33",
+      "C13",
+      "C23",
+      "C55",
+      "C66",
+      "Nset",
+      "scale_text[0:Nset]",
+      "dual_coef[0:nsv]",
+      "sup_vec[0:nsv,0:nsd]"
+    ],
+    "Units": {
+      "Stress": "MPa",
+      "Strain": "None",
+      "Disp": "mm",
+      "Force": "N"
+    }
+  }
+}

@@ -40,15 +40,15 @@
 equivalent stresses and strain, conversions of
 cylindrical to principal stresses and vice versa, and the classes <code class="docutils literal notranslate"><span class="pre">Stress</span></code> and <code class="docutils literal notranslate"><span class="pre">Strain</span></code>
 for efficient operations with these quantities.</p>
-<p>uses NumPy</p>
-<p>Version: 3.5 (2021-05-03)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
+<p>uses NumPy, pickle</p>
+<p>Version: 4.0 (2021-11-27)
+Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="basic.Strain">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">basic.</span></span><span class="sig-name descname"><span class="pre">Strain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Strain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#basic.Strain" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Stores and converts Voigt strain tensors into different formats,
 calculates principle strain and equivalent strain.</p>
 <dl class="field-list simple">
@@ -98,7 +98,7 @@ calculates principle strain and equivalent strain.</p>
 <dd class="field-odd"><p><strong>eeq</strong> – Equivalent strain</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -122,7 +122,7 @@ calculates principle strain and equivalent strain.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="basic.Stress">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">basic.</span></span><span class="sig-name descname"><span class="pre">Stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/basic.html#Stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#basic.Stress" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Stores and converts Voigt stress tensors into different formats,
 calculates principle stresses, equivalent stresses and transforms into cylindrical coordinates.</p>
 <dl class="field-list simple">
@@ -169,7 +169,7 @@ calculates principle stresses, equivalent stresses and transforms into cylindric
 <dd><p>Hydrostatic stress component</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -203,7 +203,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 <dd class="field-even"><p><strong>la</strong> – Lode angle</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -217,7 +217,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 <dd class="field-odd"><p><strong>sJ2</strong> – equivalent stress</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -235,7 +235,7 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 J2 equivalent stress otherwise</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -249,7 +249,7 @@ J2 equivalent stress otherwise</p>
 <dd class="field-odd"><p><strong>ang</strong> – polar angle of stress in devitoric plane</p>
 </dd>
 <dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -281,7 +281,7 @@ J2 equivalent stress otherwise</p>
 <dd class="field-even"><p><strong>eeq</strong> – equivalent strains</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or (N,) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -319,7 +319,7 @@ J2 equivalent stress otherwise</p>
 <dd class="field-even"><p><strong>theta</strong> – polar angles in deviatoric plane as positive angle between sprinc and a_vec in range [-pi,+p]</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or (N,) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -367,7 +367,7 @@ J2 equivalent stress otherwise</p>
 <dd class="field-even"><p><strong>sd</strong> – deviatoric stresses</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or (N,) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -385,7 +385,7 @@ J2 equivalent stress otherwise</p>
 <dd class="field-even"><p><strong>seq</strong> – J2 equivalent stresses</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or (N,) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -399,10 +399,10 @@ J2 equivalent stress otherwise</p>
 <dd class="field-odd"><p><strong>scyl</strong> (<em>(</em><em>2</em><em>,</em><em>)</em><em>, </em><em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Cylindrical stress in form (seq, theta, (optional: p))</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>sprinc</strong> – principle deviatoric stress</p>
+<dd class="field-even"><p><strong>sprinc</strong> – principle deviatoric stresses</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+<dd class="field-odd"><p>(3,) or (N,3) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -452,14 +452,14 @@ J2 equivalent stress otherwise</p>
 contains that attributes and methods needed in FEA. Materials are defined in
 module pylabfea.material</p>
 <p>uses NumPy, SciPy, MatPlotLib</p>
-<p>Version: 3.5.2 (2021-06-12)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
+<p>Version: 4.0 (2021-11-27)
+Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: <a class="reference external" href="mailto:alexander&#46;hartma4er&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartma4er<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="model.Model">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">planestress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for finite element model. Defines necessary attributes and methods
 for pre-processing (defining geometry, material assignments, mesh and boundary conditions);
 solution (invokes numerical solver for non-linear problems);
@@ -479,7 +479,7 @@ Default boundary conditions are:</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Dimensionality of model (optional, default: 1)</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Dimensionality of model (optional, default: 1)</p></li>
 <li><p><strong>planestress</strong> (<em>Boolean</em>) – Sets plane-stress condition (optional, default: False)</p></li>
 </ul>
 </dd>
@@ -512,7 +512,7 @@ Default boundary conditions are:</p>
 <dd><p>Number of sections (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -534,7 +534,7 @@ Default boundary conditions are:</p>
 <dd><p>Size of model in x-direction (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -545,7 +545,7 @@ Default boundary conditions are:</p>
 <dd><p>Size of model in y-direction (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>, default leny=1)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -556,7 +556,7 @@ Default boundary conditions are:</p>
 <dd><p>Thickness of 2d-model (defined in <code class="docutils literal notranslate"><span class="pre">geom</span></code>, default thick=1)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -677,7 +677,7 @@ Default boundary conditions are:</p>
 <dd><p>Total number of nodes in Model (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -688,7 +688,7 @@ Default boundary conditions are:</p>
 <dd><p>Numbers of nodes in x and y-direction (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -699,7 +699,7 @@ Default boundary conditions are:</p>
 <dd><p>Number of elements (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -710,7 +710,7 @@ Default boundary conditions are:</p>
 <dd><p>Number of degrees of freedom (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -732,7 +732,7 @@ Default boundary conditions are:</p>
 <dd><p>Lists of nodes on boundaries (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -743,7 +743,7 @@ Default boundary conditions are:</p>
 <dd><p>List of inner nodes (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -754,7 +754,7 @@ Default boundary conditions are:</p>
 <dd><p>List of objects of class <code class="docutils literal notranslate"><span class="pre">Element</span></code>, dimension Nel (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -831,7 +831,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="py class">
 <dt class="sig sig-object py" id="model.Model.Element">
 <em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/model.html#Model.Element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#model.Model.Element" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for isoparametric elements; supports
 1-d elements with linear or quadratic shape function and full integration;
 2-d quadrilateral elements with linear shape function and full integration</p>
@@ -839,10 +839,10 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Model</span></code>) – Refers to parent class <code class="docutils literal notranslate"><span class="pre">Model</span></code> to inherit all attributes</p></li>
-<li><p><strong>nodes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of nodes belonging to element</p></li>
-<li><p><strong>lx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Element size in x-direction</p></li>
-<li><p><strong>ly</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Element size in y-direction</p></li>
-<li><p><strong>sect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Section in which element is located</p></li>
+<li><p><strong>nodes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of nodes belonging to element</p></li>
+<li><p><strong>lx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Element size in x-direction</p></li>
+<li><p><strong>ly</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Element size in y-direction</p></li>
+<li><p><strong>sect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Section in which element is located</p></li>
 <li><p><strong>mat</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – Material card with attributes and methods to be applied in element</p></li>
 </ul>
 </dd>
@@ -864,7 +864,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>List of nodes of this element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -875,7 +875,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Size of element in x-direction</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -886,7 +886,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Size of element in y-direction</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -897,7 +897,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>number of Gauss points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -930,7 +930,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>List of B-matrices at Gauss points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -952,7 +952,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Volume of element</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -963,7 +963,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Determinant of Jacobian of iso-parametric formulation</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1007,7 +1007,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Section of model in which element is located</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1063,8 +1063,8 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – absolute x-position in element (optional, default: 0)</p></li>
-<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – absolute y-position in element (optional, default: 0)</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – absolute x-position in element (optional, default: 0)</p></li>
+<li><p><strong>y</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – absolute y-position in element (optional, default: 0)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1160,7 +1160,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Assigns an object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code> to each section.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of materials, must have same dimensions as Model.LS</p>
+<dd class="field-odd"><p><strong>mats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of materials, must have same dimensions as Model.LS</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1183,9 +1183,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement in x direction</p></li>
-<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
-<li><p><strong>dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement in x direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
+<li><p><strong>dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1198,9 +1198,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force of lhs nodes in bc_dir direction</p></li>
-<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
-<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force of lhs nodes in bc_dir direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1213,9 +1213,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force on rhs nodes in bc_dir direction</p></li>
-<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
-<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force on rhs nodes in bc_dir direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1228,9 +1228,9 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Displacement or force in x direction</p></li>
-<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
-<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force in x direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1242,7 +1242,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Calculate average displacement and total force at (boundary) nodes</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>nodes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of nodes</p>
+<dd class="field-odd"><p><strong>nodes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of nodes</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1271,9 +1271,9 @@ for 2-d model a laminate structure normal to x-direction is created; adds attrib
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List with with absolute length of each section</p></li>
-<li><p><strong>LY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Length in y direction (optional, default: 1)</p></li>
-<li><p><strong>LZ</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Thickness of model in z-direction (optional, default: 1)</p></li>
+<li><p><strong>sect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List with with absolute length of each section</p></li>
+<li><p><strong>LY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Length in y direction (optional, default: 1)</p></li>
+<li><p><strong>LZ</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Thickness of model in z-direction (optional, default: 1)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1291,9 +1291,9 @@ the section in which the element is situated to be passed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>NX</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of elements in x-direction (optional, default: 10)</p></li>
-<li><p><strong>NY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of elements in y-direction (optional, default: 1)</p></li>
-<li><p><strong>SF</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Degree of shape functions: 1=linear, 2=quadratic (optional, default: 1)</p></li>
+<li><p><strong>NX</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of elements in x-direction (optional, default: 10)</p></li>
+<li><p><strong>NY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of elements in y-direction (optional, default: 1)</p></li>
+<li><p><strong>SF</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Degree of shape functions: 1=linear, 2=quadratic (optional, default: 1)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1307,16 +1307,16 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fsel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Field selector for library field, see Keyword Arguments for possible values</p></li>
-<li><p><strong>mag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Magnification factor for displacements (optional, default: 10)</p></li>
-<li><p><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Start value for range of plotted values</p></li>
-<li><p><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – End value for range of plotted values</p></li>
-<li><p><strong>cdepth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of colors in colormap (optional, default: 20)</p></li>
+<li><p><strong>fsel</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Field selector for library field, see Keyword Arguments for possible values</p></li>
+<li><p><strong>mag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Magnification factor for displacements (optional, default: 10)</p></li>
+<li><p><strong>vmin</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Start value for range of plotted values</p></li>
+<li><p><strong>vmax</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – End value for range of plotted values</p></li>
+<li><p><strong>cdepth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of colors in colormap (optional, default: 20)</p></li>
 <li><p><strong>showmesh</strong> (<em>Boolean</em>) – Set/unset plotting of lines for element edges (optional, default: True)</p></li>
 <li><p><strong>shownodes</strong> (<em>Boolean</em>) – Set/unset plotting of nodes (optional, default: True)</p></li>
-<li><p><strong>colormap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of colormap to be used (optional, default: viridis)</p></li>
+<li><p><strong>colormap</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of colormap to be used (optional, default: viridis)</p></li>
 <li><p><strong>annot</strong> (<em>Boolean</em>) – Show annotations for x and y-axis (optional, default: True)</p></li>
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – If a filename is provided, plot is exported as PDF (optional, default: None)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – If a filename is provided, plot is exported as PDF (optional, default: None)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Keyword Arguments</dt>
@@ -1377,7 +1377,7 @@ are stored as attributes of class <code class="docutils literal notranslate"><sp
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>min_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Minimum number of load steps (optional)</p></li>
+<li><p><strong>min_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Minimum number of load steps (optional)</p></li>
 <li><p><strong>verb</strong> (<em>Boolean</em>) – Be verbose in text output (optional, default: False)</p></li>
 </ul>
 </dd>
@@ -1406,20 +1406,20 @@ needed for elastic-plastic material definitions in FEA. It also enables the trai
 machine learning algorithms as yield functions for plasticity.
 The module pylabfea.model is used to calculate mechanical properties of a defined material
 under various loading conditions.</p>
-<p>uses NumPy, MatPlotLib, sklearn and pyLabFEA.model</p>
-<p>Version: 3.5 (2021-05-03)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
+<p>uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model</p>
+<p>Version: 4.0 (2021-11-27)
+Authors: Alexander Hartmaier, Ronak Shoghi, ICAMS/Ruhr University Bochum, Germany
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="material.Material">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Material'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for Materials including material parameters (attributes), constitutive relations (methods)
 and derived properties und various loading conditions (dictionary)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of material (optional, default: ‘Material’)</p>
+<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of material (optional, default: ‘Material’)</p>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1428,7 +1428,7 @@ and derived properties und various loading conditions (dictionary)</p>
 <dd><p>Name of material</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1439,7 +1439,7 @@ and derived properties und various loading conditions (dictionary)</p>
 <dd><p>Yield strength</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1560,7 +1560,7 @@ and derived properties und various loading conditions (dictionary)</p>
 <dd><p>Anisotropic elastic constants</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1571,7 +1571,7 @@ and derived properties und various loading conditions (dictionary)</p>
 <dd><p>Isotropic elastic constants, Young modulus and Poisson number</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1615,7 +1615,7 @@ and derived properties und various loading conditions (dictionary)</p>
 <dd><p>degress of freedom for yield function, mandatory: 1:seq, 2:theta; optional: 3:work_hard, 4:texture)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1649,7 +1649,7 @@ Chapter 6, Eqs. (6.9) and (6.18)</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sig</strong> (<em>Voigt tensor</em>) – Stress</p></li>
 <li><p><strong>Cel</strong> (<em>(</em><em>6</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Elastic stiffness tensor used for predictor step</p></li>
-<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0.)</p></li>
+<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0.)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1670,7 +1670,7 @@ tensor to the yield locus in loading direction.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sig</strong> (<em>(</em><em>sdim</em><em>,</em><em>) </em><em>array</em>) – Voigt stress tensor</p></li>
-<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0)</p></li>
+<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0)</p></li>
 <li><p><strong>ld</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Vector of loading direction in princ. stress space (optional)</p></li>
 <li><p><strong>verb</strong> (<em>Boolean</em>) – Indicate whether to be verbose in text output (optional, default: False)</p></li>
 </ul>
@@ -1679,7 +1679,7 @@ tensor to the yield locus in loading direction.</p>
 <dd class="field-even"><p><strong>yf</strong> – Full ML yield function, i.e. distance of sig to yield locus in ld-direction</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1694,8 +1694,8 @@ function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Stress value (Pricipal stress or full stress tensor)</p></li>
-<li><p><strong>seq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>(</em><em>N</em><em>,</em><em>) </em><em>array</em>) – Equivalent stresses (optional)</p></li>
+<li><p><strong>sig</strong> (<em>(</em><em>sdim</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>sdim</em><em>) </em><em>array</em>) – Stress value (Pricipal stress or full stress tensor)</p></li>
+<li><p><strong>seq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>(</em><em>N</em><em>,</em><em>) </em><em>array</em>) – Equivalent stresses (optional)</p></li>
 <li><p><strong>ana</strong> (<em>Boolean</em>) – Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)</p></li>
 </ul>
 </dd>
@@ -1715,13 +1715,13 @@ function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Size of FE model (optional, defaul: 2)</p></li>
-<li><p><strong>Nel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of elements per axis (optional, defaul: 2)</p></li>
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Size of FE model (optional, defaul: 2)</p></li>
+<li><p><strong>Nel</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of elements per axis (optional, defaul: 2)</p></li>
 <li><p><strong>verb</strong> (<em>Boolean</em>) – Be verbose with output (optional, default: False)</p></li>
-<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Maximum total strain (optional, default:0.005)</p></li>
-<li><p><strong>min_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Minumum number of load steps (optional)</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Maximum total strain (optional, default:0.005)</p></li>
+<li><p><strong>min_step</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Minumum number of load steps (optional)</p></li>
 <li><p><strong>sigeps</strong> (<em>Boolean</em>) – Decide if data for stress-strain curves in stored in dictionary Material.sigeps (optional, default: False)</p></li>
-<li><p><strong>load_cases</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of load cases to be performed (optional, default: [‘stx’,’sty’,’et2’,’ect’]);
+<li><p><strong>load_cases</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of load cases to be performed (optional, default: [‘stx’,’sty’,’et2’,’ect’]);
 ‘stx’: uniaxial tensile yield stress in horizontal (x-)direction;
 ‘sty’: uniaxial tensile yield stress in vertical (y-)direction;
 ‘et2’: plane stress, equibiaxial strain in x and y direction;
@@ -1761,13 +1761,13 @@ Tresca equivalent stress</p>
 </dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Stress values (for dim=3 principal stresses are assumed, otherwise Voigt stress)</p>
+<dd class="field-odd"><p><strong>sig</strong> (<em>(</em><em>sdim</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>sdim</em><em>) </em><em>array</em>) – Stress values (for dim=3 principal stresses are assumed, otherwise Voigt stress)</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>seq</strong> – Hill-Drucker-type equivalent stress</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or (N,) array</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or (N,) array</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1785,7 +1785,7 @@ proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009</p>
 <dd class="field-even"><p><strong>seq</strong> – Equivalent stress</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1797,8 +1797,8 @@ proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sig</strong> (<em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>)</em><em>, </em><em>(</em><em>6</em><em>,</em><em>N</em><em>) or </em><em>(</em><em>3</em><em>,</em><em>N</em><em>) </em><em>array</em>) – Stresses (arrays of Voigt or principal stresses)</p></li>
-<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><em>array</em>) – Equivalent plastic strain (scalar or same length as sig) (optional, default: 0)</p></li>
+<li><p><strong>sig</strong> (<em>(</em><em>sdim</em><em>,</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>sdim</em><em>) </em><em>array</em>) – Stresses (arrays of Voigt or principal stresses)</p></li>
+<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><em>array</em>) – Equivalent plastic strain (scalar or same length as sig) (optional, default: 0)</p></li>
 <li><p><strong>ana</strong> (<em>Boolean</em>) – Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)</p></li>
 <li><p><strong>pred</strong> (<em>Boolean</em>) – Indicator if prediction value should be returned, rather then decision function (optional, default: False)</p></li>
 </ul>
@@ -1814,7 +1814,7 @@ proposed by Barlat et al, Int. J. Plast. 21 (2005) 1009</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.create_sig_data">
-<span class="sig-name descname"><span class="pre">create_sig_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nseq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sflow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.create_sig_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.create_sig_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">create_sig_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">N</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nseq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">12</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sflow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rand</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.create_sig_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.create_sig_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to create consistent data sets on the deviatoric stress plane
 for training or testing of ML yield function. Either the number “N” of raw data points, i.e. load angles, to be
 generated and a reference material “mat_ref” has to be provided, or a list of raw data points “sdata” with
@@ -1825,24 +1825,22 @@ around the expected yield locus and more sparsely in the outer plastic region.</
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of load cases (polar angles) to be created (optional,
+<li><p><strong>N</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of load cases (polar angles) to be created (optional,
 either N and mat_ref or sdata must be provided)</p></li>
 <li><p><strong>mat_ref</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – reference material needed to calculate yield function if only N is provided (optional, ignored if sdata is given)</p></li>
 <li><p><strong>sdata</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – List of cylindrical stresses (N,3) or Voigt stresses (N,6) lying on yield locus.
 Based on these yield stresses, training data in entire deviatoric stress space is created
 (optional, either sdata or N and mat_ref must be provided)</p></li>
-<li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of training stresses to be generated in the range ‘offs’ to the yield strength (optional, default: 12)</p></li>
-<li><p><strong>sflow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Expected flow stress of data set (optional, default: self.sy)</p></li>
-<li><p><strong>offs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Start of range for equiv. stress (optional, default: 0.01)</p></li>
+<li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of training stresses to be generated in the range ‘offs’ to the yield strength (optional, default: 12)</p></li>
+<li><p><strong>sflow</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Expected flow stress of data set (optional, default: self.sy)</p></li>
+<li><p><strong>offs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Start of range for equiv. stress (optional, default: 0.01)</p></li>
 <li><p><strong>extend</strong> (<em>Boolean</em>) – Create additional data in plastic regime (optional, default: False)</p></li>
 <li><p><strong>rand</strong> (<em>Boolean</em>) – Chose random load cases (polar angles) (optional, default: False)</p></li>
-<li><p><strong>sdim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Dimensionality of stress data to be generated, only used, if not yet set in material
-(optional, default: 3)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>st</strong> (<em>(M,2) or (M,5) array</em>) – Cylindrical (M,2) or deviatoric (M,5) training stresses, M = N (2 Nseq + Nextend)</p></li>
+<li><p><strong>st</strong> (<em>(M,2) or (M,6) array</em>) – Cartesian training stresses, M = N (2 Nseq + Nextend)</p></li>
 <li><p><strong>yt</strong> (<em>(M,) array</em>) – Result vector of categorial yield function (-1 or +1) for supervised training</p></li>
 </ul>
 </p>
@@ -1857,12 +1855,12 @@ Based on these yield stresses, training data in entire deviatoric stress space i
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>C11</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – </p></li>
-<li><p><strong>C12</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – </p></li>
-<li><p><strong>C44</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Anisoptropic elastic constants of material (optional,
+<li><p><strong>C11</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>C12</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>C44</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Anisoptropic elastic constants of material (optional,
 if (C11,C12,C44) not given, either (E,nu) or CV must be specified)</p></li>
-<li><p><strong>E</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – </p></li>
-<li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Isotropic parameters Young’s modulus and Poisson’s number (optional,
+<li><p><strong>E</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – </p></li>
+<li><p><strong>nu</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Isotropic parameters Young’s modulus and Poisson’s number (optional,
 if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</p></li>
 <li><p><strong>CV</strong> (<em>(</em><em>6</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Voigt matrix of elastic constants (optional, if CV not given, either
 (C11,C12,C44) or (E,nu) must be specified)</p></li>
@@ -1884,9 +1882,9 @@ if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Long half-axis of ellipsis (optional, default: 1)</p></li>
+<li><p><strong>a</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Long half-axis of ellipsis (optional, default: 1)</p></li>
 <li><p><strong>a</strong> – Short half-axis of ellipsis (optional, default: 1/sqrt(3))</p></li>
-<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of points on ellipsis to be calculated</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of points on ellipsis to be calculated</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1907,8 +1905,8 @@ Chapter 6, Eqs. (6.4), (6.8) and (6.17)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sig</strong> (<em>Voigt tensor</em>) – Stress</p></li>
-<li><p><strong>epl</strong> (<em>Voigt tensor</em>) – Plastic strain</p></li>
+<li><p><strong>sig</strong> (<em>(</em><em>6</em><em>,</em><em>)</em><em>-array</em>) – Voigt stress tensor</p></li>
+<li><p><strong>epl</strong> (<em>(</em><em>6</em><em>,</em><em>)</em><em>-array</em>) – Voigt plastic strain tensor</p></li>
 <li><p><strong>Cel</strong> (<em>(</em><em>6</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Elastic stiffnes tensor</p></li>
 <li><p><strong>deps</strong> (<em>Voigt tensor</em>) – Strain increment from predictor step</p></li>
 </ul>
@@ -1924,19 +1922,19 @@ Chapter 6, Eqs. (6.4), (6.8) and (6.17)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.export_MLparam">
-<span class="sig-name descname"><span class="pre">export_MLparam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.export_MLparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.export_MLparam" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">export_MLparam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sname</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../../models/'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">descr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.export_MLparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.export_MLparam" title="Permalink to this definition">¶</a></dt>
 <dd><p>The parameters of the trained Ml flow rule (support vectors, dual
 coefficients, offset and scaling parameters) are written to a csv file
 that is readable to Abaqus (8 numbers per line).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of script that created this material</p></li>
-<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Source of parameters (optiona, default: None)</p></li>
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Trunk of filename to which CSV flies are written (optional, default: None)</p></li>
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Path to which files are written (optional: default: ‘’)</p></li>
-<li><p><strong>descr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of names of model parameters used for generating this ML material (optional, default: [])</p></li>
-<li><p><strong>param</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of values of parameters used for generating this ML material (optional, default: []);
+<li><p><strong>sname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of script that created this material</p></li>
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Source of parameters (optiona, default: None)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Trunk of filename to which CSV flies are written (optional, default: None)</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to which files are written (optional: default: ‘’)</p></li>
+<li><p><strong>descr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of names of model parameters used for generating this ML material (optional, default: [])</p></li>
+<li><p><strong>param</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of values of parameters used for generating this ML material (optional, default: []);
 descr and param must be of the same size</p></li>
 </ul>
 </dd>
@@ -1961,7 +1959,7 @@ used by search algorithm to find zeros of yield function.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>x</strong> (<em>(</em><em>N</em><em>,</em><em>)</em><em>-array</em>) – Multiplyer for stress</p></li>
 <li><p><strong>su</strong> (<em>(</em><em>N</em><em>,</em><em>sdim</em><em>) </em><em>array</em>) – Unit stress</p></li>
-<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0)</p></li>
+<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -1974,16 +1972,16 @@ used by search algorithm to find zeros of yield function.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="material.Material.find_yloc2">
-<span class="sig-name descname"><span class="pre">find_yloc2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">su</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peeq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.find_yloc2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.find_yloc2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="material.Material.find_yloc_scalar">
+<span class="sig-name descname"><span class="pre">find_yloc_scalar</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">su</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peeq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.find_yloc_scalar"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.find_yloc_scalar" title="Permalink to this definition">¶</a></dt>
 <dd><p>Function to expand unit stresses by factor and calculate yield function;
 used by search algorithm to find zeros of yield function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Multiplyer for stress</p></li>
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Multiplyer for stress</p></li>
 <li><p><strong>su</strong> (<em>(</em><em>sdim</em><em>,</em><em>) </em><em>array</em>) – Unit stress</p></li>
-<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0)</p></li>
+<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Equivalent plastic strain (optional, default: 0)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2007,7 +2005,7 @@ with the parameters provided in the data set.
 Also initializes current texture to first one in list and re-sets work-hardening parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>param</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em> or </em><em>directories</em>) – <cite>Data.mat_param</cite> directories containing material data sets</p>
+<dd class="field-odd"><p><strong>param</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em> or </em><em>directories</em>) – <cite>Data.mat_param</cite> directories containing material data sets</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2018,7 +2016,7 @@ Also initializes current texture to first one in list and re-sets work-hardening
 <dd><p>Calculate average flow stress of current texture for given equiv plastic strain.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Current value of equiv. plastic strain</p>
+<dd class="field-odd"><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Current value of equiv. plastic strain</p>
 </dd>
 <dt class="field-even">Yields</dt>
 <dd class="field-even"><p><strong>sflow</strong> (<em>float</em>) – Average flow stress</p>
@@ -2028,7 +2026,7 @@ Also initializes current texture to first one in list and re-sets work-hardening
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.pckl">
-<span class="sig-name descname"><span class="pre">pckl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.pckl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.pckl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">pckl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../../materials/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.pckl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.pckl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Write material into pickle file. Usefull for materials with trained machine
 learning flow rules to avoid time-consuming re-training.</p>
 <dl class="field-list simple">
@@ -2050,26 +2048,26 @@ the filename will be the material name + ‘.pckl’.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.plasticity">
-<span class="sig-name descname"><span class="pre">plasticity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drucker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">khard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tresca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barlat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barlat_exp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hill_3p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hill_6p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plasticity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.plasticity" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plasticity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hill</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drucker</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">khard</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tresca</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barlat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barlat_exp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hill_3p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hill_6p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plasticity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.plasticity" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define plastic material parameters; anisotropic Hill-like and Drucker-like
 behavior is supported</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Yield strength</p></li>
+<li><p><strong>sy</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Yield strength</p></li>
 <li><p><strong>hill</strong> (<em>(</em><em>3</em><em>,</em><em>) </em><em>array</em>) – Parameters for Hill-like orthotropic anisotropy (optional, default: isotropy)</p></li>
-<li><p><strong>drucker</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter for Drucker-like tension-compression asymmetry (optional, default: 0)</p></li>
-<li><p><strong>khard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Linear strain hardening slope (ds/de_p) (optional, default: 0)</p></li>
+<li><p><strong>drucker</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter for Drucker-like tension-compression asymmetry (optional, default: 0)</p></li>
+<li><p><strong>khard</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Linear strain hardening slope (ds/de_p) (optional, default: 0)</p></li>
 <li><p><strong>tresca</strong> (<em>Boolean</em>) – Indicate if Tresca equivalent stress should be used (optional, default: False)</p></li>
 <li><p><strong>barlat</strong> (<em>(</em><em>18</em><em>,</em><em>) </em><em>array</em>) – Array with parameters for Barlat Yld2004-18p yield function (optional)</p></li>
-<li><p><strong>barlat_exp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Exponent for Barlat Yld2004-18p yield function (optional)</p></li>
+<li><p><strong>barlat_exp</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Exponent for Barlat Yld2004-18p yield function (optional)</p></li>
 <li><p><strong>hill_3p</strong> (<em>Boolean</em>) – Indicate if 3-parameter Hill model shall be applied (optional, default: None)
 Will be set True automatically if 3 Hill paramaters != 1 are provided</p></li>
 <li><p><strong>hill_6p</strong> (<em>Boolean</em>) – Indicate if 6-parameter Hill model shall be applied (optional, default: None)
 Will be set True automatically if 6 Hill parameters are provided</p></li>
-<li><p><strong>sdim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Dimensionality of stress tensor to be used for plasticity, must be either 3
+<li><p><strong>sdim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Dimensionality of stress tensor to be used for plasticity, must be either 3
 (only principal stresses are considered) or 6 (full stress tensor is considered),
-(optional, default: 3)</p></li>
+(optional, default: 6)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2087,7 +2085,7 @@ Will be set True automatically if 6 Hill parameters are provided</p></li>
 <li><p><strong>xx</strong> (<em>meshgrid</em>) – x-coordinates</p></li>
 <li><p><strong>yy</strong> (<em>meshgrid</em>) – y-coordinates</p></li>
 <li><p><strong>field</strong> (<em>Boolean</em>) – Decide if field is plotted (optional, default: True)</p></li>
-<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Color for contour line (optional, default: ‘red’)</p></li>
+<li><p><strong>c</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Color for contour line (optional, default: ‘red’)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2107,8 +2105,8 @@ Will be set True automatically if 6 Hill parameters are provided</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>Hill</strong> (<em>Boolean</em>) – Decide if data for Hill-type equivalent stress is presented (optional, default: False)</p></li>
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Filename to save plot (optional)</p></li>
-<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Fontsize for axis annotations (optional, default: 14)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Filename to save plot (optional)</p></li>
+<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Fontsize for axis annotations (optional, default: 14)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2116,25 +2114,26 @@ Will be set True automatically if 6 Hill parameters are provided</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.plot_yield_locus">
-<span class="sig-name descname"><span class="pre">plot_yield_locus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xstart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iso</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nmesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_yield_locus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.plot_yield_locus" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">plot_yield_locus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fun</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trange</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">peeq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xstart</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[0]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[1]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iso</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nmesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.plot_yield_locus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.plot_yield_locus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot different cuts through yield locus in 3D principal stress space.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fun</strong> (<em>function handle</em>) – Yield function to be plotted (optional, default: own yield function)</p></li>
-<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Label for yield function (optional, default: own name)</p></li>
+<li><p><strong>label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Label for yield function (optional, default: own name)</p></li>
 <li><p><strong>data</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – principal stress data to be used for scatter plot (optional)</p></li>
-<li><p><strong>trange</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Cut-off for data to be plotted on slice (optional, default: 1.e-2)</p></li>
-<li><p><strong>xstart</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Smallest value on x-axis (optional, default: -2)</p></li>
-<li><p><strong>xend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Largest value on x-axis (optional, default: 2)</p></li>
-<li><p><strong>axis1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Cartesian stress coordinates to be plotted on x-axis of slices (optional, default: [0])</p></li>
-<li><p><strong>axis2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Cartesian stress coordinates to be plotted on y-axis of slices (optional, default: [1])</p></li>
+<li><p><strong>trange</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Cut-off for data to be plotted on slice (optional, default: 1.e-2)</p></li>
+<li><p><strong>peeq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Level of plastic strain for which yield locus is plotted (isotropic hardening)</p></li>
+<li><p><strong>xstart</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Smallest value on x-axis (optional, default: -2)</p></li>
+<li><p><strong>xend</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Largest value on x-axis (optional, default: 2)</p></li>
+<li><p><strong>axis1</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Cartesian stress coordinates to be plotted on x-axis of slices (optional, default: [0])</p></li>
+<li><p><strong>axis2</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Cartesian stress coordinates to be plotted on y-axis of slices (optional, default: [1])</p></li>
 <li><p><strong>iso</strong> (<em>Boolean</em>) – Decide if reference ellipsis for isotropic material is plotted (optional, default: False)</p></li>
 <li><p><strong>ref_mat=None</strong> – Reference material to plot yield locus (optional)</p></li>
 <li><p><strong>field</strong> (<em>Boolean</em>) – Decide if field of yield function is plotted (optional, default: False)</p></li>
-<li><p><strong>Nmesh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of mesh points per axis on which yield function is evaluated (optional, default:100)</p></li>
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – File name for output of olot (optional)</p></li>
-<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Fontsize for axis annotations (optional, default: 20)</p></li>
+<li><p><strong>Nmesh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of mesh points per axis on which yield function is evaluated (optional, default:100)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – File name for output of olot (optional)</p></li>
+<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Fontsize for axis annotations (optional, default: 20)</p></li>
 <li><p><strong>scaling</strong> (<em>Boolean</em>) – Scale stress with yield strength (optional, default: True)</p></li>
 </ul>
 </dd>
@@ -2149,22 +2148,22 @@ Will be set True automatically if 6 Hill parameters are provided</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.polar_plot_yl">
-<span class="sig-name descname"><span class="pre">polar_plot_yl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">72</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sJ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.polar_plot_yl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.polar_plot_yl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">polar_plot_yl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">72</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sJ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.polar_plot_yl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.polar_plot_yl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot yield locus as polar plot in deviatoric stress plane</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>Na</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of angles on which yield locus is evaluated (optional, default: 72)</p></li>
+<li><p><strong>Na</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of angles on which yield locus is evaluated (optional, default: 72)</p></li>
 <li><p><strong>cmat</strong> (<em>list of materials</em>) – Materials of which YL is plotted in same plot with same scaling (optional)</p></li>
 <li><p><strong>data</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Array of cylindrical stress added to plot (optional)</p></li>
-<li><p><strong>dname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Label for data (optional, default: reference)</p></li>
-<li><p><strong>scaling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Scaling factor for stresses (optional)</p></li>
+<li><p><strong>dname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Label for data (optional, default: reference)</p></li>
+<li><p><strong>scaling</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Scaling factor for stresses (optional)</p></li>
 <li><p><strong>field</strong> (<em>Boolean</em>) – Field of decision function is plotted, works only together with ML yield function
 (optional, default: False)</p></li>
 <li><p><strong>predict</strong> (<em>Boolean</em>) – Plot ML prediction (-1,1), otherwise decision fucntion is plotted (optional, default: False)</p></li>
-<li><p><strong>Np</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of points per axis for field plot (optional, default: 100)</p></li>
+<li><p><strong>Np</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of points per axis for field plot (optional, default: 100)</p></li>
 <li><p><strong>cbar</strong> (<em>Boolean</em>) – Plot colorbar for field (optional, default: False)</p></li>
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of PDF file to which plot is saved</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of PDF file to which plot is saved</p></li>
 <li><p><strong>arrow</strong> (<em>Boolean</em>) – Indicate if arrows for the pricipal stress directions are shown (optional, default: False)</p></li>
 <li><p><strong>sJ2</strong> (<em>Boolean</em>) – Indicate that J2 equivalent stress shall be used instead of material definition of
 equivalent stress (optional, default: False)</p></li>
@@ -2185,7 +2184,7 @@ corresponds to user material function.</p>
 <li><p><strong>epl</strong> (<em>(</em><em>6</em><em>,</em><em>) </em><em>array</em>) – Voigt plastic strain tensor at start of load step</p></li>
 <li><p><strong>deps</strong> (<em>(</em><em>6</em><em>,</em><em>) </em><em>array</em>) – Voigt strain tensor defining deformation (=load step)</p></li>
 <li><p><strong>CV</strong> (<em>(</em><em>6</em><em>,</em><em>6</em><em>) </em><em>array</em>) – Voigt elastic tensor</p></li>
-<li><p><strong>maxit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Maximum number of iteration steps (optional, default= 5)</p></li>
+<li><p><strong>maxit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Maximum number of iteration steps (optional, default= 5)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2207,7 +2206,7 @@ corresponds to user material function.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>current</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – Mixture parameter for microstructures in range [0,1] for each defined microstructure, indicates the
+<li><p><strong>current</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – Mixture parameter for microstructures in range [0,1] for each defined microstructure, indicates the
 intensity of the given microstructure. The sum of all mixture parameters must be &lt;=1, the rest will be set
 to random texture. Must have same dimension as material.msparam.</p></li>
 <li><p><strong>verb</strong> (<em>Boolean</em>) – Be verbose</p></li>
@@ -2233,16 +2232,16 @@ to random texture. Must have same dimension as material.msparam.</p></li>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>X_grad_train</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – </p></li>
 <li><p><strong>y_grad_train</strong> (<em>(</em><em>N</em><em>,</em><em>) </em><em>array</em>) – </p></li>
-<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Paramater for training of Support Vector Regression (SVR) (optional, default:10)</p></li>
-<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter for kernel of SVR (optional, default: 0.1)</p></li>
+<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Paramater for training of Support Vector Regression (SVR) (optional, default:10)</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter for kernel of SVR (optional, default: 0.1)</p></li>
 </ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="material.Material.setup_yf_SVM_cyl">
-<span class="sig-name descname"><span class="pre">setup_yf_SVM_cyl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.setup_yf_SVM_cyl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.setup_yf_SVM_cyl" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="material.Material.setup_yf_SVM_3D">
+<span class="sig-name descname"><span class="pre">setup_yf_SVM_3D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cyl</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gridsearch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.setup_yf_SVM_3D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.setup_yf_SVM_3D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
 data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
 be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv.
@@ -2256,10 +2255,11 @@ possible.</p>
 <li><p><strong>y_train</strong> (<em>1d-array</em>) – Result vector for training data (same size as x)</p></li>
 <li><p><strong>x_test</strong> (<em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Test data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2) (optional)</p></li>
 <li><p><strong>y_test</strong> – Result vector for test data (optional)</p></li>
-<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter for training of SVC (optional, default: 10)</p></li>
-<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter for kernel function of SVC (optional, default: 1)</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameters for size of periodic continuation of training data (optional, default:0.1)</p></li>
+<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter for training of SVC (optional, default: 10)</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter for kernel function of SVC (optional, default: 1)</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameters for size of periodic continuation of training data (optional, default:0.1)</p></li>
 <li><p><strong>plot</strong> (<em>Boolean</em>) – Indicates if plot of decision function should be generated (optional, default: False)</p></li>
+<li><p><strong>gridsearch</strong> (<em>Boolean</em>) – Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2273,8 +2273,8 @@ possible.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="material.Material.setup_yf_SVM_voigt">
-<span class="sig-name descname"><span class="pre">setup_yf_SVM_voigt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.setup_yf_SVM_voigt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.setup_yf_SVM_voigt" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="material.Material.setup_yf_SVM_6D">
+<span class="sig-name descname"><span class="pre">setup_yf_SVM_6D</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_train</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_test</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gridsearch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.setup_yf_SVM_6D"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.setup_yf_SVM_6D" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
 data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
 be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv.
@@ -2288,9 +2288,10 @@ Additional DOF for work hardening and texture if considered.</p></li>
 <li><p><strong>y_train</strong> (<em>1d-array</em>) – Result vector for training data (same size as x)</p></li>
 <li><p><strong>x_test</strong> (<em>(</em><em>N</em><em>,</em><em>self.Ndof</em><em>) </em><em>array</em>) – Test data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2) (optional)</p></li>
 <li><p><strong>y_test</strong> – Result vector for test data (optional)</p></li>
-<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter for training of SVC (optional, default: 10)</p></li>
-<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter for kernel function of SVC (optional, default: 1)</p></li>
+<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter for training of SVC (optional, default: 10)</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter for kernel function of SVC (optional, default: 1)</p></li>
 <li><p><strong>plot</strong> (<em>Boolean</em>) – Indicates if plot of decision function should be generated (optional, default: False)</p></li>
+<li><p><strong>gridsearch</strong> (<em>Boolean</em>) – Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -2305,7 +2306,7 @@ Additional DOF for work hardening and texture if considered.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="material.Material.train_SVC">
-<span class="sig-name descname"><span class="pre">train_SVC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nlc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">36</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nseq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.train_SVC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.train_SVC" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">train_SVC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">C</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gamma</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nlc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">36</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nseq</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_ref</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdata</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fontsize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gridsearch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gvals</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/material.html#Material.train_SVC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#material.Material.train_SVC" title="Permalink to this definition">¶</a></dt>
 <dd><p>Train SVC for all yield functions of the microstructures provided in msparam and for flow stresses to capture
 work hardening. In first step, the
 training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
@@ -2314,21 +2315,22 @@ features are introduced that describe the relation between the different sets.</
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter needed for training process, larger values lead to more flexibility (optional, default: 10)</p></li>
-<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter of Radial Basis Function of SVC kernel, larger values, lead to faster decay of influence of individual
+<li><p><strong>C</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter needed for training process, larger values lead to more flexibility (optional, default: 10)</p></li>
+<li><p><strong>gamma</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter of Radial Basis Function of SVC kernel, larger values, lead to faster decay of influence of individual
 support vectors, i.e., to more short ranged kernels (optional, default: 4)</p></li>
-<li><p><strong>Nlc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of load cases to be considered, will be overwritten if material has microstructure
+<li><p><strong>Nlc</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of load cases to be considered, will be overwritten if material has microstructure
 information (optional, default: 36)</p></li>
-<li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of training and test stresses to be generated in elastic regime, same number will be
+<li><p><strong>Nseq</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of training and test stresses to be generated in elastic regime, same number will be
 produced in plastic regime (optional, default: 25)</p></li>
-<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Parameter to ensure peridicity of yield function wrt. theta</p></li>
+<li><p><strong>fs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Parameter to ensure peridicity of yield function wrt. theta</p></li>
 <li><p><strong>extend</strong> (<em>Boolean</em>) – Indicate whether training data should be extended further into plastic regime (optional, default: True)</p></li>
 <li><p><strong>mat_ref</strong> (object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code>) – reference material needed to calculate yield function if only N is provided (optional, ignored if sdata is given)</p></li>
 <li><p><strong>sdata</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>6</em><em>) </em><em>array</em>) – List of cylindrical stresses (N,3) or Voigt stresses (N,6) lying on yield locus.
 Based on these yield stresses, training data in entire deviatoric stress space is created
 (optional, f no data in self.msparam is given, either sdata or N and mat_ref must be provided)</p></li>
 <li><p><strong>plot</strong> (<em>Boolean</em>) – Indicate if graphical output should be performed (optional, default: False)</p></li>
-<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Fontsize for graph annotations (optional, default: 16)</p></li>
+<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Fontsize for graph annotations (optional, default: 16)</p></li>
+<li><p><strong>gridsearch</strong> (<em>Boolean</em>) – Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)</p></li>
 </ul>
 </dd>
 </dl>
@@ -2346,32 +2348,32 @@ that is required to define a material, i.e., all parameters for elasticity, plas
 and microstructures are provided from the data. Materials are defined in
 module pylabfea.material based on the analyzed data of this module.</p>
 <p>uses NumPy, SciPy, MatPlotLib, Pandas</p>
-<p>Version: 3.5 (2021-05-03)
-Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020
+<p>Version: 4.0 (2021-11-27)
+Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="data.Data">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">data.</span></span><span class="sig-name descname"><span class="pre">Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'password'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Dataset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_crit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_ep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data.Data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">data.</span></span><span class="sig-name descname"><span class="pre">Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'password'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Dataset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_crit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_ep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data.Data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling data from virtual mechanical tests in micromechanical
 simulations and data from physical mechanical tests on materials with various
 microstructures</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>msl</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List with names of JOSN files with metadata for all microstructures</p></li>
-<li><p><strong>path_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Trunc of pathname for data files</p></li>
-<li><p><strong>path_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Trunc of pathname for JSON metadata files (optional, default: path_data)</p></li>
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of Dataset (optional, default: ‘Dataset’)</p></li>
-<li><p><strong>sdim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Dimensionality of stresses; if sdim=3 only principal stresses are considered (optional, default: 3)</p></li>
+<li><p><strong>msl</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List with names of JOSN files with metadata for all microstructures</p></li>
+<li><p><strong>path_data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Trunc of pathname for data files</p></li>
+<li><p><strong>path_json</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Trunc of pathname for JSON metadata files (optional, default: path_data)</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of Dataset (optional, default: ‘Dataset’)</p></li>
+<li><p><strong>sdim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Dimensionality of stresses; if sdim=3 only principal stresses are considered (optional, default: 6)</p></li>
 <li><p><strong>mirror</strong> (<em>Boolean</em>) – Indicate if stresses shall be doubled by periodic completion of cylindrical stresses
 on the deviatoric plane of the principal stress space (optional, default: False)</p></li>
-<li><p><strong>nth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Read only every nth lines of input file (optional, default: 1)</p></li>
-<li><p><strong>epl_crit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Critical plastic strain at which yield strength is defined (optional, default: 2.e-3)</p></li>
-<li><p><strong>d_ep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a>) – Range around critical value of plastic strain in which flow stresses are
+<li><p><strong>nth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Read only every nth lines of input file (optional, default: 1)</p></li>
+<li><p><strong>epl_crit</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Critical plastic strain at which yield strength is defined (optional, default: 2.e-3)</p></li>
+<li><p><strong>d_ep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Range around critical value of plastic strain in which flow stresses are
 evaluated (optional, default: 5.e-4)</p></li>
-<li><p><strong>npe</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of equiv. plastic strains used for work hardening</p></li>
+<li><p><strong>npe</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of equiv. plastic strains used for work hardening</p></li>
 </ul>
 </dd>
 </dl>
@@ -2380,7 +2382,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">msl</span></span><a class="headerlink" href="#data.Data.msl" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2390,7 +2392,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">Nset</span></span><a class="headerlink" href="#data.Data.Nset" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2400,7 +2402,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#data.Data.name" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2410,7 +2412,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">pd</span></span><a class="headerlink" href="#data.Data.pd" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2420,7 +2422,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">pj</span></span><a class="headerlink" href="#data.Data.pj" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2430,7 +2432,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">epc</span></span><a class="headerlink" href="#data.Data.epc" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2440,7 +2442,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">dep</span></span><a class="headerlink" href="#data.Data.dep" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2450,7 +2452,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">set</span></span><a class="headerlink" href="#data.Data.set" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2460,7 +2462,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">sy_av</span></span><a class="headerlink" href="#data.Data.sy_av" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2470,7 +2472,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">E_av</span></span><a class="headerlink" href="#data.Data.E_av" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2480,7 +2482,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <span class="sig-name descname"><span class="pre">nu_av</span></span><a class="headerlink" href="#data.Data.nu_av" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2511,7 +2513,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 <dl class="py class">
 <dt class="sig sig-object py" id="data.Data.Set_CSV">
 <em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Set_CSV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data.Set_CSV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data.Data.Set_CSV" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling of a CSV dataset for one individual material. At
 least stress data must be provided in dataset. Strain data must be provided
 for class “Flow_Stress”, if only total strain is given, plastic strain is
@@ -2520,7 +2522,7 @@ assumed to be equal to total strain.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (object of type <code class="docutils literal notranslate"><span class="pre">Data</span></code>) – Parent database from which properties are inherited</p></li>
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of JSON file with metadata for microstructure to be stored in this dataset</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of JSON file with metadata for microstructure to be stored in this dataset</p></li>
 <li><p><strong>plot</strong> (<em>Boolean</em>) – Graphical output of data in each set (optional, default: False)</p></li>
 </ul>
 </dd>
@@ -2540,7 +2542,7 @@ assumed to be equal to total strain.</p>
 <span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#data.Data.Set_CSV.name" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2551,7 +2553,7 @@ assumed to be equal to total strain.</p>
 <dd><p>Number of imported data points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2562,7 +2564,7 @@ assumed to be equal to total strain.</p>
 <dd><p>Number of raw data points (filtered data lying around yield point mirrored wrt polar angle)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2573,7 +2575,7 @@ assumed to be equal to total strain.</p>
 <dd><p>Number of load cases in raw data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2584,7 +2586,7 @@ assumed to be equal to total strain.</p>
 <dd><p>Elastic parameters obtained from data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2595,7 +2597,7 @@ assumed to be equal to total strain.</p>
 <dd><p>Yield strength obtained from data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2606,7 +2608,7 @@ assumed to be equal to total strain.</p>
 <dd><p>Microstructure parameter for texture</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2716,7 +2718,7 @@ assumed to be equal to total strain.</p>
 (index space: [0,N])</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2728,7 +2730,7 @@ assumed to be equal to total strain.</p>
 around yield point (index space: [0,Ndat])</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2738,13 +2740,13 @@ around yield point (index space: [0,Ndat])</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="data.Data.Set_DB">
 <em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Set_DB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data.Set_DB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data.Data.Set_DB" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling of a dataset from a Mongo databse</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>db</strong> (object of type <code class="docutils literal notranslate"><span class="pre">Data</span></code>) – Parent database from which properties are inherited</p></li>
-<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Name of JSON file with metadata for microstructure to be stored in this dataset</p></li>
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of JSON file with metadata for microstructure to be stored in this dataset</p></li>
 <li><p><strong>plot</strong> (<em>Boolean</em>) – Graphical output of data in each set (optional, default: False)</p></li>
 </ul>
 </dd>
@@ -2764,7 +2766,7 @@ around yield point (index space: [0,Ndat])</p>
 <span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#data.Data.Set_DB.name" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)">str</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2775,7 +2777,7 @@ around yield point (index space: [0,Ndat])</p>
 <dd><p>Number of imported data points</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2786,7 +2788,7 @@ around yield point (index space: [0,Ndat])</p>
 <dd><p>Number of raw data points (filtered data lying around yield point mirrored wrt polar angle)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2797,7 +2799,7 @@ around yield point (index space: [0,Ndat])</p>
 <dd><p>Number of load cases in raw data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2808,7 +2810,7 @@ around yield point (index space: [0,Ndat])</p>
 <dd><p>Elastic parameters obtained from data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2819,7 +2821,7 @@ around yield point (index space: [0,Ndat])</p>
 <dd><p>Yield strength obtained from data</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2830,7 +2832,7 @@ around yield point (index space: [0,Ndat])</p>
 <dd><p>Microstructure parameter for texture</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2940,7 +2942,7 @@ around yield point (index space: [0,Ndat])</p>
 (index space: [0,N])</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2952,7 +2954,7 @@ around yield point (index space: [0,Ndat])</p>
 around yield point (index space: [0,Ndat])</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)">list</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2962,7 +2964,7 @@ around yield point (index space: [0,Ndat])</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="data.Data.Set_Data">
 <em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Set_Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/data.html#Data.Set_Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#data.Data.Set_Data" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Generate set from input data</p>
 </dd></dl>
 
@@ -2974,8 +2976,8 @@ raw data in deviatoric cyl. stress space</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Write graph to pdf file (optional)</p></li>
-<li><p><strong>nth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Plot every nth load case (optional, default: 18)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Write graph to pdf file (optional)</p></li>
+<li><p><strong>nth</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Plot every nth load case (optional, default: 18)</p></li>
 <li><p><strong>fontsize</strong> (<em>20</em>) – Fontsize for plot (optional, default: 20)</p></li>
 </ul>
 </dd>
@@ -2989,15 +2991,15 @@ raw data in deviatoric cyl. stress space</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>active</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – ‘flow_stress’, ‘work_hard’ or ‘texture’, selct which parameter to vary for set of plots</p></li>
-<li><p><strong>set_ind</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – select data set for work hardening plots (corresponds to level of plastic strain) (optional, default: 0)</p></li>
+<li><p><strong>active</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – ‘flow_stress’, ‘work_hard’ or ‘texture’, selct which parameter to vary for set of plots</p></li>
+<li><p><strong>set_ind</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – select data set for work hardening plots (corresponds to level of plastic strain) (optional, default: 0)</p></li>
 <li><p><strong>scatter</strong> (<em>Boolean</em>) – defines if raw data points are plotted (optional, default: False)</p></li>
 <li><p><strong>data</strong> (<em>(</em><em>N</em><em>,</em><em>3</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>2</em><em>) </em><em>array</em>) – additional data to plot in form of cylindrical stresses (optional, default: None)</p></li>
-<li><p><strong>data_label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – label for legend of additional data (optional, default: None)</p></li>
+<li><p><strong>data_label</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – label for legend of additional data (optional, default: None)</p></li>
 <li><p><strong>arrow</strong> (<em>Boolean</em>) – indicate if arrows for principal stress directions are drawn (optional, default: False)</p></li>
-<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – filename for output (optional, default: None (no output))</p></li>
-<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – title for plot (optional, default: None)</p></li>
-<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – specifies fontsize used in plot (optional, default: 18)</p></li>
+<li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – filename for output (optional, default: None (no output))</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – title for plot (optional, default: None)</p></li>
+<li><p><strong>fontsize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – specifies fontsize used in plot (optional, default: 18)</p></li>
 </ul>
 </dd>
 </dl>
@@ -3025,7 +3027,7 @@ raw data in deviatoric cyl. stress space</p>
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Documentation:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="readme.html">Technical guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Notebooks</a></li>
@@ -3050,7 +3052,7 @@ raw data in deviatoric cyl. stress space</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -3072,7 +3074,7 @@ raw data in deviatoric cyl. stress space</p>
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
       |

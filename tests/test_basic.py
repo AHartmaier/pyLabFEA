@@ -63,7 +63,7 @@ voigt_stiff = fmat1*mat1.E + fmat2*mat2.E # Voigt stiffness: weighted average of
 
 fem2 = FE.Model(dim=2, planestress=False)   # call class to generate container for finite element model
 fem2.geom([2, 2], LY=4.) # define sections in absolute lengths
-mat2.plasticity(sy=150.,khard=500.)   # define material with isotropic plasticity
+mat2.plasticity(sy=150.,khard=500.,sdim=3)   # define material with isotropic plasticity
 fem2.assign([mat1, mat2])  # assign the proper material to each section
 #boundary conditions: uniaxial stress in longitudinal direction
 fem2.bcleft(0.)                     # fix left and bottom boundary
@@ -76,7 +76,7 @@ fem2.solve()           # solve system of equations
 fem2.calc_global()     # calculate global stress and strain
 
 # add plastic properties for further tests
-mat2.plasticity(sy=150., hill=[0.7,1.,1.4], khard=100.)   # define material with ideal isotropic plasticity
+mat2.plasticity(sy=150., hill=[0.7,1.,1.4], khard=100., sdim=3)   # define material with ideal isotropic plasticity
 mat2.calc_properties(eps=0.05) # calculate the stress-strain curves up to a total strain of 5%
 
 # test work hardening implementation

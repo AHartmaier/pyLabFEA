@@ -12,6 +12,7 @@ test_requirements = ['pytest>=3', ]
 setup_requirements = ['pytest-runner', ]
 
 setup(
+    name='pylabfea',
     author="Alexander Hartmaier",
     author_email='alexander.hartmaier@rub.de',
     python_requires='>=3',
@@ -28,17 +29,18 @@ setup(
         'Programming Language :: Python :: 3.9',
     ],
     description="Python Laboratory for Finite Element Analysis",
-    install_requires=['numpy', 'matplotlib', 'scipy', 'scikit-learn', 'pandas', 'fireworks'],
+    install_requires=['numpy', 'matplotlib', 'scipy', 'scikit-learn', 'pandas', 'fireworks',
+                      'pytest'],
     license="GNU General Public License v3",
     long_description=readme,
     include_package_data=True,
     keywords='FEA',
-    name='pylabfea',
-    packages=find_packages(exclude=["*tests*"]),
+    packages=find_packages('src', exclude=["*tests*"]),
+    package_dir={'':'src'},
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/AHartmaier/pyLabFEA',
-    version='3.5',
+    version='4.0',
     zip_safe=False,
 )

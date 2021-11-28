@@ -38,8 +38,8 @@
 
 <span class="sd">uses NumPy, SciPy, MatPlotLib</span>
 
-<span class="sd">Version: 3.5.2 (2021-06-12)</span>
-<span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020</span>
+<span class="sd">Version: 4.0 (2021-11-27)</span>
+<span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany</span>
 <span class="sd">Email: alexander.hartma4er@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
@@ -1170,7 +1170,7 @@
                     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> ***Inconstistent stiffness matrix!</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
                 <span class="n">hh</span> <span class="o">=</span> <span class="p">[</span><span class="n">el</span><span class="o">.</span><span class="n">sig</span><span class="o">-</span><span class="n">el</span><span class="o">.</span><span class="n">CV</span><span class="o">@</span><span class="p">(</span><span class="n">el</span><span class="o">.</span><span class="n">eps</span><span class="o">-</span><span class="n">el</span><span class="o">.</span><span class="n">epl</span><span class="p">)</span> <span class="k">for</span> <span class="n">el</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">element</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">hh</span><span class="p">))</span> <span class="o">&gt;</span> <span class="mf">1.</span><span class="p">:</span>
-                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> ***TEST failed: &#39;</span><span class="p">,</span> <span class="n">hh</span><span class="p">,</span><span class="s1">&#39;</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="p">)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> ***TEST failed: </span><span class="si">{}</span><span class="se">\n\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">hh</span><span class="p">))</span>
 <span class="c1">#                 hh = sig - sig0 - grad_stiff @ deps</span>
 <span class="c1">#                 if (seq_J2(hh)&gt;0.1):</span>
 <span class="c1">#                     print(&#39;\n\n######################################&#39;)</span>
@@ -1478,7 +1478,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Documentation:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">Technical guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Notebooks</a></li>
@@ -1498,7 +1498,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -1520,7 +1520,7 @@
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

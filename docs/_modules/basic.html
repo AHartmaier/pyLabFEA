@@ -37,10 +37,10 @@
 <span class="sd">cylindrical to principal stresses and vice versa, and the classes ``Stress`` and ``Strain``</span>
 <span class="sd">for efficient operations with these quantities.</span>
 
-<span class="sd">uses NumPy</span>
+<span class="sd">uses NumPy, pickle</span>
 
-<span class="sd">Version: 3.5 (2021-05-03)</span>
-<span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr-University Bochum, April 2020</span>
+<span class="sd">Version: 4.0 (2021-11-27)</span>
+<span class="sd">Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany</span>
 <span class="sd">Email: alexander.hartmaier@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
 
@@ -221,8 +221,8 @@
 <span class="sd">         </span>
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    sprinc : float or (N,) array</span>
-<span class="sd">        principle deviatoric stress</span>
+<span class="sd">    sprinc : (3,) or (N,3) array</span>
+<span class="sd">        principle deviatoric stresses</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">sh</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">scyl</span><span class="p">)</span> 
     <span class="k">if</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">2</span><span class="p">,)</span> <span class="ow">or</span> <span class="n">sh</span><span class="o">==</span><span class="p">(</span><span class="mi">3</span><span class="p">,):</span>
@@ -566,7 +566,7 @@
 
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pckl&#39;</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Name for pickled material must be given.&#39;</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="nb">input</span><span class="p">:</span>
         <span class="n">pckl</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">pckl</span></div>
@@ -588,7 +588,7 @@
 
 
 <h3>Navigation</h3>
-<p class="caption"><span class="caption-text">Documentation:</span></p>
+<p class="caption" role="heading"><span class="caption-text">Documentation:</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../readme.html">Technical guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Notebooks</a></li>
@@ -608,7 +608,7 @@
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -630,7 +630,7 @@
       &copy;2020, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.0.2</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.2.0</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
       
     </div>

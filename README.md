@@ -2,7 +2,7 @@
 
 ### Python Laboratory for Finite Element Analysis
 
-  - Author: Alexander Hartmaier
+  - Authors: Alexander Hartmaier, Ronak Shoghi
   - Organization: ICAMS, Ruhr University Bochum, Germany
   - Contact: <alexander.hartmaier@rub.de>
 
@@ -79,6 +79,8 @@ pyLabFEA requires the following packages as imports:
  - [MatPlotLib](https://matplotlib.org/) for graphical output
  - [pandas](https://pandas.pydata.org/) for data import
  - [fireworks](https://materialsproject.github.io/fireworks/) direct import of data resulting from fireworks workflows
+ - [torchvision](https://pytorch.org) automized generation of load cases for tests data
+ - [PyTorch](https://pytorch.org) automized generation of load cases for test data
 
 ## License
 
