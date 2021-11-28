@@ -61,6 +61,9 @@ overview on the contents of the notebooks is also available [here](https://ahart
 The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on Binder 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
+## Examples
+
+Python examples demonstrate how ML flow rules can be trained based on reference materials withsignificant plastic anisotropy, as Hill or Barlat reference materials. The trained ML flow rules can be used in form of a UMAT for the commercial FEA package Abaqus.
 
 ## Contributions
 
@@ -79,8 +82,7 @@ pyLabFEA requires the following packages as imports:
  - [MatPlotLib](https://matplotlib.org/) for graphical output
  - [pandas](https://pandas.pydata.org/) for data import
  - [fireworks](https://materialsproject.github.io/fireworks/) direct import of data resulting from fireworks workflows
- - [torchvision](https://pytorch.org) automized generation of load cases for tests data
- - [PyTorch](https://pytorch.org) automized generation of load cases for test data
+
 
 ## License
 
