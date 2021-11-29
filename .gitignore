@@ -146,4 +146,4 @@ media
 static
 
 # pickled files
-.pkl
+*.pkl
