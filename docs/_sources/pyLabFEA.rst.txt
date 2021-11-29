@@ -3,16 +3,15 @@ Modules
 
 Module Basic
 ------------
-.. automodule:: basic
+.. automodule:: pylabfea.basic
    :members:
    :undoc-members:
    :show-inheritance:
 
-
 Module Model
 ------------
 
-.. automodule:: model
+.. automodule:: pylabfea.model
    :members:
    :undoc-members:
    :show-inheritance:
@@ -20,7 +19,15 @@ Module Model
 Module Material
 ---------------
 
-.. automodule:: material
+.. automodule:: pylabfea.material
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   
+Module Training
+---------------
+
+.. automodule:: pylabfea.training
    :members:
    :undoc-members:
    :show-inheritance:
@@ -28,8 +35,8 @@ Module Material
 Module Data
 -----------
 
-.. automodule:: data
+.. automodule:: pylabfea.data
    :members:
    :undoc-members:
    :show-inheritance:
-
+   

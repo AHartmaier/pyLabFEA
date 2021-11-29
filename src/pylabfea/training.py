@@ -4,7 +4,7 @@ in shape of unit stresses that are evenly distributed in the stress space to
 define the load cases for which the critical stress tensor at which plastic yielding
 starts needs to be determined.
 
-uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model
+uses NumPy, ScipPy, MatPlotLib, sklearn, and pyLabFEA.basic
 
 Version: 4.0 (2021-11-27)
 Authors: Ronak Shoghi, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
@@ -14,7 +14,7 @@ distributed under GNU General Public License (GPLv3)
 Subroutines int_sin_m, primes and uniform_hypersphere have been adapted from
 code published by Stack Overflow under the CC-BY-SA 4.0 license, see
 https://stackoverflow.com/questions/57123194/how-to-distribute-points-evenly-on-the-surface-of-hyperspheres-in-higher-dimensi/59279721#59279721
-These subroutines are distributed here under the same license, see https://creativecommons.org/licenses/by-sa/4.0/
+These subroutines are distributed here under the CC-BY-SA 4.0 license, see https://creativecommons.org/licenses/by-sa/4.0/
 '''
 
 from pylabfea.basic import seq_J2
@@ -27,7 +27,20 @@ from sklearn.metrics import mean_absolute_error, confusion_matrix, \
 import matplotlib.pyplot as plt
 
 def int_sin_m(x, m):
-    '''Computes the integral of sin^m(t) dt from 0 to x recursively'''
+    '''Computes the integral of sin^m(t) dt from 0 to x recursively
+    
+    Parameters
+    ----------
+    x : float
+        Upper limit of integration
+    m : int
+        Power of trigonometric function to be considered
+        
+    Returns
+    -------
+    f : float
+        Value of integral
+    '''
     if m == 0:
         return x
     elif m == 1:
@@ -37,7 +50,7 @@ def int_sin_m(x, m):
         return hh
 
 def primes():
-    '''Returns an infinite generator of prime numbers'''
+    '''Infinite generator of prime numbers'''
     yield from (2, 3, 5, 7)
     composites = {}
     ps = primes()
@@ -70,7 +83,7 @@ def uniform_hypersphere(d, n, method='brentq'):
     d : int
         Dimension of stress space in which to create unit stresses
     n : int
-        Numberof stresses to be created
+        Number of stresses to be created
         
     Returns
     -------
@@ -128,6 +141,30 @@ def load_cases(number_3d, number_6d, method='brentq'):
     return allsig
 
 def training_score(yf_ref,yf_ml):
+    '''Calculate the accuracy of the training result in form of different measures
+    as compared to given reference values.
+
+    Parameters
+    ----------
+    yf_ref : (N,)-array
+        Yield function values of reference material
+    yf_ml : (N,)-array
+        Yield function values of ML material at identical sequence of stresses 
+        at which reference material is evaluated.
+
+    Returns
+    -------
+    mae : float
+        Mean Average Error
+    precision : float
+        Ratio of true positives w.r.t. all positives
+    Accuracy : float
+        Ratio of true positives and true negative w.r.t. all results
+    Recall : float
+        Ratio of true positives w.r.t. true positives and false negatives
+    F1Score : float
+        F1 score
+    '''
     res_yf_ref = np.sign(yf_ref)
     ind = np.nonzero(np.abs(res_yf_ref)<0.9)[0]
     res_yf_ref[ind] = 1. # change points with yf=0 to +1
@@ -154,8 +191,8 @@ def training_score(yf_ref,yf_ml):
             FP+=1
         if (res_yf_ref[i] == -1) & (res_yf_ml[i] == -1):
             TN+=1
-    maee = mean_absolute_error(yf_ref, yf_ml)
-    print("Mean Absolut Error is",maee)
+    mae = mean_absolute_error(yf_ref, yf_ml)
+    print("Mean Absolut Error is",mae)
     print('True Positives:',TP)
     print('False Negatives:',FN)
     print('False Positives:',FP)
@@ -168,4 +205,4 @@ def training_score(yf_ref,yf_ml):
     print('Recall:',Recall)
     F1Score = 2*(Recall * precision) / (Recall + precision)
     print('F1score:',F1Score)
-    return maee,precision,Accuracy,Recall,F1Score
+    return mae,precision,Accuracy,Recall,F1Score

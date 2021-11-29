@@ -458,7 +458,7 @@ class Material(object):
         
         Returns
         -------
-        f : scakar
+        f : float
             Yield function evaluated at sig=x.sp
         '''
         
