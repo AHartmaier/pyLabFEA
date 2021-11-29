@@ -9,7 +9,13 @@ uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model
 Version: 4.0 (2021-11-27)
 Authors: Ronak Shoghi, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
-distributed under GNU General Public License (GPLv3)'''
+distributed under GNU General Public License (GPLv3)
+
+Subroutines int_sin_m, primes and uniform_hypersphere have been adapted from
+code published by Stack Overflow under the CC-BY-SA 4.0 license, see
+https://stackoverflow.com/questions/57123194/how-to-distribute-points-evenly-on-the-surface-of-hyperspheres-in-higher-dimensi/59279721#59279721
+These subroutines are distributed here under the same license, see https://creativecommons.org/licenses/by-sa/4.0/
+'''
 
 from pylabfea.basic import seq_J2
 import numpy as np
