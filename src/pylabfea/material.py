@@ -353,7 +353,7 @@ class Material(object):
             Voigt stress tensor
         peeq : float
             Equivalent plastic strain (optional, default: 0)
-        ld  : (3,) array
+        ld  : (6,) array
             Vector of loading direction in princ. stress space (optional)
         verb : Boolean
             Indicate whether to be verbose in text output (optional, default: False)
@@ -379,7 +379,17 @@ class Material(object):
             else:
                 #convert ld to unit stress
                 su = np.zeros(self.sdim)
-                su[0:3] = ld*np.sqrt(1.5)/np.linalg.norm(ld)
+                hh = np.linalg.norm(ld)
+                if hh<1.e-3:
+                    warnings.warn('ML_full_yf called with inconsitent ld={}'.format(ld))
+                    print('calling routine: ', sys._getframe().f_back.f_code.co_name)
+                    hh = 1.
+                    ld = np.zeros(self.sdim)
+                    ld[0] = 1.
+                su = ld[0:self.sdim]*np.sqrt(1.5)/hh
+            if np.any(np.isnan(sig)) or np.any(np.isnan(su)):
+                print('NaN detected (MP_full_yf): sig={}, su={}'.format(sig,su))
+                print('SEQ={}, ld={}, peeq={}'.format(seq,ld,peeq))
             x0 = sflow  # starting value of yield point search
             if su[0]*su[1] < -1.e-5:
                 # correction of starting value for pure shear cases

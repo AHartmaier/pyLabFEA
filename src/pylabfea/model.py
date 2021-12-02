@@ -484,6 +484,9 @@ class Model(object):
         material.mat : List of material objects
             Internal variable for materials assigned to each section of the geometry
         '''
+        if len(mats)!=self.Nsec:
+            raise ValueError('Numer of materials ({}) does not match number of sections ({})'\
+                             .format(len(mats), self.Nsec))
         self.mat = mats
         for i in range(len(mats)):
             if mats[i].sy!=None:
@@ -803,11 +806,18 @@ class Model(object):
                         if el.Mat.ML_yf:
                             #for categorial ML yield function, calculate yf0 as distance to yield surface
                             #construct normal stress vector in loading direction for search of yield point
-                            hs = np.zeros(3)
+                            hs = np.zeros(6)
                             if np.abs(max_dbcr[0])>1.e-6:
                                 hs[0] = el.Mat.sy*np.sign(max_dbcr[0])
                             if np.abs(max_dbct[1])>1.e-6:
                                 hs[1] = el.Mat.sy*np.sign(max_dbct[1])
+                            if np.abs(max_dbcr[1])>1.e-6:
+                                hs[3] = el.Mat.sy*np.sign(max_dbcr[1])
+                            if np.abs(max_dbct[0])>1.e-6:
+                                hs[3] = el.Mat.sy*np.sign(max_dbct[0])
+                            if (np.linalg.norm(hs)<1.e-3):
+                                warnings.warn('calc_scf: inconsistant ld={}, max_dbct={}, max_dbcr={}'.format(hs, max_dbct, max_dbcr))
+                                hs[0] = 1.
                             yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=hs, verb=verb)
                         hh = np.minimum(1., -yf0/sref)
                         sc_list.append(hh)
