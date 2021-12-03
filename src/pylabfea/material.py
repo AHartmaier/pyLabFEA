@@ -1628,17 +1628,17 @@ class Material(object):
             self.C12 = C12
             self.C44 = C44
             self.nu = C12/(C11+C12)
-            self.E = 2*C44*(1+self.nu) # only for isotropy
+            self.E = 2*C44*(1+self.nu) # only for isotropy, might be used for plane stress models
             self.CV = None
-            warnings.warn('elasticity: E and nu calculated from anisotropic elastic parameters')
+            #warnings.warn('elasticity: E and nu calculated from anisotropic elastic parameters')
         elif (CV is not None):
             self.CV = np.array(CV)
             self.C11 = self.CV[0,0]
             self.C12 = self.CV[0,1]
             self.C44 = self.CV[3,3]
             self.nu = self.C12/(self.C11+self.C12)
-            self.E = 2*self.C44*(1+self.nu) # only for isotropy
-            #print('Warning: E and nu calculated from anisotropic elastic parameters')
+            self.E = 2*self.C44*(1+self.nu) # only for isotropy, might be used for plane stress models
+            #warnings.warn('elasticity: E and nu calculated from anisotropic elastic parameters')
         else:
             raise ValueError('elasticity: Inconsistent definition of material parameters')
 
