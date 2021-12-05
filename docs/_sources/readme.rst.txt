@@ -37,26 +37,6 @@ After this, the package can by imported into python scripts with
 
    import pylabfea as FE
    
-   
-Jupyter notebooks
------------------
-
-The pyLabFEA package is conveniently used with Jupyter notebooks. 
-Available notebooks with tutorials on linear and non-linear FEA,
-homogenization of elastic and elastic-plastic material behavior, and
-constitutive models based on machine learning algorithms are contained in
-the subfolder 'notebooks' and can be accessed via ``ìndex.ipynb``. 
-An overview on the contents of the notebooks 
-is available `here`_ .
-
-.. _here: https://ahartmaier.github.io/pyLabFEA/examples.html
-
-The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on `Binder`_
-
-.. _Binder: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
-
-.. image:: https://mybinder.org/badge_logo.svg
-   :target: https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master
 
 Documentation
 -------------

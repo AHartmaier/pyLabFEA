@@ -55,7 +55,7 @@ The documentation has been generated using [Sphinx](http://www.sphinx-doc.org/en
 pyLabFEA is conveniently used with Jupyter notebooks. 
 Available notebooks with tutorials on linear and non-linear FEA, homogenization of elastic and
 elastic-plastic material behavior, and constitutive models based on
-machine learning algorithms are contained in the subfolder 'notebooks' and can be accessed via `index.ipynb`. An
+machine learning algorithms are contained in the subfolder 'notebooks' of this repository and can be accessed via `index.ipynb`. An
 overview on the contents of the notebooks is also available [here](https://ahartmaier.github.io/pyLabFEA/examples.html).
 
 The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on Binder 
@@ -63,7 +63,7 @@ The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on Binde
 
 ## Examples
 
-Python examples demonstrate how ML flow rules can be trained based on reference materials withsignificant plastic anisotropy, as Hill or Barlat reference materials. The trained ML flow rules can be used in form of a UMAT for the commercial FEA package Abaqus.
+Python routines contained in the subfolder 'examples' of this repository demonstrate how ML flow rules can be trained based on reference materials with significant plastic anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. The training data consists of different stress tensors that mark the onset of plastic yielding of the material. It is important that these stress tensors cover the onset of plastic yielding in the full 6-dimensional stress space, including normal and shear stresses. The trained ML flow rules can be used in form of a user material (UMAT) for the commercial FEA package Abaqus.
 
 ## Contributions
 
