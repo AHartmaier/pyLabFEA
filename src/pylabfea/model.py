@@ -12,7 +12,7 @@ distributed under GNU General Public License (GPLv3)'''
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
-from pylabfea.basic import Stress, eps_eq, ptol
+from pylabfea.basic import Stress, eps_eq, seq_J2, ptol
 from matplotlib import colors, colorbar
 
 # =========================   
@@ -519,6 +519,8 @@ class Model(object):
             self.ubcleft[j] = True   # True: displacement BC on lhs node
         elif (bctype=='force'):
             self.ubcleft[j] = False   # False: force BC on lhs node
+            if np.abs(val) > 1.e-6:
+                raise ValueError('Finite force values at left boundary not supported.')
         else:
             raise ValueError('bcleft: Unknown BC: %s'%bctype)
         
@@ -577,6 +579,8 @@ class Model(object):
             self.ubcbot[j] = True   # True: displacement BC on bottom node
         elif (bctype=='force'):
             self.ubcbot[j] = False   # False: force BC on bottom node
+            if np.abs(val) > 1.e-6:
+                raise ValueError('Finite force values at bottom boundary not supported.')
         else:
             raise ValueError('bcbot: Unknown BC: %s'%bctype)
         
@@ -812,9 +816,9 @@ class Model(object):
                             if np.abs(max_dbct[1])>1.e-6:
                                 hs[1] = el.Mat.sy*np.sign(max_dbct[1])
                             if np.abs(max_dbcr[1])>1.e-6:
-                                hs[3] = el.Mat.sy*np.sign(max_dbcr[1])
+                                hs[5] = el.Mat.sy*np.sign(max_dbcr[1])
                             if np.abs(max_dbct[0])>1.e-6:
-                                hs[3] = el.Mat.sy*np.sign(max_dbct[0])
+                                hs[5] = el.Mat.sy*np.sign(max_dbct[0])
                             if (np.linalg.norm(hs)<1.e-3):
                                 warnings.warn('calc_scf: inconsistant ld={}, max_dbct={}, max_dbcr={}'.format(hs, max_dbct, max_dbcr))
                                 hs[0] = 1.
@@ -840,7 +844,7 @@ class Model(object):
 
         #define BC: modify stiffness matrix for displacement BC, calculate consistent force BC
         def calc_BC(K, bcl0, bcb0, dbcr, dbct):
-            '''BC on lhs and bpttom nodes nodes is always static.  
+            '''BC on lhs and bottom nodes nodes is always static.  
             Displacement type BC are applied by adding known boundary forces to solution vector
             to reduce rank of system of equations by 1 (one row eliminated)
             
@@ -882,8 +886,13 @@ class Model(object):
                     if self.ubcbot[k]:
                         for j in self.nobot:
                             i = j*self.dim + k   # postion of x or y-values of node #j in u/f vector
-                            ind.remove(i)
-                            du[i] = bcb0[k]
+                            if i in ind:
+                                ind.remove(i)
+                                du[i] = bcb0[k]
+                            else:
+                                if du[i] != bcb0[k]:
+                                    warnings.warn('Inconsistent BC at left ({}) and bottom node {} ({}).'\
+                                    .format(du[i], j, bcb0[k]))
                             df[ind] -= K[ind,i]*bcb0[k]
 
             # rhs node BC can be force or displacement
@@ -895,10 +904,15 @@ class Model(object):
                     # eliminate row Ndof from system of equations
                     for j in self.noright:
                         i = j*self.dim + k
-                        ind.remove(i)
+                        if i in ind:
+                            ind.remove(i)
+                            du[i] = dbcr[k]
+                        else:
+                            if du[i] != dbcr[k]:
+                                warnings.warn('Inconsistent BC at right node {} ({}) and bottom ({}).'\
+                                .format(j,du[i], dbcr[k]))
                         hh = list(range(self.Ndof))
                         hh.remove(i)
-                        du[i] = dbcr[k]
                         df[hh] -= K[i, hh]*dbcr[k]
                 else:
                     # force bc on rhs nodes
@@ -920,8 +934,13 @@ class Model(object):
                         # eliminate row Ndof from system of equations
                         for j in self.notop:
                             i = j*self.dim + k
-                            ind.remove(i)
-                            du[i] = dbct[k]
+                            if i in ind:
+                                ind.remove(i)
+                                du[i] = dbct[k]
+                            else:
+                                if du[i] != dbct[k]:
+                                    warnings.warn('Inconsistent BC at top ({}) and left/right node {} ({}).'\
+                                    .format(du[i], j, dbcr[k]))
                             df[ind] -= K[ind,i]*dbct[k]
                     else:
                         # force bc on top nodes
@@ -1064,17 +1083,8 @@ class Model(object):
                         #fres = K @ (self.u+self.du)
                         print('load increment right:', dbcr)
                         print('load increment top:',dbct)
-
                     if not conv:
                         nconv += 1
-#                         if nit >= 30:
-#                             print('\n conv,nit,f,ptol,dbcr,dbct',conv,nit,f,ptol,dbcr,dbct)
-#                             raise RuntimeError('Error: No convergence achieved in plasticity routine')
-#                         else:
-#                             # further reduce load increments to reach convergence
-#                             dbcr *= 0.1
-#                             dbct *= 0.1
-                        
                     nit += 1
                 # end while change
             # end if nonlin    
@@ -1089,10 +1099,7 @@ class Model(object):
                     el.epl += el.res_depl
                     el.sig = el.res_sig    
                 el.eps = el.eps_t()
-                '''if el.Mat.msparam is not None:
-                    # data-based plasticity
-                    peeq = eps_eq(el.epl)
-                    el.Mat.set_workhard(peeq)'''
+
             #update load step
             il += 1
             niter.append(nit-1)
@@ -1118,45 +1125,24 @@ class Model(object):
                 print('Iteration step #',nit)
                 print('Load increment ', il, 'total',self.ubctop,'top ',bct0,'/',self.bct,'; last step ',dbct)
                 print('Load increment ', il, 'total',self.ubcright,'rhs',bcr0,'/',self.bcr,'; last step ',dbcr)
-                #fres = K@self.du  # residual forces
-                #print('Yield function after ',nit,'steps: f=',f, '; norm(f_node)=',np.linalg.norm(fres[jin],1))
-#                 ih = np.array(self.notop)*self.dim
-#                 print('Nodal forces f_x on top surface nodes: ',fres[ih])
-#                 ih = np.array(self.notop)*self.dim + 1
-#                 print('Nodal forces f_y on top surface nodes: ',fres[ih])
-#                 ih = np.array(self.nobot)*self.dim
-#                 print('Nodal forces f_x on bottom surface nodes: ',fres[ih])
-#                 ih = np.array(self.nobot)*self.dim + 1
-#                 print('Nodal forces f_y on bottom surface nodes: ',fres[ih])
-#                 ih = np.array(self.noleft)*self.dim 
-#                 print('Nodal forces f_x on left surface nodes: ',fres[ih])
-#                 ih = np.array(self.noleft)*self.dim + 1
-#                 print('Nodal forces f_y on left surface nodes: ',fres[ih])
-#                 ih = np.array(self.noright)*self.dim
-#                 print('Nodal forces f_x on right surface nodes: ',fres[ih])
-#                 ih = np.array(self.noright)*self.dim + 1
-#                 print('Nodal forces f_y on right surface nodes: ',fres[ih])
-                print('BC strain: ', np.around([self.glob['ebc1'],self.glob['ebc2']],decimals=5))
-                print('BC stress: ', np.around([self.glob['sbc1'],self.glob['sbc2']],decimals=5))
-                print('Global strain: ', np.around(self.glob['eps'],decimals=6))
-                print('Global stress: ', np.around(self.glob['sig'],decimals=5))
+                print('BC strain (11,22,12): ', np.around([self.glob['ebc1'],self.glob['ebc2'],self.glob['ebc12']],decimals=5))
+                print('BC stress (11,22,12): ', np.around([self.glob['sbc1'],self.glob['sbc2'],self.glob['sbc12']],decimals=3))
+                print('Global strain: ', np.around(self.glob['eps'],decimals=5))
+                print('Global stress: ', np.around(self.glob['sig'],decimals=3))
                 print('Global plastic strain: ', np.around(self.glob['epl'],decimals=6))
-                hh =  np.abs(self.glob['sbc1'] - self.glob['sig'][0])
-                hh += np.abs(self.glob['sbc2'] - self.glob['sig'][1])
-                if hh > 1.e-6:
-                    warnings.warn('\n ***Inconstistent stiffness matrix!\n\n')
+                seq = seq_J2(self.glob['sig'])
+                if seq>1.e-3:
+                    hh =  np.abs(self.glob['sbc1'] - self.glob['sig'][0])
+                    hh += np.abs(self.glob['sbc2'] - self.glob['sig'][1])
+                    hh += np.abs(self.glob['sbc12'] - self.glob['sig'][5])
+                    hh /= seq
+                    if hh > 1.e-3:
+                        warnings.warn('***Inconstistent stiffness matrix!\
+                        Rel. error is stress={}'.format(hh))
+                        print(self.glob)
                 hh = [el.sig-el.CV@(el.eps-el.epl) for el in self.element]
                 if np.abs(np.amax(hh)) > 1.:
                     warnings.warn('\n ***TEST failed: {}\n\n'.format(hh))
-#                 hh = sig - sig0 - grad_stiff @ deps
-#                 if (seq_J2(hh)>0.1):
-#                     print('\n\n######################################')
-#                     print("Inconsistent tangent:", sig, sig0)
-#                     print(sig-sig0, grad_stiff@deps)
-#                     print(deps, deps/Strain(deps).eeq(), deps/Strain(deps).eteq())
-#                     print(ddepl, ddepl/Strain(ddepl).eeq(), ddepl/Strain(ddepl).eteq())
-#                     print(grad_stiff)
-#                     print('######################################\n\n')
                 print('----------------------------')
         self.bct_mem = bct0
         self.bcr_mem = bcr0
@@ -1203,11 +1189,15 @@ class Model(object):
         uxr, uyr, fxr, fyr = self.bcval(self.noright)
         self.glob['ebc1'] = (uxr-uxl)/self.lenx
         self.glob['sbc1'] = 0.5*(fxr-fxl)/(self.leny*self.thick)
+        self.glob['ebc21'] = (uyr-uyl)/self.lenx
+        self.glob['sbc21'] = 0.5*(fyr-fyl)/(self.leny*self.thick)
         if (self.dim==2):
             uxb, uyb, fxb, fyb = self.bcval(self.nobot)
             uxt, uyt, fxt, fyt = self.bcval(self.notop)
             self.glob['ebc2'] = (uyt-uyb)/self.leny
             self.glob['sbc2'] = 0.5*(fyt-fyb)/(self.lenx*self.thick)
+            self.glob['ebc12'] = (uxt-uxb)/self.leny
+            self.glob['sbc12'] = 0.5*(fxt-fxb)/(self.lenx*self.thick)
         #calculate global values from element solutions
         sig = np.zeros(6)
         eps = np.zeros(6)

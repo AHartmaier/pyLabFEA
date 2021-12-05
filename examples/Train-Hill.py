@@ -12,7 +12,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 print('pyLabFEA version', FE.__version__)
 
-#define Hill model as reference
+#define Hill model as reference material
 E=200000.
 nu=0.3
 sy=60.

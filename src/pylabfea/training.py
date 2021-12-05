@@ -173,7 +173,6 @@ def training_score(yf_ref,yf_ml):
     res_yf_ml[ind] = 1. # change points with yf=0 to +1
 
     cm = confusion_matrix(res_yf_ref, res_yf_ml)
-    print(cm)
     cmd = ConfusionMatrixDisplay(cm, display_labels=['Elastic','Plastic'])
     cmd.plot()
     plt.show()
@@ -194,9 +193,9 @@ def training_score(yf_ref,yf_ml):
     mae = mean_absolute_error(yf_ref, yf_ml)
     print("Mean Absolut Error is",mae)
     print('True Positives:',TP)
-    print('False Negatives:',FN)
-    print('False Positives:',FP)
     print('True Negatives:',TN)
+    print('False Positives:',FP)
+    print('False Negatives:',FN)
     precision = (TP)/(TP+FP)
     print('Precision:',precision)
     Accuracy = (TP+TN)/(TP+FP+FN+TN)

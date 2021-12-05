@@ -714,9 +714,9 @@ class Material(object):
                 h3 = self.hill[3]
                 h4 = self.hill[4]
                 h5 = self.hill[5]
-                fgrad[:,3] = 6.*h3*sig[:,3]/seq
-                fgrad[:,4] = 6.*h4*sig[:,4]/seq
-                fgrad[:,5] = 6.*h5*sig[:,5]/seq
+                fgrad[:,3] = 3.*h3*sig[:,3]/seq
+                fgrad[:,4] = 3.*h4*sig[:,4]/seq
+                fgrad[:,5] = 3.*h5*sig[:,5]/seq
                 if h0==h1==h2==h3==h4==h5==1.:
                     label = 'analytical, J2 isotropic, full stress'
                 else:
@@ -1177,8 +1177,9 @@ class Material(object):
                 print('Training data created from reference material',mat_ref.name,', with',Nlc,'load cases.')
             else:
                 # based on given yield stresses
-                self.sdim = len(sdata[0,:])
                 Nlc = len(sdata[:,0])
+                seq = seq_J2(sdata)
+                self.plasticity(sy=np.mean(seq), sdim=len(sdata[0,:]))
                 xt, yt = self.create_sig_data(sdata=sdata,  Nseq=Nseq, extend=extend)
                 print('Training data created from {}-dimensional yield stresses with {} load cases.'\
                       .format(self.sdim,Nlc))

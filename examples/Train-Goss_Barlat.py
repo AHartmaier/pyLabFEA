@@ -14,27 +14,8 @@ from scipy.optimize import fsolve
 print('pyLabFEA version', FE.__version__)
 
 def find_yloc(x, sig, mat):
-    '''Function to expand unit stresses by factor and calculate yield function;
-    used by search algorithm to find zeros of yield function.
-
-    Parameters
-    ----------
-    x : (N,)-array
-        Multiplyer for stress
-    sig : (N,6) array
-        unit stress
-
-    Returns
-    -------
-    f : 1d-array
-        Yield function evaluated at sig=x.sp
-    '''
-
-    N = len(sig)
-    f = np.zeros(N)
-    for i in range(N):
-        f[i] = mat.calc_seq(sig[i, :] * x[i]) - mat.sy
-    return f
+    # Expand unit stresses 'sig' by factor 'x' and calculate yield function
+    return mat.calc_seq(sig*x[:,None]) - mat.sy
 
 # define Barlat material for Goss texture (RVE data, combined data set)
 # fitted to micromechanical data
