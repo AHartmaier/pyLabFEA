@@ -213,7 +213,6 @@
     <span class="n">res_yf_ml</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span> <span class="c1"># change points with yf=0 to +1</span>
 
     <span class="n">cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">res_yf_ref</span><span class="p">,</span> <span class="n">res_yf_ml</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">cm</span><span class="p">)</span>
     <span class="n">cmd</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="p">(</span><span class="n">cm</span><span class="p">,</span> <span class="n">display_labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Elastic&#39;</span><span class="p">,</span><span class="s1">&#39;Plastic&#39;</span><span class="p">])</span>
     <span class="n">cmd</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
     <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
@@ -234,9 +233,9 @@
     <span class="n">mae</span> <span class="o">=</span> <span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">yf_ref</span><span class="p">,</span> <span class="n">yf_ml</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean Absolut Error is&quot;</span><span class="p">,</span><span class="n">mae</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;True Positives:&#39;</span><span class="p">,</span><span class="n">TP</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;False Negatives:&#39;</span><span class="p">,</span><span class="n">FN</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;False Positives:&#39;</span><span class="p">,</span><span class="n">FP</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;True Negatives:&#39;</span><span class="p">,</span><span class="n">TN</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;False Positives:&#39;</span><span class="p">,</span><span class="n">FP</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;False Negatives:&#39;</span><span class="p">,</span><span class="n">FN</span><span class="p">)</span>
     <span class="n">precision</span> <span class="o">=</span> <span class="p">(</span><span class="n">TP</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">TP</span><span class="o">+</span><span class="n">FP</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Precision:&#39;</span><span class="p">,</span><span class="n">precision</span><span class="p">)</span>
     <span class="n">Accuracy</span> <span class="o">=</span> <span class="p">(</span><span class="n">TP</span><span class="o">+</span><span class="n">TN</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">TP</span><span class="o">+</span><span class="n">FP</span><span class="o">+</span><span class="n">FN</span><span class="o">+</span><span class="n">TN</span><span class="p">)</span>

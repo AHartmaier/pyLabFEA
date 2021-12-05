@@ -48,7 +48,7 @@ Application 1: Machine Learning Flow Rule for Hill-like plasticity
 ------------------------------------------------------------------
 
 In this application, a machine learning algorithm is trained with 
-data from an anisotropic Hill-like yield criterion to
+data from an anisotropic Hill-like yield criterion for pure normal stresses to
 be used as constitutive model for anisotropic plasticity of metals.
 
 .. raw:: html
@@ -58,8 +58,19 @@ Application 2: Machine Learning Flow Rule for Tresca plasticity
 ---------------------------------------------------------------
 
 In this application, a machine learning algorithm is trained with 
-data from a Tresca yield criterion to
+data from a Tresca yield criterion for pure normal stresses to
 be used as constitutive model for isotropic plasticity of metals.
 
 .. raw:: html
    :file: _static/pyLabFEA_ML-FlowRule-Tresca.html
+   
+Application 3: Machine Learning Flow Rule for training with full tensorial stresses
+-----------------------------------------------------------------------------------
+
+In this application, a machine learning algorithm is trained with 
+full tensorial stress data, including normal and shear stresses, 
+from anisotropic Hill and Barlat-type yield criteria to be used 
+as constitutive model for isotropic plasticity of metals.
+
+.. raw:: html
+   :file: _static/pyLabFEA_ML-FlowRule-Training.html
