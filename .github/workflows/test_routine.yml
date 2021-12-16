@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10"]
+        python-version: ["3.10"]
     name: Test pylabfea
     steps:
     - uses: actions/checkout@v2
@@ -28,6 +28,6 @@ jobs:
         $CONDA/bin/conda env update --file environment.yml --name base
         python -m pip install . --user
 
-    - name: run tests
+    - name: Run tests
       run: |
         pytest tests
