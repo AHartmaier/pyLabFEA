@@ -13,26 +13,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.9]
-
+        python-version: ["3.8", "3.9", "3.10"]
+    name: Test pylabfea
     steps:
     - uses: actions/checkout@v2
-    - name: Setup conda
-      uses: s-weigand/setup-conda@v1
+    - name: Setup Python
+      uses: actions/setup-python@v2
       with:
-        update-conda: true
         python-version: ${{ matrix.python-version }}
-        conda-channels: default, conda-forge
-    - name: setup conda
+    - name: Install dependecies
       run: |
         conda --version
         which python
-        conda config --set always_yes yes --set changeps1 no
-        conda install -c conda-forge numpy scipy scikit-learn pytest
-        conda update -q conda
+        $CONDA/bin/conda env update --file environment.yml --name base
         python -m pip install . --user
 
     - name: run tests
       run: |
-        pytest tests/
- 
+        pytest tests
