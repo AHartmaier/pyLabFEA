@@ -30,7 +30,7 @@ jobs:
         conda config --set always_yes yes --set changeps1 no
         conda install -c conda-forge numpy scipy scikit-learn pytest
         conda update -q conda
-       python -m pip install . --user
+        python -m pip install . --user
 
     - name: run tests
       run: |
