@@ -820,7 +820,8 @@ class Model(object):
                             if np.abs(max_dbct[0])>1.e-6:
                                 hs[5] = el.Mat.sy*np.sign(max_dbct[0])
                             if (np.linalg.norm(hs)<1.e-3):
-                                warnings.warn('calc_scf: inconsistant ld={}, max_dbct={}, max_dbcr={}'.format(hs, max_dbct, max_dbcr))
+                                warnings.warn('calc_scf: inconsistant ld={}, max_dbct={}, max_dbcr={}'
+                                              .format(hs, max_dbct, max_dbcr))
                                 hs[0] = 1.
                             yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=hs, verb=verb)
                         hh = np.minimum(1., -yf0/sref)
