@@ -23,15 +23,15 @@ def test_ml_plasticity():
     #initialize and train SVC as ML yield function
     #implement ML flow rule into mat_ml
     train_sc, test_sc = mat_ml.setup_yf_SVM_3D(x_train, y_train, C=10, gamma=4., fs=0.3)
-    mat_ml.calc_properties(eps=0.05, sigeps=True, min_step=12)
+    mat_ml.calc_properties(eps=0.01, sigeps=True, min_step=12)
     
     #check if nonlinear stress-strain data is correct
     assert np.abs(mat_ml.propJ2['stx']['ys'] - 146.60448659713813) < 1E-5
-    assert np.abs(mat_ml.propJ2['sty']['seq'][-1] - 162.32017645) < 1E-5
-    assert np.abs(mat_ml.propJ2['sty']['peeq'][-1] - 0.04919651) < 1E-7
+    assert np.abs(mat_ml.propJ2['sty']['seq'][-1] - 162.3201764461) < 1E-5
+    assert np.abs(mat_ml.propJ2['sty']['peeq'][-1] - 9.189915019471789E-3) < 1E-7
     assert np.abs(mat_ml.propJ2['et2']['ys'] - 137.0452401057186) < 1E-5
-    assert np.abs(mat_ml.propJ2['ect']['peeq'][-1] - 0.04549045) < 1E-7
-    assert np.abs(mat_ml.propJ2['ect']['seq'][-1] - 160.99255742) < 1E-5
+    assert np.abs(mat_ml.propJ2['ect']['peeq'][-1] - 8.540733271274253E-3) < 1E-7
+    assert np.abs(mat_ml.propJ2['ect']['seq'][-1] - 160.86834826891058) < 1E-5
     
 def test_ml_shear():
     E=200.e3
