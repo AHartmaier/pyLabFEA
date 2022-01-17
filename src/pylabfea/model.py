@@ -808,26 +808,15 @@ class Model(object):
                     #if element starts in elastic regime load step can only touch yield surface
                     if  yf0 < -0.15:
                         if el.Mat.ML_yf:
-                            #for categorial ML yield function, calculate yf0 as distance to yield surface
-                            #construct normal stress vector in loading direction for search of yield point
-                            hs = np.zeros(6)
-                            if np.abs(max_dbcr[0])>1.e-6:
-                                hs[0] = el.Mat.sy*np.sign(max_dbcr[0])
-                            if np.abs(max_dbct[1])>1.e-6:
-                                hs[1] = el.Mat.sy*np.sign(max_dbct[1])
-                            if np.abs(max_dbcr[1])>1.e-6:
-                                hs[5] = el.Mat.sy*np.sign(max_dbcr[1])
-                            if np.abs(max_dbct[0])>1.e-6:
-                                hs[5] = el.Mat.sy*np.sign(max_dbct[0])
-                            if (np.linalg.norm(hs)<1.e-3):
-                                warnings.warn('calc_scf: inconsistant ld={}, max_dbct={}, max_dbcr={}'.format(hs, max_dbct, max_dbcr))
-                                hs[0] = 1.
-                            yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=hs, verb=verb)
+                            # for categorial ML yield function, calculate yf0
+                            # as exact distance to yield surface
+                            yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=sld, verb=verb)
                         hh = np.minimum(1., -yf0/sref)
                         sc_list.append(hh)
                     else:
+                        # make sure load step does not exceed yield surface too much
                         hh = np.minimum(1., np.sqrt(1.5)*el.Mat.get_sflow(peeq)/sref)
-                        sc_list.append(hh) # make sure load step does not exceed yield surface too much
+                    sc_list.append(hh)
             # select scaling appropriate scaling such that no element crosses yield surface
             if len(sc_list)==0: sc_list=[1.]
             hh = np.std(sc_list)
@@ -982,6 +971,21 @@ class Model(object):
         bcl0 = self.bcl
         bcb0 = self.bcb
         K = self.setupK()  # assemble system stiffness matrix from element stiffness matrices
+        # construct Voigt type tensor in loading direction for search of yield
+        # point, used for scaling of load step for ML flow rules
+        sld = np.zeros(6)
+        if np.abs(self.bcr[0])>1.e-6:
+            sld[0] = np.sign(self.bcr[0])
+        if np.abs(self.bct[1])>1.e-6:
+            sld[1] = np.sign(self.bct[1])
+        if np.abs(self.bcr[1])>1.e-6:
+            sld[5] = np.sign(self.bcr[1])
+        if np.abs(self.bct[0])>1.e-6:
+            sld[5] = np.sign(self.bct[0])
+        if (np.linalg.norm(sld)<1.e-3):
+            warnings.warn('solve: inconsistent sld={}, bct={}, bcr={}'
+                          .format(sld, self.bct, self.bcr))
+            sld[0] = 1.
                 
         #define loop for external load steps (BC subdivision)
         #during each load step mechanical equilibrium is calculated for sub-step

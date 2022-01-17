@@ -42,12 +42,12 @@ def int_sin_m(x, m):
         Value of integral
     '''
     if m == 0:
-        return x
+        hh = x
     elif m == 1:
-        return 1. - np.cos(x)
+        hh = 1. - np.cos(x)
     else:
         hh = (m-1)/m * int_sin_m(x, m-2) - np.cos(x)*np.sin(x)**(m-1)/m
-        return hh
+    return hh
 
 def primes():
     '''Infinite generator of prime numbers'''
@@ -140,7 +140,7 @@ def load_cases(number_3d, number_6d, method='brentq'):
     allsig /= seq[:, None]
     return allsig
 
-def training_score(yf_ref,yf_ml):
+def training_score(yf_ref, yf_ml, plot=True):
     '''Calculate the accuracy of the training result in form of different measures
     as compared to given reference values.
 
@@ -172,10 +172,11 @@ def training_score(yf_ref,yf_ml):
     ind = np.nonzero(np.abs(res_yf_ml)<0.9)[0]
     res_yf_ml[ind] = 1. # change points with yf=0 to +1
 
-    cm = confusion_matrix(res_yf_ref, res_yf_ml)
-    cmd = ConfusionMatrixDisplay(cm, display_labels=['Elastic','Plastic'])
-    cmd.plot()
-    plt.show()
+    if plot:
+        cm = confusion_matrix(res_yf_ref, res_yf_ml)
+        cmd = ConfusionMatrixDisplay(cm, display_labels=['Elastic','Plastic'])
+        cmd.plot()
+        plt.show()
 
     TP = 0
     FN = 0
@@ -204,4 +205,4 @@ def training_score(yf_ref,yf_ml):
     print('Recall:',Recall)
     F1Score = 2*(Recall * precision) / (Recall + precision)
     print('F1score:',F1Score)
-    return mae,precision,Accuracy,Recall,F1Score
+    return mae, precision, Accuracy, Recall, F1Score
