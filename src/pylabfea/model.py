@@ -1387,15 +1387,13 @@ class Model(object):
                 hx = [hx1, hx2, hx2, hx1]
                 hy = [-hh, -hh, hh, hh]
             else:
-                hx = [0., 0., 0., 0.]
-                hy = [0., 0., 0., 0.]
+                hx = np.zeros(4)
+                hy = np.zeros(4)
                 k = [0, 3, 1, 2]
-                p = 0
-                for ih in el.nodes:
+                for p, ih in enumerate(el.nodes):
                     j = ih*self.dim
                     hx[k[p]] = self.npos[j] + mag*self.u[j]
                     hy[k[p]] = self.npos[j+1] + mag*self.u[j+1]
-                    p += 1
             ax.fill(hx, hy, color=cmap(col[self.element.index(el)]))
             if (showmesh):
                 hx.append(hx[0])
