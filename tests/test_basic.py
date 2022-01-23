@@ -39,6 +39,47 @@ def test_hill_6p():
     assert np.abs(mat4.sigeps['et2']['sig'][-1][1] - 102.534840) < 1E-5
     assert np.abs(mat4.sigeps['ect']['sig'][-1][0] + 54.6031702) < 1E-5
     
+def test_bcnode():
+    # setup material definition for regular mesh
+    NX=18
+    NY=18
+    NXi1 = int(NX/3)
+    NXi2 = 2*NXi1
+    NYi1 = int(NY/3)
+    NYi2 = 2*NYi1
+    el = np.ones((NX, NY))
+    el[NXi1:NXi2, NYi1:NYi2] = 2
+
+    # define materials
+    mat1 = FE.Material(num=1)            # call class to generate material object
+    mat1.elasticity(E=100.e3, nu=0.27)   # define elastic properties
+    mat2 = FE.Material(num=2)            # define second material
+    mat2.elasticity(E=3.e3, nu=0.3)      # material is purely elastic
+
+    # setup model for elongation in y-direction
+    fe = FE.Model(dim=2, planestress=False)   # initialize finite element model
+    fe.geom(sect=2, LX=4., LY=4.) # define geometry with two sections
+    fe.assign([mat1, mat2])       # assign materials to sections
+
+    #boundary conditions: uniaxial stress in longitudinal direction                  
+    fe.bcbot(0.)                    # fix bottom boundary
+    fe.bcright(0., 'force')           # boundary condition on lateral edges of model
+    fe.bcleft(0., 'force')
+    fe.bctop(0.01*fe.leny, 'disp')  # strain applied to top nodes
+
+    # meshing and plotting of model
+    fe.mesh(elmts=el, NX=NX, NY=NY)  # create regular mesh with sections as defined in el
+    # fix lateral displacements of corner node to prevent rigig body motion
+    hh = [no in fe.nobot for no in fe.noleft]
+    noc = np.nonzero(hh)[0]  # find corner node
+    fe.bcnode(noc, 0., 'disp', 'x')  # fix laterial displacement
+    fe.solve()
+    assert np.abs(fe.u[684] + 9.730777232237817e-3) < 1E-5
+    assert np.abs(fe.element[0].sig[5] - 2.2990816342732256) < 1E-5
+    assert np.abs(fe.element[5*NY+7].sig[0] - 45.68020736256676) < 1E-5
+    assert np.abs(fe.element[6*NY+7].sig[1] - 69.16252458086865) < 1E-5
+    assert noc == [0]
+    
 #define model for elasticity tests
 fem_v = FE.Model(dim=2, planestress=True)   # call class to generate container for finite element model
 fem_v.geom([2, 1, 2, 1, 2], LY=4.) # define sections in absolute lengths

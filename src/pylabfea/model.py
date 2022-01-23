@@ -1,11 +1,11 @@
 #Module pylabfea.mod
-'''Module pylabefea.model introduces global functions for mechanical quantities and class ``Model`` that 
-contains that attributes and methods needed in FEA. Materials are defined in 
-module pylabfea.material
+'''Module pylabefea.model introduces global functions for mechanical quantities
+and class ``Model`` that contains that attributes and methods needed in FEA. 
+Materials are defined in module pylabfea.material
 
 uses NumPy, SciPy, MatPlotLib
 
-Version: 4.0 (2021-11-27)
+Version: 4.1 (2022-02-22)
 Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartma4er@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -21,13 +21,16 @@ from matplotlib import colors, colorbar
 
 class Model(object):
     '''Class for finite element model. Defines necessary attributes and methods
-    for pre-processing (defining geometry, material assignments, mesh and boundary conditions);
+    for pre-processing (defining geometry, material assignments, mesh and 
+                        boundary conditions);
     solution (invokes numerical solver for non-linear problems);
     and post-processing (visualization of results on meshed geometry, 
     homogenization of results into global quantities).
     
-    *Boundary conditions* on left-hand-side and bottom nodes are always assumed to be static (typically with values of zero);
-    Boundary conditions on right-hand-side and top nodes are considered as load steps starting from zero.
+    *Boundary conditions* on left-hand-side and bottom nodes are always assumed
+    to be static (typically with values of zero);
+    Boundary conditions on right-hand-side and top nodes are considered as load
+    steps starting from zero.
     Default boundary conditions are: 
     
       * lhs: fixed in x-direction (ux=0), free in y-direction (fy=0)
@@ -60,23 +63,32 @@ class Model(object):
     nonlin : Boolean
         Indicates non-linearity of model (defined in ``assign``)
     mat   : list of objects to class Material
-        List of materials assigned to sections of model, same dimensions as LS (defined in ``assign``)
+        List of materials assigned to sections of model, same dimensions as LS
+        (defined in ``assign``)
     ubcbot: dim-array of Boolean
-        True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in ``bcright``)
+        True: displacement BC on rhs nodes; False: force BC on rhs nodes
+        (defined in ``bcright``)
     bcb  : dim-array
-        Nodal displacements in x or y-direction for lhs nodes (defined in ``bcbot``)
+        Nodal displacements in x or y-direction for lhs nodes
+        (defined in ``bcbot``)
     ubcleft: dim-array of Boolean
-        True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in ``bcright``)
+        True: displacement BC on rhs nodes; False: force BC on rhs nodes
+        (defined in ``bcright``)
     bcl : dim-array
-        Nodal displacement in x or y-direction for lhs nodes (defined in ``bcleft``)
+        Nodal displacement in x or y-direction for lhs nodes
+        (defined in ``bcleft``)
     ubcright: dim-array of Boolean
-        True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in ``bcright``)
+        True: displacement BC on rhs nodes; False: force BC on rhs nodes
+        (defined in ``bcright``)
     bcr   : dim-array
-        Nodal displacements/forces in x or y-direction for rhs nodes (defined in ``bcright``)
+        Nodal displacements/forces in x or y-direction for rhs nodes
+        (defined in ``bcright``)
     ubctop: Boolean
-        True: displacement BC on top nodes; False: force BC on top nodes (defined in ``bctop``)
+        True: displacement BC on top nodes; False: force BC on top nodes
+        (defined in ``bctop``)
     bct   : dim-array 
-        Nodal displacements/forces in x or y-direction for top nodes (defined in ``bctop``)
+        Nodal displacements/forces in x or y-direction for top nodes
+        (defined in ``bctop``)
     Nnode : int
         Total number of nodes in Model (defined in ``mesh``)
     NnodeX, NnodeY : int
@@ -86,28 +98,37 @@ class Model(object):
     Ndof  : int
         Number of degrees of freedom (defined in ``mesh``)
     npos: 1d-array
-        Nodal positions, dimension Ndof, same structure as u,f-arrays: (x1, y1, x2, y1, ...) (defined in ``mesh``)
+        Nodal positions, dimension Ndof, same structure as u,f-arrays:
+            (x1, y1, x2, y1, ...) (defined in ``mesh``)
     noleft, noright, nobot, notop : list 
         Lists of nodes on boundaries (defined in ``mesh``)
     noinner : list
         List of inner nodes (defined in ``mesh``)
     element : list
-        List of objects of class ``Element``, dimension Nel (defined in ``mesh``)
+        List of objects of class ``Element``, dimension Nel
+        (defined in ``mesh``)
     u    : (Ndof,) array
         List of nodal displacements (defined in ``solve``)
     f    : (Ndof,) array
         List of nodal forces (defined in ``solve``)
     sgl  : (N,6) array
-        Time evolution of global stress tensor with incremental load steps (defined in ``solve``)
+        Time evolution of global stress tensor with incremental load steps
+        (defined in ``solve``)
     egl  : (N,6) array
-        Time evolution of global total strain tensor with incremental load steps (defined in ``solve``)
+        Time evolution of global total strain tensor with incremental load
+        steps (defined in ``solve``)
     epgl : (N,6) array
-        Time evolution of global plastic strain tensor with incremental load steps (defined in ``solve``)
+        Time evolution of global plastic strain tensor with incremental load
+        steps (defined in ``solve``)
     glob : python dictionary
-        Global values homogenized from BC or element solutions, contains the elements: 
-        'ebc1', 'ebc2', 'sbc1', 'sbc2' : global strain and stress from BC (type: float)
-        'eps', 'epl', 'sig',  : global strain, plastic strain, and stress tensors homogenized 
-        from element solutions (type: Voigt tensor)     (defined in ``calc_global``)
+        Global values homogenized from BC or element solutions, contains the
+        elements: 
+        'ebc1', 'ebc2', 'sbc1', 'sbc2' : global strain and stress from BC
+        (type: float)
+        'eps', 'epl', 'sig',  : global strain, plastic strain, and stress 
+        tensors homogenized 
+        from element solutions (type: Voigt tensor)
+        (defined in ``calc_global``)
     '''
     
     def __init__(self, dim=1, planestress = False):
@@ -127,10 +148,13 @@ class Model(object):
         self.bcb = np.zeros(dim)  
         self.bct = np.zeros(dim)
         self.bcr = np.zeros(dim)
+        self.bcn = np.zeros(dim)
+        self.noset = None
         self.ubctop = [False, False] # default free boundary on top
         self.ubcright = [False, False] # default free boundary on rhs
         self.ubcleft = [True, False]  # default fixed boundary in x-direction on lhs
         self.ubcbot = [False, True] # default fixed boundary in y-direction on bottom
+        self.ubcn = [False, False]  # default free BC for node set
         self.nonlin = False # default is linear elastic model
         self.sgl = np.zeros((1,6))  # list for time evolution of global stresses
         self.egl = np.zeros((1,6))  # list for time evolution of global strains
@@ -201,8 +225,6 @@ class Model(object):
             Tangent stiffness tensor of element
         Kel   : 2-d array
             Element stiffness matrix
-        Sect  : int
-            Section of model in which element is located
         Mat   : object of class ``Material``
             Material model to be applied
         eps   : Voigt tensor
@@ -213,12 +235,11 @@ class Model(object):
             average plastic element strain (defined in ``Model.solve``)
         '''
 
-        def __init__(self, model, nodes, lx, ly, sect, mat):
+        def __init__(self, model, nodes, lx, ly, mat):
             self.Model = model
             self.nodes = nodes
             self.Lelx = lx
             self.Lely = ly
-            self.Sect = sect
             self.Mat = mat
             DIM = model.dim
             #Calculate Voigt stiffness matrix for plane stress and plane strain'
@@ -302,7 +323,8 @@ class Model(object):
                         self.gpx[i] = x
                         self.Bmat[i] = self.calc_Bmat(x=x)
                 elif (DIM==2):
-                    raise NotImplementedError('Error: Quadrilateral elements with quadratic shape function not yet implemented')
+                    raise NotImplementedError('Error: Quadrilateral elements'+
+                         'with quadratic shape function not yet implemented')
             self.calc_Kel()
             
         def calc_Kel(self):
@@ -375,7 +397,8 @@ class Model(object):
             if (self.Mat.sy==None):
                 depl = np.zeros(6)
             else:
-                depl = self.Mat.epl_dot(self.sig, self.epl, self.CV, self.deps())
+                depl = self.Mat.epl_dot(self.sig, self.epl, self.CV,
+                                        self.deps())
             return depl
         
         def calc_Bmat(self, x=0., y=0.):
@@ -449,12 +472,14 @@ class Model(object):
                     B[0,1] = 4.*h1 - 2.*h2*x
                     B[0,2] = h2*x  - h1
                 if (DIM==2):
-                    raise NotImplementedError('Error: Quadratic shape functions for 2D elements not yet implemented')
+                    raise NotImplementedError('Error: Quadratic shape'+
+                         'functions for 2D elements not yet implemented')
             return B
         
-    def geom(self, sect, LY=1., LZ=1.):
+    def geom(self, sect=1, LX=None, LY=1., LZ=1.):
         '''Specify geometry of FE model and its subdivision into sections;
-        for 2-d model a laminate structure normal to x-direction is created; adds attributes to class ``Model``
+        for 2-d model a laminate structure normal to x-direction is created;
+        adds attributes to class ``Model``
         
         Parameters
         ----------
@@ -465,9 +490,22 @@ class Model(object):
         LZ : float
             Thickness of model in z-direction (optional, default: 1)
         '''
-        self.Nsec = len(sect)  # number of sections
-        self.LS = np.array(sect)
-        self.lenx = sum(sect)  # total length of model
+        if type(sect)==list:
+            self.Nsec = len(sect)  # number of sections
+            self.LS = np.array(sect)
+            self.lenx = sum(sect)  # total length of model
+        elif type(sect)==int:
+            if sect < 1:
+                raise ValueError('At least one section must be defined.')
+            if LX is None:
+                raise ValueError('LX must be given if sect is of type int')
+            else:
+                self.lenx = LX
+            self.Nsec = sect
+            self.LS = np.ones(sect)*self.lenx/sect
+        else:
+            raise TypeError('Sect must be either list or int, not {}'\
+                            .format(type(sect)))
         self.leny = LY
         self.thick = LZ
         
@@ -477,47 +515,53 @@ class Model(object):
         Parameters
         ----------
         mats : list 
-            List of materials, must have same dimensions as Model.LS
+            List of materials, dimensions must be equal to number of sections
             
         Attributes
         ----------
         material.mat : List of material objects
-            Internal variable for materials assigned to each section of the geometry
+            Internal variable for materials assigned to each section of the 
+            geometry
+        material.nonlin : bool
+            Indicate if material non-linearity must be considered
         '''
         if len(mats)!=self.Nsec:
             raise ValueError('Numer of materials ({}) does not match number of sections ({})'\
                              .format(len(mats), self.Nsec))
         self.mat = mats
-        for i in range(len(mats)):
-            if mats[i].sy!=None:
+        self.nonlin = False
+        for mat in mats:
+            if mat.sy != None:
                 self.nonlin = True   # nonlinear model if at least one material is plastic
 
     #subroutines to define boundary conditions, top/bottom only needed for 2-d models
     def bcleft(self, val, bctype='disp', bcdir='x'):
-        '''Define boundary conditions on lhs nodes, either force or displacement type
+        '''Define boundary conditions on lhs nodes, either force or
+        displacement type
         
         Parameters
         ----------
         val : float
             Displacement or force of lhs nodes in bc_dir direction
         bctype : str
-            Type of boundary condition ('disp' or 'force') (optional, default: 'disp')
+            Type of boundary condition ('disp' or 'force')
+            (optional, default: 'disp')
         bcdir : str or int
             Direction of boundary load (optional, default: 'x')
         '''
-        if bcdir=='x' or bcdir==0:
+        if bcdir.lower()=='x' or bcdir==0:
             self.bcl[0] = val
             j = 0
-        elif bcdir=='y' or bcdir==1:
+        elif bcdir.lower()=='y' or bcdir==1:
             self.bcl[1] = val
             j = 1
         else:
-            print('bcleft: wrong value for dir:', dir)
-            raise ValueError('bcleft: Unknown value for dir (direction)')
-        if (bctype=='disp'):
+            raise ValueError('bcleft: Unknown value for direction: {}'\
+                             .format(bcdir))
+        if (bctype.lower()=='disp'):
             #type of boundary conditions (BC)
             self.ubcleft[j] = True   # True: displacement BC on lhs node
-        elif (bctype=='force'):
+        elif (bctype.lower()=='force'):
             self.ubcleft[j] = False   # False: force BC on lhs node
             if np.abs(val) > 1.e-6:
                 raise ValueError('Finite force values at left boundary not supported.')
@@ -525,7 +569,8 @@ class Model(object):
             raise ValueError('bcleft: Unknown BC: %s'%bctype)
         
     def bcright(self, val, bctype, bcdir='x'):
-        '''Define boundary conditions on rhs nodes, either force or displacement type
+        '''Define boundary conditions on rhs nodes, either force or
+        displacement type
         
         Parameters
         ----------
@@ -536,22 +581,22 @@ class Model(object):
         bcdir : str or int
             Direction of boundary load (optional, default: 'x')
         '''
-        if bcdir=='x' or bcdir==0:
+        if bcdir.lower()=='x' or bcdir==0:
             self.bcr[0] = val
             j = 0
-        elif bcdir=='y' or bcdir==1:
+        elif bcdir.lower()=='y' or bcdir==1:
             self.bcr[1] = val
             j = 1
         else:
-            print('bcright: wrong value for dir:', dir)
-            raise ValueError('bcright: Unknown value for dir (direction)')
-        if (bctype=='disp'):
-            #type of boundary conditions (BC)
+            raise ValueError('bcright: Unknown value for direction :{}'\
+                             .format(bcdir))
+        if (bctype.lower()=='disp'):
+            # type of boundary conditions (BC)
             self.ubcright[j] = True   # True: displacement BC on rhs node
-        elif (bctype=='force'):
+        elif (bctype.lower()=='force'):
             self.ubcright[j] = False   # False: force BC on rhs node
         else:
-            raise TypeError('bcright: Unknown BC: %s'%bctype)
+            raise TypeError('bcright: Unknown BC: {}'.format(bctype))
         
     def bcbot(self, val, bctype='disp', bcdir='y'):
         '''Define boundary conditions on bottom nodes, always displacement type
@@ -559,30 +604,33 @@ class Model(object):
         Parameters
         ----------
         val  : float
-            Displacement in x direction
+            Displacement in bcdir direction
         bctype : str
-            Type of boundary condition ('disp' or 'force') (optional, default: 'disp')
-        dir : str or int
+            Type of boundary condition ('disp' or 'force')
+            (optional, default: 'disp')
+        bcdir : str or int
             Direction of boundary load (optional, default: 'y')
         '''
-        if bcdir=='x' or bcdir==0:
+        if self.dim!=2:
+            warnings.warn('BC on bottom nodes will be ignoresd for 2D model')
+        if bcdir.lower()=='x' or bcdir==0:
             self.bcb[0] = val
             j = 0
-        elif bcdir=='y' or bcdir==1:
+        elif bcdir.lower()=='y' or bcdir==1:
             self.bcb[1] = val
             j = 1
         else:
-            print('bcbot: wrong value for dir:', dir)
-            raise ValueError('bcleft: Unknown value for dir (direction)')
-        if (bctype=='disp'):
-            #type of boundary conditions (BC)
+            raise ValueError('bcleft: Unknown value for direction: {}'\
+                             .format(bcdir))
+        if (bctype.lower()=='disp'):
+            # type of boundary conditions (BC)
             self.ubcbot[j] = True   # True: displacement BC on bottom node
-        elif (bctype=='force'):
+        elif (bctype.lower()=='force'):
             self.ubcbot[j] = False   # False: force BC on bottom node
             if np.abs(val) > 1.e-6:
                 raise ValueError('Finite force values at bottom boundary not supported.')
         else:
-            raise ValueError('bcbot: Unknown BC: %s'%bctype)
+            raise ValueError('bcbot: Unknown BC: {}'.format(bctype))
         
     def bctop(self, val, bctype, bcdir='y'):
         '''Define boundary conditions on top nodes, either force or displacement type
@@ -590,37 +638,84 @@ class Model(object):
         Parameters
         ----------
         val     : float
-            Displacement or force in x direction 
+            Displacement or force in bcdir direction 
         bctype : str
             Type of boundary condition ('disp' or 'force')
         bcdir : str or int
             Direction of boundary load (optional, default: 'y')
         '''
-        if bcdir=='x' or bcdir==0:
+        if self.dim!=2:
+            warnings.warn('BC on top nodes will be ignored for 2D model')
+        if bcdir.lower()=='x' or bcdir==0:
             self.bct[0] = val
             j = 0
-        elif bcdir=='y' or bcdir==1:
+        elif bcdir.lower()=='y' or bcdir==1:
             self.bct[1] = val
             j = 1
         else:
-            print('bctop: wrong value for dir:', dir)
-            raise ValueError('bcleft: Unknown value for dir (direction)')
-        if (bctype=='disp'):
-            'type of boundary conditions (BC)'
+            raise ValueError('bcleft: Unknown value for direction {}: '\
+                             .format(bcdir))
+        if (bctype.lower()=='disp'):
+            # type of boundary conditions (BC)
             self.ubctop[j] = True   # True: displacement BC on rhs node
-        elif (bctype=='force'):
+        elif (bctype.lower()=='force'):
             self.ubctop[j] = False   # False: force BC on rhs node
         else:
-            raise TypeError('bctop: Unknown BC: %s'%bctype)
+            raise TypeError('bctop: Unknown BC: {}'.format(bctype))
+            
+    def bcnode(self, node, val, bctype, bcdir):
+        '''Define boundary conditions on a given set of nodes, 
+        either force or displacement type in x or y direction are accepted.
+        
+        Since nodes must be given, this subroutine can only be called after
+        meshing.
+        
+        Parameters
+        ----------
+        node   : int or list of int
+            Node or set of nodes to which BC shall be applied
+        val    : float
+            Displacement or force in bcdir direction 
+        bctype : str
+            Type of boundary condition ('disp' or 'force')
+        bcdir : str or int
+            Direction of boundary load ('x' or 'y'; 0 or 1)
+        '''
+        if self.dim!=2:
+            warnings.warn('BC on chosen nodes will be ignored for 2D model')
+        if type(node)==list:
+            self.noset = node
+        else:
+            self.noset = [node]
+        if bcdir.lower()=='x' or bcdir==0:
+            self.bcn[0] = val
+            j = 0
+        elif bcdir.lower()=='y' or bcdir==1:
+            self.bcn[1] = val
+            j = 1
+        else:
+            raise ValueError('bcleft: Unknown value for direction {}'\
+                             .format(bcdir))
+        if (bctype.lower()=='disp'):
+            # type of boundary conditions (BC)
+            self.ubcn[j] = True   # True: displacement BC on node
+        elif (bctype.lower()=='force'):
+            self.ubcn[j] = False   # False: force BC on node
+        else:
+            raise TypeError('bcnode: Unknown BC: {}'.format(bctype))
 
             
-    def mesh(self, NX=10, NY=1, SF=1):
-        '''Generate structured mesh with quadrilateral elements (2d models). First,
-        nodal positions ``Model.npos`` are defined such that nodes lie at 
-        corners (linear shape function) and edges (quadratic shape function) of elements. 
-        Then, elements are initialized as object of class ``Model.Element``, which requires the list of 
-        nodes associated with the element, the dimensions of the element, and the material of
-        the section in which the element is situated to be passed.
+    def mesh(self, elmts= None, nodes=None, NX=10, NY=1, SF=1):
+        '''
+        Import mesh or
+        Generate structured mesh with quadrilateral elements (2d models). 
+        First, nodal positions ``Model.npos`` are defined such that nodes lie
+        at corners (linear shape function) and edges (quadratic shape function)
+        of elements. 
+        Then, elements are initialized as object of class ``Model.Element``,
+        which requires the list of nodes associated with the element, the 
+        dimensions of the element, and the material of the section in which 
+        the element is situated to be passed.
         
         Parameters
         ----------
@@ -629,25 +724,42 @@ class Model(object):
         NY : int
             Number of elements in y-direction (optional, default: 1)
         SF : int
-            Degree of shape functions: 1=linear, 2=quadratic (optional, default: 1)
+            Degree of shape functions: 1=linear, 2=quadratic
+            (optional, default: 1)
         '''
         self.shapefact = SF
         DIM = self.dim
+        if elmts is not None:
+            el = np.array(elmts, dtype=int)
+            sh = el.shape
+            if len(sh) != DIM:
+                raise ValueError('Cannot use a {}-shaped mesh with a {}-dimemsional model'\
+                                 .format(sh, DIM))
+            NX = sh[0]
+            NY = sh[1] if DIM > 1 else 1
+                
         if (NX < self.Nsec):
             raise TypeError('Error: Number of elements is smaller than number of sections')
-        if ((NY>1)and(DIM==1)):
+        if (NY>1 and DIM==1):
             NY = 1
             warnings.warn('Warning: NY=1 for 1-d model')
         if self.u is not None:
             warnings.warn('Warning: Solution of previous steps is deleted')
             self.u = None
             self.f = None
-        self.NnodeX = self.shapefact*NX + 1    # number of nodes along x axis
-        self.NnodeY = (DIM-1)*self.shapefact*NY + 1    # number of nodes along y axis
-        self.Nel = NX*NY
+        self.NnodeX = self.shapefact*NX + 1  # number of nodes along x axis
+        self.NnodeY = (DIM-1)*self.shapefact*NY + 1  # number of nodes along y axis
         self.Nnode = self.NnodeX*self.NnodeY   # total number of nodes
         self.Ndof  = self.Nnode*DIM  # degrees of freedom
-        self.npos = np.zeros(self.Ndof)  # position array of nodes
+        if nodes is None:
+            self.npos = np.zeros(self.Ndof)  # position array of nodes
+        else:
+            self.npos = np.ravel(nodes, order='C')
+            if len(self.npos) != self.Nnode:
+                raise ValueError('Inconsistent definition of nodes: '+
+                      '{} nodes for {}-dim model with shape function={}'\
+                      .format(len(self.npos)/DIM, DIM, SF))
+        self.Nel = NX*NY
         self.element = [None] * self.Nel  # empty list for elements
         self.noleft  = []  # list of nodes on left boundary
         self.noright = []  # list of nodes on right boundary
@@ -655,65 +767,135 @@ class Model(object):
         self.notop   = []  # list of nodes on top boundary
         self.noinner = []  # list of inner nodes
         
-        #Calculate number of elements per section -- only laminate structure
-        hh  = self.LS / self.lenx      # proportion of segment length to total length of model
-        nes = [int(x) for x in np.round(hh*NX)]  # nes gives number of elements per segement in proportion 
-        if (np.sum(nes) != NX):  # add or remove elements of largest section if necessary
-            im = np.argmax(self.LS)
-            nes[im] = nes[im] - np.sum(nes) + NX
+        if elmts is None:
+            #Calculate number of elements per section -- only laminate structure
+            hh  = self.LS / self.lenx  # proportion of segment length to total length of model
+            nes = [int(x) for x in np.round(hh*NX)]  # nes gives number of elements per segement in proportion 
+            if (np.sum(nes) != NX):  # add or remove elements of largest section if necessary
+                im = np.argmax(self.LS)
+                nes[im] = nes[im] - np.sum(nes) + NX
 
-        #Define nodal positions and element shapes -- only for laminate structure
-        jstart = 0
-        nrow = self.NnodeY
-        dy = self.leny / NY
-        for i in range(self.Nsec):
-            #define nodal positions first
-            ncol = nes[i]*self.shapefact + 1
-            dx = self.LS[i] / nes[i]
-            nr = np.max([1, nrow-1])
-            elstart = np.sum(nes[0:i],dtype=int)*nr
-            n1 = (int(elstart/NY)*nrow + int(np.mod(elstart,NY)))*self.shapefact
-            for j in range(jstart, ncol):
-                for k in range(nrow):
-                    inode = j*nrow + k + n1
-                    self.npos[inode*DIM] = (j+int(elstart/NY))*dx # x-position of node
-                    if (DIM==2):
-                        self.npos[inode*DIM+1] = k*dy # y-position of node
+            # Define nodal positions and element shapes -- only for laminate structure
+            jstart = 0
+            nrow = self.NnodeY
+            dy = self.leny / NY
+            for i in range(self.Nsec):
+                # define nodal positions first
+                ncol = nes[i]*self.shapefact + 1
+                dx = self.LS[i] / nes[i]
+                nr = np.max([1, nrow-1])
+                elstart = np.sum(nes[0:i],dtype=int)*nr
+                n1 = (int(elstart/NY)*nrow + int(np.mod(elstart,NY)))*\
+                    self.shapefact
+                for j in range(jstart, ncol):
+                    for k in range(nrow):
+                        inode = j*nrow + k + n1
+                        self.npos[inode*DIM] = (j+int(elstart/NY))*dx # x-position of node
+                        if (DIM==2):
+                            self.npos[inode*DIM+1] = k*dy # y-position of node
+                        nin = True
+                        if (j==0): 
+                            self.noleft.append(inode)
+                            nin = False
+                        if (k==0):
+                            self.nobot.append(inode)
+                            nin = False
+                        if (k==nrow-1):
+                            self.notop.append(inode)
+                            nin = False
+                        if ((i==self.Nsec-1)and(j==ncol-1)):
+                            self.noright.append(inode)
+                            nin = False
+                        if nin:
+                            self.noinner.append(inode)
+                # initialize elements
+                for j in range(nes[i]*nr):
+                    ih = elstart + j   # index of current element
+                    n1 = (int(ih/NY)*nrow + ih%NY)*self.shapefact
+                    n2 = n1 + self.shapefact
+                    n3 = n1 + nrow*self.shapefact
+                    n4 = n3 + self.shapefact
+                    if (self.shapefact*DIM==1):
+                        self.element[ih] = self.Element(self, [n1, n2], dx, dy,
+                                                        self.mat[i])  # 1-d, lin shape fct
+                    elif (self.shapefact*DIM==4):
+                        nh = n1 + nrow + 1
+                        hh = [n1, n1+1, n2, nh, nh+1, n3, n3+1, n4]  # 2-d, quad shape fct
+                        self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
+                    elif (DIM==2):
+                        hh = [n1, n2, n3, n4]  # 2-d, lin shape fct
+                        self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
+                    else:
+                        hh = [n1, n1+1, n2]  # 1-d, lin shape fct
+                        self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
+                jstart = 1
+        else:
+            # create nodes on regular mesh if no nodes are given
+            if nodes is None:
+                dx = self.lenx/NX
+                dy = self.leny/NY
+                for j in range(self.NnodeX):
+                    for k in range(self.NnodeY):
+                        inode = j*self.NnodeY + k
+                        self.npos[inode*DIM] = j*dx # x-position of node
+                        if (DIM==2):
+                            self.npos[inode*DIM+1] = k*dy # y-position of node
+                        nin = True
+                        if (j==0): 
+                            self.noleft.append(inode)
+                            nin = False
+                        if (k==0):
+                            self.nobot.append(inode)
+                            nin = False
+                        if (k==self.NnodeY-1):
+                            self.notop.append(inode)
+                            nin = False
+                        if (j==self.NnodeX-1):
+                            self.noright.append(inode)
+                            nin = False
+                        if nin:
+                            self.noinner.append(inode)
+            else:
+                # save nodes on boundaries
+                tol = 0.001*self.lenx/NX
+                for i, pos in enumerate(self.npos):
                     nin = True
-                    if (j==0): 
-                        self.noleft.append(inode)
+                    if pos < tol: 
+                        if DIM==1 or i%2==0:
+                            self.noleft.append(inode)
+                        if DIM==2 and i%2==1:
+                            self.nobot.append(inode)
                         nin = False
-                    if (k==0):
-                        self.nobot.append(inode)
-                        nin = False
-                    if (k==nrow-1):
-                        self.notop.append(inode)
-                        nin = False
-                    if ((i==self.Nsec-1)and(j==ncol-1)):
+                    if pos>self.lenx-tol and (DIM==1 or i%2==0):
                         self.noright.append(inode)
+                        nin = False
+                    if pos>self.leny-tol and DIM==2 and i%2==1:
+                        self.notop.append(inode)
                         nin = False
                     if nin:
                         self.noinner.append(inode)
-            #initialize elements
-            for j in range(nes[i]*nr):
-                ih = elstart + j   # index of current element
-                n1 = (int(ih/NY)*nrow + int(np.mod(ih,NY)))*self.shapefact
-                n2 = n1 + self.shapefact
-                n3 = n1 + nrow*self.shapefact
-                n4 = n3 + self.shapefact
-                if (self.shapefact*DIM==1):
-                    self.element[ih] = self.Element(self, [n1, n2], dx, dy, i, self.mat[i])  # 1-d, lin shape fct
-                elif (self.shapefact*DIM==4):
-                    nh = n1 + nrow + 1
-                    hh = [n1, n1+1, n2, nh, nh+1, n3, n3+1, n4] # 2-d, quad shape fct
-                    self.element[ih] = self.Element(self, hh, dx, dy, i, self.mat[i])
-                elif (DIM==2):
-                    hh = [n1, n2, n3, n4] # 2-d, lin shape fct
-                    self.element[ih] = self.Element(self, hh, dx, dy, i, self.mat[i])
-                else:
-                    hh = [n1, n1+1, n2] # 1-d, lin shape fct
-                    self.element[ih] = self.Element(self, hh, dx, dy, i, self.mat[i])
-            jstart = 1
+            # initialize elements
+            for j in range(NX):
+                for k in range(NY):
+                    i = el[j, k] - 1
+                    ih = j*NY + k
+                    n1 = (int(ih/NY)*self.NnodeY + ih % NY)*self.shapefact
+                    n2 = n1 + self.shapefact
+                    n3 = n1 + self.NnodeY*self.shapefact
+                    n4 = n3 + self.shapefact
+                    if (self.shapefact*DIM==1):
+                        self.element[ih] = self.Element(self, [n1, n2], dx, dy,
+                                                        self.mat[i])  # 1-d, lin shape fct
+                    elif (self.shapefact*DIM==4):
+                        nh = n1 + self.NnodeY + 1
+                        hh = [n1, n1+1, n2, nh, nh+1, n3, n3+1, n4]  # 2-d, quad shape fct
+                        self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
+                    elif (DIM==2):
+                        hh = [n1, n2, n3, n4]  # 2-d, lin shape fct
+                        self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
+                    else:
+                        hh = [n1, n1+1, n2]  # 1-d, quadratic shape fct
+                        self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
 
     def setupK(self):
         '''Calculate and assemble system stiffness matrix based on element stiffness matrices.
@@ -832,7 +1014,7 @@ class Model(object):
             return scf
 
         #define BC: modify stiffness matrix for displacement BC, calculate consistent force BC
-        def calc_BC(K, bcl0, bcb0, dbcr, dbct):
+        def calc_BC(K, bcl0, bcb0, dbcr, dbct, dbcn):
             '''BC on lhs and bottom nodes nodes is always static.  
             Displacement type BC are applied by adding known boundary forces to solution vector
             to reduce rank of system of equations by 1 (one row eliminated)
@@ -845,6 +1027,8 @@ class Model(object):
                 static BC on lhs and bottom nodes
             dbcr, dbct : dim-arrays
                 increment of BC on rhs and top nodes
+            dbcn : dim-array
+                increment of BC on selected node set
                 
             Returns
             -------
@@ -940,6 +1124,32 @@ class Model(object):
                             if hx<1.e-3 or hx>self.lenx-1.e-3:
                                 hh*=0.5  # reduce force on corner nodes
                             df[i] += dbct[k]*hh
+                            
+            # BC on selected node set can be force or displacement
+            # apply BC and solve corresponding system of equations
+            if self.dim==2 and self.noset is not None:
+                if dbcn is None:
+                    raise ValueError('No BC for selected node set given.')
+                for k in range(self.dim):
+                    if self.ubcn[k]:
+                        # displacement BC
+                        # add known boundary force to solution vector to
+                        # eliminate row Ndof from system of equations
+                        for j in self.noset:
+                            i = j*self.dim + k
+                            if i in ind:
+                                ind.remove(i)
+                                du[i] = dbcn[k]
+                            else:
+                                if du[i] != dbcn[k]:
+                                    warnings.warn('Inconsistent BC at node set ({}) and left/right node {} ({}).'\
+                                    .format(du[i], j, dbcn[k]))
+                            df[ind] -= K[ind,i]*dbcn[k]
+                    else:
+                        # force bc on node set
+                        for j in self.noset:
+                            i = j*self.dim + k
+                            df[i] += dbcn[k]
             return du, df, ind
                 
         jin = []
@@ -965,9 +1175,14 @@ class Model(object):
             bct0 = np.zeros(self.dim)
             self.bct_mem = np.zeros(self.dim)
             self.bcr_mem = np.zeros(self.dim)
+            if self.noset is not None:
+                bcn0 = np.zeros(self.dim)
+                self.bcn_mem = np.zeros(self.dim)
         else:
             bcr0 = self.bcr_mem
             bct0 = self.bct_mem
+            if self.noset is not None:
+                bcn0 = self.bcn_mem
         bcl0 = self.bcl
         bcb0 = self.bcb
         K = self.setupK()  # assemble system stiffness matrix from element stiffness matrices
@@ -983,7 +1198,7 @@ class Model(object):
         if np.abs(self.bct[0])>1.e-6:
             sld[5] = np.sign(self.bct[0])
         if (np.linalg.norm(sld)<1.e-3):
-            warnings.warn('solve: inconsistent sld={}, bct={}, bcr={}'
+            warnings.warn('solve: inconsistent BC sld={}, bct={}, bcr={}'
                           .format(sld, self.bct, self.bcr))
             sld[0] = 1.
                 
@@ -1002,15 +1217,22 @@ class Model(object):
             max_dbct = self.bct - bct0
             max_dbcr = self.bcr - bcr0
             if min_step is not None:
-                sc = np.maximum(1, min_step-il)
+                sc = np.maximum(1, min_step - il)
                 max_dbct /= sc
                 max_dbcr /= sc
             #calculate du and df fulfilling mech. equil. for max. load step consistent with stiffness matrix K
             dbcr = max_dbcr
             dbct = max_dbct
+            if self.noset is not None:
+                max_dbcn = self.bcn - bcn0
+                if min_step is not None:
+                    max_dbcn /= np.maximum(1, min_step - il)
+                dbcn = max_dbcn
+            else:
+                dbcn = None
             
             # linear model can be solved directly in one step, elastic predictor for nonlinear models
-            self.du, df, ind = calc_BC(K, bcl0, bcb0, dbcr, dbct) # consider BC for system of equ. 
+            self.du, df, ind = calc_BC(K, bcl0, bcb0, dbcr, dbct, dbcn) # consider BC for system of equ. 
             self.du[ind] = np.linalg.solve(Kred(K, ind), df[ind]) # Solve reduced system of equations
             
             if self.nonlin:
@@ -1044,10 +1266,17 @@ class Model(object):
                             else:
                                 hh = np.maximum(self.bct[k]-bct0[k], dbct[k]*hs)
                                 dbct[k] = np.minimum(0.05*max_dbct[k], hh)
+                            if self.noset is not None:
+                                if max_dbcn[k] >= 0:
+                                    hh = np.minimum(self.bcn[k]-bcn0[k], dbcn[k]*hs)
+                                    dbcn[k] = np.maximum(0.05*max_dbcn[k], hh)
+                                else:
+                                    hh = np.maximum(self.bcn[k]-bcn0[k], dbcn[k]*hs)
+                                    dbcn[k] = np.minimum(0.05*max_dbcn[k], hh)
                         
                     # solve system with current K matrix
                     K = self.setupK()  # assemble updated tangent stiffness matrix
-                    self.du, df, ind = calc_BC(K, bcl0, bcb0, dbcr, dbct)
+                    self.du, df, ind = calc_BC(K, bcl0, bcb0, dbcr, dbct, dbcn)
                     self.du[ind] = np.linalg.solve(Kred(K, ind), df[ind]) # solve du with current stiffness matrix
                     
                     # evaluate material response in each element
@@ -1087,6 +1316,8 @@ class Model(object):
                         #fres = K @ (self.u+self.du)
                         print('load increment right:', dbcr)
                         print('load increment top:',dbct)
+                        if self.noset is not None:
+                            print('load increment set:',dbcn)
                     if not conv:
                         nconv += 1
                     nit += 1
@@ -1115,6 +1346,10 @@ class Model(object):
                 bct0 += dbct
                 hr0 = np.abs(bct0[0]-self.bct[0])>1.e-6 and np.abs(self.bct[0])>1.e-9
                 hr1 = np.abs(bct0[1]-self.bct[1])>1.e-6 and np.abs(self.bct[1])>1.e-9
+                if self.noset is not None:
+                    bcn0 += dbcn
+                    hr0 = hr0 or (np.abs(bcn0[0]-self.bcn[0])>1.e-6 and np.abs(self.bcn[0])>1.e-9)
+                    hr1 = hr1 or (np.abs(bcn0[1]-self.bcn[1])>1.e-6 and np.abs(self.bcn[1])>1.e-9)
             else:
                 hl1 = False
                 hr0 = False
@@ -1129,6 +1364,8 @@ class Model(object):
                 print('Iteration step #',nit)
                 print('Load increment ', il, 'total',self.ubctop,'top ',bct0,'/',self.bct,'; last step ',dbct)
                 print('Load increment ', il, 'total',self.ubcright,'rhs',bcr0,'/',self.bcr,'; last step ',dbcr)
+                if self.noset is not None:
+                    print('Load increment ', il, 'total',self.ubcn,'set',bcn0,'/',self.bcn,'; last step ',dbcn)
                 print('BC strain (11,22,12): ', np.around([self.glob['ebc1'],self.glob['ebc2'],self.glob['ebc12']],decimals=5))
                 print('BC stress (11,22,12): ', np.around([self.glob['sbc1'],self.glob['sbc2'],self.glob['sbc12']],decimals=3))
                 print('Global strain: ', np.around(self.glob['eps'],decimals=5))
@@ -1275,6 +1512,8 @@ class Model(object):
             horizontal displacement
         uy       : 
             vertical displacement
+        mat     :
+            materials and sections of model
         '''
         fig, ax = plt.subplots(1)
         cmap = plt.cm.get_cmap(colormap, cdepth)
@@ -1338,6 +1577,10 @@ class Model(object):
             hh = [el.eps[1]*self.leny for el in self.element]
             text_cb = r'$u_y$ (mm)'
             return hh, text_cb
+        def disp_mat():
+            hh = [el.Mat.num for el in self.element]
+            text_cb = 'Material number'
+            return hh, text_cb
         field={
             'strain1'  : strain1(),
             'strain2'  : strain2(),
@@ -1353,7 +1596,8 @@ class Model(object):
             'peeq'     : strain_peeq(),
             'etot'     : strain_etot(),
             'ux'       : disp_x(),
-            'uy'       : disp_y()
+            'uy'       : disp_y(),
+            'mat'      : disp_mat()
         }
         
         #define color value by mapping field value of element to interval [0,1]
@@ -1381,25 +1625,30 @@ class Model(object):
         for el in self.element:
             # draw filled polygon for each element
             if (self.dim==1):
-                ih = np.amin(el.nodes)       # left node of current element
-                jh = np.amax(el.nodes)    # right node of current element
-                ih1 = ih*self.dim            # position of ux in u vector
-                jh1 = jh*self.dim            # position of ux in u vector
-                hx1 = self.npos[ih] + mag*self.u[ih1] # x position of left node 
-                hx2 = self.npos[jh] + mag*self.u[jh1] # x position of right node
+                ih = np.amin(el.nodes)  # left node of current element
+                jh = np.amax(el.nodes)  # right node of current element
+                ih1 = ih*self.dim       # position of ux in u vector
+                jh1 = jh*self.dim       # position of ux in u vector
+                hx1 = self.npos[ih]     # x position of left node 
+                hx2 = self.npos[jh]     # x position of right node
+                if mag>0. and self.u is not None:
+                    hx1 += mag*self.u[ih1] # add nodal displacement
+                    hx2 += mag*self.u[jh1] 
                 hh = self.thick*0.5
                 hx = [hx1, hx2, hx2, hx1]
                 hy = [-hh, -hh, hh, hh]
             else:
-                hx = [0., 0., 0., 0.]
-                hy = [0., 0., 0., 0.]
+                hx = [0, 0, 0, 0]
+                hy = [0, 0, 0, 0]
                 k = [0, 3, 1, 2]
-                p = 0
-                for ih in el.nodes:
+                for p, ih in enumerate(el.nodes):
                     j = ih*self.dim
-                    hx[k[p]] = self.npos[j] + mag*self.u[j]
-                    hy[k[p]] = self.npos[j+1] + mag*self.u[j+1]
-                    p += 1
+                    hx[k[p]] = self.npos[j]
+                    hy[k[p]] = self.npos[j+1]
+                    if mag>0. and self.u is not None:
+                        hx[k[p]] += mag*self.u[j]
+                        hy[k[p]] += mag*self.u[j+1]
+                        
             ax.fill(hx, hy, color=cmap(col[self.element.index(el)]))
             if (showmesh):
                 hx.append(hx[0])
@@ -1408,7 +1657,9 @@ class Model(object):
 
         #plot nodes
         if (shownodes):
-            hh = self.npos + mag*self.u
+            hh = self.npos
+            if mag>0. and self.u is not None:
+                hh += mag*self.u
             if (self.dim==1):
                 hx = hh
                 hy = np.zeros(self.Ndof)

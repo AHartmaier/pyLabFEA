@@ -7,7 +7,7 @@ under various loading conditions.
 
 uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model
 
-Version: 4.0 (2021-11-27)
+Version: 4.1 (2022-01-23)
 Authors: Alexander Hartmaier, Ronak Shoghi, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
@@ -39,11 +39,15 @@ class Material(object):
     ----------
     name : str
         Name of material (optional, default: 'Material')
+    num : int
+        Material number (optional, default: 1)
 
     Attributes
     ----------
     name    : str
         Name of material
+    num     : int
+        Material number
     sy      : float
         Yield strength
     ML_yf   : Boolean
@@ -104,13 +108,14 @@ class Material(object):
     #plasticity: define plastic material parameter sy, khard
     #epl_dot: calculate plastic strain rate
 
-    def __init__(self, name='Material'):
+    def __init__(self, name='Material', num=1):
+        self.name = name
+        self.num = num
         self.sy = None  # Elasticity will be considered unless sy is set
         self.ML_yf = False # use conventional plasticity unless trained ML functions exists
         self.ML_grad = False # use conventional gradient unless ML function exists
         self.tresca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.barlat = False  # Use Barlat equiv. stress if parameters are given
-        self.name = name
         self.msparam = None  # parameters for primary microstructure
         self.whdat = False
         self.txdat = False
