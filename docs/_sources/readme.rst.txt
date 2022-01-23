@@ -29,7 +29,7 @@ The correct implementation can be tested with
 
 ::
 
-$ pytest tests
+$ pytest tests -v
 
 After this, the package can by imported into python scripts with
 

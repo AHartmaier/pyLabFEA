@@ -7,7 +7,7 @@ uses NumPy, SciPy, MatPlotLib
 
 Version: 4.1 (2022-02-22)
 Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
-Email: alexander.hartma4er@rub.de
+Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,10 +22,15 @@ from matplotlib import colors, colorbar
 class Model(object):
     '''Class for finite element model. Defines necessary attributes and methods
     for pre-processing (defining geometry, material assignments, mesh and 
-                        boundary conditions);
+    boundary conditions);
     solution (invokes numerical solver for non-linear problems);
     and post-processing (visualization of results on meshed geometry, 
     homogenization of results into global quantities).
+    
+    *Geometry and sections* can be defined with the methods ``geom`` and ``assign``. 
+    There are pre-defined options that make the generation of laminate structures 
+    particularly easy. But also more general section can be defined and each section 
+    can be associated with a different material.
     
     *Boundary conditions* on left-hand-side and bottom nodes are always assumed
     to be static (typically with values of zero);
@@ -37,6 +42,21 @@ class Model(object):
       * bot: fixed in y-direction (uy=0), free in x-direction (fx=0)
       * rhs: free (fx=fy=0)
       * top: free (fx=fy=0)
+      
+    There are pre-defined sets of nodes to top, bottom, left and right boundaries to
+    which either force or displacement controlled loads can be applied in x or y-direction
+    with the methods ``bctop``, ``bcbot``, ``bcleft``, ``bcright``. Furthermore, it is 
+    possible to define boundary conditions for a freely defined set of nodes with the 
+    method ``bcnode``. The latter option if useful, to fix only one corner node when 
+    laterally free boundaries shall be implemented. It can also be used to simulate 
+    loads on parts of boundaries, as it occurs for indentations, etc.
+    
+    *Visualization* is performed with the method ``plot``, which can display various 
+    mechanical quantities on the deformed mesh. Homogenization of boundary loads is
+    simply performed with the method ``calc_glob`` by which all global stresses and 
+    strains are obtained by averaging over the element values and by summing up the 
+    boundary loads for comparison. This is particularly useful when calculating the
+    stress-strain behavior of a structure.
     
     Parameters
     ----------
@@ -44,6 +64,7 @@ class Model(object):
         Dimensionality of model (optional, default: 1)
     planestress : Boolean
         Sets plane-stress condition (optional, default: False)
+        
     Attributes
     ----------
     dim   : integer
@@ -477,14 +498,21 @@ class Model(object):
             return B
         
     def geom(self, sect=1, LX=None, LY=1., LZ=1.):
-        '''Specify geometry of FE model and its subdivision into sections;
-        for 2-d model a laminate structure normal to x-direction is created;
+        '''Specify geometry of FE model with dimensions ``LX``, ``LY`` and ``LZ`` and 
+        its subdivision into a number of sections;
+        for 2-d model a laminate structure normal to x-direction can be created easily 
+        with the in-built option to pass a list with the absolute lengths of each section
+        in the parameter ``sect``. When this parameter is an integer it merely reserves 
+        space for sections with arbitrary geometries;
         adds attributes to class ``Model``
         
         Parameters
         ----------
-        sect  : list 
-            List with with absolute length of each section
+        sect  : list or int
+            Either number of sections (int) or list with with absolute length of each section
+        LX : float
+            Length of model in x-direction (optional, default None in which case LX is
+            calculated as the sum of the lengths of all sections)
         LY : float
             Length in y direction (optional, default: 1)
         LZ : float
@@ -515,7 +543,7 @@ class Model(object):
         Parameters
         ----------
         mats : list 
-            List of materials, dimensions must be equal to number of sections
+            List of materials, dimension must be equal to number of sections
             
         Attributes
         ----------
@@ -535,14 +563,15 @@ class Model(object):
                 self.nonlin = True   # nonlinear model if at least one material is plastic
 
     #subroutines to define boundary conditions, top/bottom only needed for 2-d models
-    def bcleft(self, val, bctype='disp', bcdir='x'):
+    def bcleft(self, val=0., bctype='disp', bcdir='x'):
         '''Define boundary conditions on lhs nodes, either force or
-        displacement type
+        displacement type; static boundary conditions are assumed for lhs boundary. The 
+        default is freezing all x-displacements to zero.
         
         Parameters
         ----------
         val : float
-            Displacement or force of lhs nodes in bc_dir direction
+            Displacement or force of lhs nodes in bc_dir direction (optional, default: 0)
         bctype : str
             Type of boundary condition ('disp' or 'force')
             (optional, default: 'disp')
@@ -570,7 +599,9 @@ class Model(object):
         
     def bcright(self, val, bctype, bcdir='x'):
         '''Define boundary conditions on rhs nodes, either force or
-        displacement type
+        displacement type.
+        If non-zero, the boundary loads will be incremented step-wise until the given 
+        boundary conditions are fulfilled.
         
         Parameters
         ----------
@@ -598,13 +629,15 @@ class Model(object):
         else:
             raise TypeError('bcright: Unknown BC: {}'.format(bctype))
         
-    def bcbot(self, val, bctype='disp', bcdir='y'):
-        '''Define boundary conditions on bottom nodes, always displacement type
+    def bcbot(self, val=0., bctype='disp', bcdir='y'):
+        '''Define boundary conditions on bottom nodes, either force or
+        displacement type; static boundary conditions are assumed for bottom boundary. 
+        The default is freezing all y-displacements to zero.
         
         Parameters
         ----------
         val  : float
-            Displacement in bcdir direction
+            Displacement in bcdir direction (optional, default: 0)
         bctype : str
             Type of boundary condition ('disp' or 'force')
             (optional, default: 'disp')
@@ -633,7 +666,9 @@ class Model(object):
             raise ValueError('bcbot: Unknown BC: {}'.format(bctype))
         
     def bctop(self, val, bctype, bcdir='y'):
-        '''Define boundary conditions on top nodes, either force or displacement type
+        '''Define boundary conditions on top nodes, either force or displacement type. 
+        If non-zero, the boundary loads will be incremented step-wise until the given 
+        boundary conditions are fulfilled.
         
         Parameters
         ----------
@@ -664,8 +699,10 @@ class Model(object):
             raise TypeError('bctop: Unknown BC: {}'.format(bctype))
             
     def bcnode(self, node, val, bctype, bcdir):
-        '''Define boundary conditions on a given set of nodes, 
-        either force or displacement type in x or y direction are accepted.
+        '''Define boundary conditions on a set of nodes defined in ``node``, 
+        either force or displacement type in x or y-direction are accepted. 
+        If non.zero, the boundary loads will be incremented step-wise until the given 
+        boundary conditions are fulfilled.
         
         Since nodes must be given, this subroutine can only be called after
         meshing.
@@ -705,10 +742,10 @@ class Model(object):
             raise TypeError('bcnode: Unknown BC: {}'.format(bctype))
 
             
-    def mesh(self, elmts= None, nodes=None, NX=10, NY=1, SF=1):
+    def mesh(self, elmts=None, nodes=None, NX=10, NY=1, SF=1):
         '''
         Import mesh or
-        Generate structured mesh with quadrilateral elements (2d models). 
+        generate structured mesh with quadrilateral elements (2d models). 
         First, nodal positions ``Model.npos`` are defined such that nodes lie
         at corners (linear shape function) and edges (quadratic shape function)
         of elements. 
@@ -719,6 +756,10 @@ class Model(object):
         
         Parameters
         ----------
+        elmts : (NX, NY) array
+            Represents number of material as defined by list Model.mat
+        nodes : (2,) array
+            Defines positions of nodes on regular grid.
         NX : int
             Number of elements in x-direction (optional, default: 10)
         NY : int

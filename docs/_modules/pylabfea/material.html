@@ -47,7 +47,7 @@
 
 <span class="sd">uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model</span>
 
-<span class="sd">Version: 4.0 (2021-11-27)</span>
+<span class="sd">Version: 4.1 (2022-01-23)</span>
 <span class="sd">Authors: Alexander Hartmaier, Ronak Shoghi, ICAMS/Ruhr University Bochum, Germany</span>
 <span class="sd">Email: alexander.hartmaier@rub.de</span>
 <span class="sd">distributed under GNU General Public License (GPLv3)&#39;&#39;&#39;</span>
@@ -79,11 +79,15 @@
 <span class="sd">    ----------</span>
 <span class="sd">    name : str</span>
 <span class="sd">        Name of material (optional, default: &#39;Material&#39;)</span>
+<span class="sd">    num : int</span>
+<span class="sd">        Material number (optional, default: 1)</span>
 
 <span class="sd">    Attributes</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name    : str</span>
 <span class="sd">        Name of material</span>
+<span class="sd">    num     : int</span>
+<span class="sd">        Material number</span>
 <span class="sd">    sy      : float</span>
 <span class="sd">        Yield strength</span>
 <span class="sd">    ML_yf   : Boolean</span>
@@ -144,13 +148,14 @@
     <span class="c1">#plasticity: define plastic material parameter sy, khard</span>
     <span class="c1">#epl_dot: calculate plastic strain rate</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Material&#39;</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Material&#39;</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num</span> <span class="o">=</span> <span class="n">num</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">sy</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Elasticity will be considered unless sy is set</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ML_yf</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># use conventional plasticity unless trained ML functions exists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ML_grad</span> <span class="o">=</span> <span class="kc">False</span> <span class="c1"># use conventional gradient unless ML function exists</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">tresca</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># use J2 or Hill equivalent stress unless defined otherwise</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">barlat</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Use Barlat equiv. stress if parameters are given</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">msparam</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># parameters for primary microstructure</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">whdat</span> <span class="o">=</span> <span class="kc">False</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">txdat</span> <span class="o">=</span> <span class="kc">False</span>

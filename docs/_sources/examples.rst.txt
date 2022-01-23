@@ -23,7 +23,8 @@ in the repository.
 ---------------------------
 
 `pyLabFEA_Introduction`_  |br|
-In this tutorial, the basic steps of using the pyLabFEA package for elastic materials are demonstrated.  
+In this tutorial, the basic steps of using the pyLabFEA package for elastic materials are 
+demonstrated.  
 
 .. _`Tutorial 1: Introduction`: _static/pyLabFEA_Introduction.html
 .. _pyLabFEA_Introduction: _static/pyLabFEA_Introduction.html
@@ -103,8 +104,21 @@ as constitutive model for anisotropic plasticity of metals.
 Examples
 ========
 
-Python routines contained in the directory 'examples' demonstrate how ML flow rules can be trained based on reference materials with significant plastic anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. The training data consists of different stress tensors that mark the onset of plastic yielding of the material. It is important that these stress tensors cover the onset of plastic yielding in the full 6-dimensional stress space, including normal and shear stresses. The trained ML flow rules can be used in form of a user material (UMAT) for the commercial FEA package Abaqus.
+Python routines contained in the directory 'examples' demonstrate 
 
+* how ML flow rules can be trained based on reference materials with significant plastic 
+anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. 
+The training data consists of different stress tensors that mark the onset of plastic 
+yielding of the material. It is important that these stress tensors cover the onset of 
+plastic yielding in the full 6-dimensional stress space, including normal and shear 
+stresses. The trained ML flow rules can be used in form of a user material (UMAT) for 
+the commercial FEA package Abaqus.
+
+* how more complex 2D models can be setup, e.g. an elastic inclusion in an elasto-plastic 
+matrix. Generally, models in pyLabFEA can have several sections where each section is 
+associated to a different material. For structured meshes, the assignment of each element
+to a section (or material) can be defined simply a 2D array, that has the same shape as
+the arrangement of elements in the model.
 
 .. |br| raw:: html
 

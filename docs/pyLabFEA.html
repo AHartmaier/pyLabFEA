@@ -457,25 +457,32 @@ J2 equivalent stress otherwise</p>
 </section>
 <section id="module-pylabfea.model">
 <span id="module-model"></span><h2>Module Model<a class="headerlink" href="#module-pylabfea.model" title="Permalink to this headline">¶</a></h2>
-<p>Module pylabefea.model introduces global functions for mechanical quantities and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that
-contains that attributes and methods needed in FEA. Materials are defined in
-module pylabfea.material</p>
+<p>Module pylabefea.model introduces global functions for mechanical quantities
+and class <code class="docutils literal notranslate"><span class="pre">Model</span></code> that contains that attributes and methods needed in FEA.
+Materials are defined in module pylabfea.material</p>
 <p>uses NumPy, SciPy, MatPlotLib</p>
-<p>Version: 4.0 (2021-11-27)
+<p>Version: 4.1 (2022-02-22)
 Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
-Email: <a class="reference external" href="mailto:alexander&#46;hartma4er&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartma4er<span>&#64;</span>rub<span>&#46;</span>de</a>
+Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.model.Model">
 <em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">planestress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for finite element model. Defines necessary attributes and methods
-for pre-processing (defining geometry, material assignments, mesh and boundary conditions);
+for pre-processing (defining geometry, material assignments, mesh and
+boundary conditions);
 solution (invokes numerical solver for non-linear problems);
 and post-processing (visualization of results on meshed geometry,
 homogenization of results into global quantities).</p>
-<p><em>Boundary conditions</em> on left-hand-side and bottom nodes are always assumed to be static (typically with values of zero);
-Boundary conditions on right-hand-side and top nodes are considered as load steps starting from zero.
+<p><em>Geometry and sections</em> can be defined with the methods <code class="docutils literal notranslate"><span class="pre">geom</span></code> and <code class="docutils literal notranslate"><span class="pre">assign</span></code>.
+There are pre-defined options that make the generation of laminate structures
+particularly easy. But also more general section can be defined and each section
+can be associated with a different material.</p>
+<p><em>Boundary conditions</em> on left-hand-side and bottom nodes are always assumed
+to be static (typically with values of zero);
+Boundary conditions on right-hand-side and top nodes are considered as load
+steps starting from zero.
 Default boundary conditions are:</p>
 <blockquote>
 <div><ul class="simple">
@@ -485,6 +492,19 @@ Default boundary conditions are:</p>
 <li><p>top: free (fx=fy=0)</p></li>
 </ul>
 </div></blockquote>
+<p>There are pre-defined sets of nodes to top, bottom, left and right boundaries to
+which either force or displacement controlled loads can be applied in x or y-direction
+with the methods <code class="docutils literal notranslate"><span class="pre">bctop</span></code>, <code class="docutils literal notranslate"><span class="pre">bcbot</span></code>, <code class="docutils literal notranslate"><span class="pre">bcleft</span></code>, <code class="docutils literal notranslate"><span class="pre">bcright</span></code>. Furthermore, it is
+possible to define boundary conditions for a freely defined set of nodes with the
+method <code class="docutils literal notranslate"><span class="pre">bcnode</span></code>. The latter option if useful, to fix only one corner node when
+laterally free boundaries shall be implemented. It can also be used to simulate
+loads on parts of boundaries, as it occurs for indentations, etc.</p>
+<p><em>Visualization</em> is performed with the method <code class="docutils literal notranslate"><span class="pre">plot</span></code>, which can display various
+mechanical quantities on the deformed mesh. Homogenization of boundary loads is
+simply performed with the method <code class="docutils literal notranslate"><span class="pre">calc_glob</span></code> by which all global stresses and
+strains are obtained by averaging over the element values and by summing up the
+boundary loads for comparison. This is particularly useful when calculating the
+stress-strain behavior of a structure.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -584,7 +604,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.mat">
 <span class="sig-name descname"><span class="pre">mat</span></span><a class="headerlink" href="#pylabfea.model.Model.mat" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of materials assigned to sections of model, same dimensions as LS (defined in <code class="docutils literal notranslate"><span class="pre">assign</span></code>)</p>
+<dd><p>List of materials assigned to sections of model, same dimensions as LS
+(defined in <code class="docutils literal notranslate"><span class="pre">assign</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>list of objects to class Material</p>
@@ -595,7 +616,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.ubcbot">
 <span class="sig-name descname"><span class="pre">ubcbot</span></span><a class="headerlink" href="#pylabfea.model.Model.ubcbot" title="Permalink to this definition">¶</a></dt>
-<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
+<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array of Boolean</p>
@@ -606,7 +628,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bcb">
 <span class="sig-name descname"><span class="pre">bcb</span></span><a class="headerlink" href="#pylabfea.model.Model.bcb" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacements in x or y-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcbot</span></code>)</p>
+<dd><p>Nodal displacements in x or y-direction for lhs nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bcbot</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array</p>
@@ -617,7 +640,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.ubcleft">
 <span class="sig-name descname"><span class="pre">ubcleft</span></span><a class="headerlink" href="#pylabfea.model.Model.ubcleft" title="Permalink to this definition">¶</a></dt>
-<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
+<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array of Boolean</p>
@@ -628,7 +652,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bcl">
 <span class="sig-name descname"><span class="pre">bcl</span></span><a class="headerlink" href="#pylabfea.model.Model.bcl" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacement in x or y-direction for lhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcleft</span></code>)</p>
+<dd><p>Nodal displacement in x or y-direction for lhs nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bcleft</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array</p>
@@ -639,7 +664,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.ubcright">
 <span class="sig-name descname"><span class="pre">ubcright</span></span><a class="headerlink" href="#pylabfea.model.Model.ubcright" title="Permalink to this definition">¶</a></dt>
-<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
+<dd><p>True: displacement BC on rhs nodes; False: force BC on rhs nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array of Boolean</p>
@@ -650,7 +676,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bcr">
 <span class="sig-name descname"><span class="pre">bcr</span></span><a class="headerlink" href="#pylabfea.model.Model.bcr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacements/forces in x or y-direction for rhs nodes (defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
+<dd><p>Nodal displacements/forces in x or y-direction for rhs nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bcright</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array</p>
@@ -661,7 +688,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.ubctop">
 <span class="sig-name descname"><span class="pre">ubctop</span></span><a class="headerlink" href="#pylabfea.model.Model.ubctop" title="Permalink to this definition">¶</a></dt>
-<dd><p>True: displacement BC on top nodes; False: force BC on top nodes (defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
+<dd><p>True: displacement BC on top nodes; False: force BC on top nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>Boolean</p>
@@ -672,7 +700,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bct">
 <span class="sig-name descname"><span class="pre">bct</span></span><a class="headerlink" href="#pylabfea.model.Model.bct" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal displacements/forces in x or y-direction for top nodes (defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
+<dd><p>Nodal displacements/forces in x or y-direction for top nodes
+(defined in <code class="docutils literal notranslate"><span class="pre">bctop</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>dim-array</p>
@@ -727,7 +756,10 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.npos">
 <span class="sig-name descname"><span class="pre">npos</span></span><a class="headerlink" href="#pylabfea.model.Model.npos" title="Permalink to this definition">¶</a></dt>
-<dd><p>Nodal positions, dimension Ndof, same structure as u,f-arrays: (x1, y1, x2, y1, …) (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
+<dd><dl class="simple">
+<dt>Nodal positions, dimension Ndof, same structure as u,f-arrays:</dt><dd><p>(x1, y1, x2, y1, …) (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>1d-array</p>
@@ -760,7 +792,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.element">
 <span class="sig-name descname"><span class="pre">element</span></span><a class="headerlink" href="#pylabfea.model.Model.element" title="Permalink to this definition">¶</a></dt>
-<dd><p>List of objects of class <code class="docutils literal notranslate"><span class="pre">Element</span></code>, dimension Nel (defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
+<dd><p>List of objects of class <code class="docutils literal notranslate"><span class="pre">Element</span></code>, dimension Nel
+(defined in <code class="docutils literal notranslate"><span class="pre">mesh</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)">list</a></p>
@@ -793,7 +826,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.sgl">
 <span class="sig-name descname"><span class="pre">sgl</span></span><a class="headerlink" href="#pylabfea.model.Model.sgl" title="Permalink to this definition">¶</a></dt>
-<dd><p>Time evolution of global stress tensor with incremental load steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
+<dd><p>Time evolution of global stress tensor with incremental load steps
+(defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>(N,6) array</p>
@@ -804,7 +838,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.egl">
 <span class="sig-name descname"><span class="pre">egl</span></span><a class="headerlink" href="#pylabfea.model.Model.egl" title="Permalink to this definition">¶</a></dt>
-<dd><p>Time evolution of global total strain tensor with incremental load steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
+<dd><p>Time evolution of global total strain tensor with incremental load
+steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>(N,6) array</p>
@@ -815,7 +850,8 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.epgl">
 <span class="sig-name descname"><span class="pre">epgl</span></span><a class="headerlink" href="#pylabfea.model.Model.epgl" title="Permalink to this definition">¶</a></dt>
-<dd><p>Time evolution of global plastic strain tensor with incremental load steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
+<dd><p>Time evolution of global plastic strain tensor with incremental load
+steps (defined in <code class="docutils literal notranslate"><span class="pre">solve</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>(N,6) array</p>
@@ -826,10 +862,14 @@ Default boundary conditions are:</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.glob">
 <span class="sig-name descname"><span class="pre">glob</span></span><a class="headerlink" href="#pylabfea.model.Model.glob" title="Permalink to this definition">¶</a></dt>
-<dd><p>Global values homogenized from BC or element solutions, contains the elements:
-‘ebc1’, ‘ebc2’, ‘sbc1’, ‘sbc2’ : global strain and stress from BC (type: float)
-‘eps’, ‘epl’, ‘sig’,  : global strain, plastic strain, and stress tensors homogenized
-from element solutions (type: Voigt tensor)     (defined in <code class="docutils literal notranslate"><span class="pre">calc_global</span></code>)</p>
+<dd><p>Global values homogenized from BC or element solutions, contains the
+elements:
+‘ebc1’, ‘ebc2’, ‘sbc1’, ‘sbc2’ : global strain and stress from BC
+(type: float)
+‘eps’, ‘epl’, ‘sig’,  : global strain, plastic strain, and stress
+tensors homogenized
+from element solutions (type: Voigt tensor)
+(defined in <code class="docutils literal notranslate"><span class="pre">calc_global</span></code>)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>python dictionary</p>
@@ -839,7 +879,7 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.model.Model.Element">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.Element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.Element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for isoparametric elements; supports
 1-d elements with linear or quadratic shape function and full integration;
@@ -1011,17 +1051,6 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 </dd></dl>
 
 <dl class="py attribute">
-<dt class="sig sig-object py" id="pylabfea.model.Model.Element.Sect">
-<span class="sig-name descname"><span class="pre">Sect</span></span><a class="headerlink" href="#pylabfea.model.Model.Element.Sect" title="Permalink to this definition">¶</a></dt>
-<dd><p>Section of model in which element is located</p>
-<dl class="field-list simple">
-<dt class="field-odd">Type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.Element.Mat">
 <span class="sig-name descname"><span class="pre">Mat</span></span><a class="headerlink" href="#pylabfea.model.Model.Element.Mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Material model to be applied</p>
@@ -1169,16 +1198,28 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dd><p>Assigns an object of class <code class="docutils literal notranslate"><span class="pre">Material</span></code> to each section.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>mats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of materials, must have same dimensions as Model.LS</p>
+<dd class="field-odd"><p><strong>mats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of materials, dimension must be equal to number of sections</p>
 </dd>
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="pylabfea.model.Model.material.mat">
 <span class="sig-prename descclassname"><span class="pre">material.</span></span><span class="sig-name descname"><span class="pre">mat</span></span><a class="headerlink" href="#pylabfea.model.Model.material.mat" title="Permalink to this definition">¶</a></dt>
-<dd><p>Internal variable for materials assigned to each section of the geometry</p>
+<dd><p>Internal variable for materials assigned to each section of the
+geometry</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p>List of material objects</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pylabfea.model.Model.material.nonlin">
+<span class="sig-prename descclassname"><span class="pre">material.</span></span><span class="sig-name descname"><span class="pre">nonlin</span></span><a class="headerlink" href="#pylabfea.model.Model.material.nonlin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Indicate if material non-linearity must be considered</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1187,14 +1228,17 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bcbot">
-<span class="sig-name descname"><span class="pre">bcbot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bcbot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bcbot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define boundary conditions on bottom nodes, always displacement type</p>
+<span class="sig-name descname"><span class="pre">bcbot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bcbot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bcbot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define boundary conditions on bottom nodes, either force or
+displacement type; static boundary conditions are assumed for bottom boundary.
+The default is freezing all y-displacements to zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement in x direction</p></li>
-<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
-<li><p><strong>dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement in bcdir direction (optional, default: 0)</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)
+(optional, default: ‘disp’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1202,14 +1246,38 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bcleft">
-<span class="sig-name descname"><span class="pre">bcleft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bcleft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bcleft" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define boundary conditions on lhs nodes, either force or displacement type</p>
+<span class="sig-name descname"><span class="pre">bcleft</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'disp'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bcleft"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bcleft" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define boundary conditions on lhs nodes, either force or
+displacement type; static boundary conditions are assumed for lhs boundary. The
+default is freezing all x-displacements to zero.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force of lhs nodes in bc_dir direction</p></li>
-<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’) (optional, default: ‘disp’)</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force of lhs nodes in bc_dir direction (optional, default: 0)</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)
+(optional, default: ‘disp’)</p></li>
 <li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘x’)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pylabfea.model.Model.bcnode">
+<span class="sig-name descname"><span class="pre">bcnode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bcnode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bcnode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define boundary conditions on a set of nodes defined in <code class="docutils literal notranslate"><span class="pre">node</span></code>,
+either force or displacement type in x or y-direction are accepted.
+If non.zero, the boundary loads will be incremented step-wise until the given
+boundary conditions are fulfilled.</p>
+<p>Since nodes must be given, this subroutine can only be called after
+meshing.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>node</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em> or </em><em>list of int</em>) – Node or set of nodes to which BC shall be applied</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force in bcdir direction</p></li>
+<li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
+<li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (‘x’ or ‘y’; 0 or 1)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1218,7 +1286,10 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bcright">
 <span class="sig-name descname"><span class="pre">bcright</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'x'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bcright"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bcright" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define boundary conditions on rhs nodes, either force or displacement type</p>
+<dd><p>Define boundary conditions on rhs nodes, either force or
+displacement type.
+If non-zero, the boundary loads will be incremented step-wise until the given
+boundary conditions are fulfilled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
@@ -1233,11 +1304,13 @@ from element solutions (type: Voigt tensor)     (defined in <code class="docutil
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.model.Model.bctop">
 <span class="sig-name descname"><span class="pre">bctop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bctype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bcdir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'y'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.bctop"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.bctop" title="Permalink to this definition">¶</a></dt>
-<dd><p>Define boundary conditions on top nodes, either force or displacement type</p>
+<dd><p>Define boundary conditions on top nodes, either force or displacement type.
+If non-zero, the boundary loads will be incremented step-wise until the given
+boundary conditions are fulfilled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force in x direction</p></li>
+<li><p><strong>val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Displacement or force in bcdir direction</p></li>
 <li><p><strong>bctype</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Type of boundary condition (‘disp’ or ‘force’)</p></li>
 <li><p><strong>bcdir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Direction of boundary load (optional, default: ‘y’)</p></li>
 </ul>
@@ -1274,13 +1347,20 @@ as homogenized values of boundary nodes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.model.Model.geom">
-<span class="sig-name descname"><span class="pre">geom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sect</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LZ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.geom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.geom" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specify geometry of FE model and its subdivision into sections;
-for 2-d model a laminate structure normal to x-direction is created; adds attributes to class <code class="docutils literal notranslate"><span class="pre">Model</span></code></p>
+<span class="sig-name descname"><span class="pre">geom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LZ</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.geom"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.geom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specify geometry of FE model with dimensions <code class="docutils literal notranslate"><span class="pre">LX</span></code>, <code class="docutils literal notranslate"><span class="pre">LY</span></code> and <code class="docutils literal notranslate"><span class="pre">LZ</span></code> and
+its subdivision into a number of sections;
+for 2-d model a laminate structure normal to x-direction can be created easily
+with the in-built option to pass a list with the absolute lengths of each section
+in the parameter <code class="docutils literal notranslate"><span class="pre">sect</span></code>. When this parameter is an integer it merely reserves
+space for sections with arbitrary geometries;
+adds attributes to class <code class="docutils literal notranslate"><span class="pre">Model</span></code></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>sect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List with with absolute length of each section</p></li>
+<li><p><strong>sect</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Either number of sections (int) or list with with absolute length of each section</p></li>
+<li><p><strong>LX</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Length of model in x-direction (optional, default None in which case LX is
+calculated as the sum of the lengths of all sections)</p></li>
 <li><p><strong>LY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Length in y direction (optional, default: 1)</p></li>
 <li><p><strong>LZ</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a>) – Thickness of model in z-direction (optional, default: 1)</p></li>
 </ul>
@@ -1290,19 +1370,25 @@ for 2-d model a laminate structure normal to x-direction is created; adds attrib
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.model.Model.mesh">
-<span class="sig-name descname"><span class="pre">mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">NX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.mesh" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate structured mesh with quadrilateral elements (2d models). First,
-nodal positions <code class="docutils literal notranslate"><span class="pre">Model.npos</span></code> are defined such that nodes lie at
-corners (linear shape function) and edges (quadratic shape function) of elements.
-Then, elements are initialized as object of class <code class="docutils literal notranslate"><span class="pre">Model.Element</span></code>, which requires the list of
-nodes associated with the element, the dimensions of the element, and the material of
-the section in which the element is situated to be passed.</p>
+<span class="sig-name descname"><span class="pre">mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elmts</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NX</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">NY</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SF</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.mesh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import mesh or
+generate structured mesh with quadrilateral elements (2d models).
+First, nodal positions <code class="docutils literal notranslate"><span class="pre">Model.npos</span></code> are defined such that nodes lie
+at corners (linear shape function) and edges (quadratic shape function)
+of elements.
+Then, elements are initialized as object of class <code class="docutils literal notranslate"><span class="pre">Model.Element</span></code>,
+which requires the list of nodes associated with the element, the
+dimensions of the element, and the material of the section in which
+the element is situated to be passed.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
+<li><p><strong>elmts</strong> (<em>(</em><em>NX</em><em>, </em><em>NY</em><em>) </em><em>array</em>) – Represents number of material as defined by list Model.mat</p></li>
+<li><p><strong>nodes</strong> (<em>(</em><em>2</em><em>,</em><em>) </em><em>array</em>) – Defines positions of nodes on regular grid.</p></li>
 <li><p><strong>NX</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of elements in x-direction (optional, default: 10)</p></li>
 <li><p><strong>NY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of elements in y-direction (optional, default: 1)</p></li>
-<li><p><strong>SF</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Degree of shape functions: 1=linear, 2=quadratic (optional, default: 1)</p></li>
+<li><p><strong>SF</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Degree of shape functions: 1=linear, 2=quadratic
+(optional, default: 1)</p></li>
 </ul>
 </dd>
 </dl>
@@ -1345,6 +1431,7 @@ according to field variable ‘fsel’; uses matplotlib</p>
 <li><p><strong>etot</strong> – equivalent total strain</p></li>
 <li><p><strong>ux</strong> – horizontal displacement</p></li>
 <li><p><strong>uy</strong> – vertical displacement</p></li>
+<li><p><strong>mat</strong> – materials and sections of model</p></li>
 </ul>
 </dd>
 </dl>
@@ -1416,19 +1503,22 @@ machine learning algorithms as yield functions for plasticity.
 The module pylabfea.model is used to calculate mechanical properties of a defined material
 under various loading conditions.</p>
 <p>uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model</p>
-<p>Version: 4.0 (2021-11-27)
+<p>Version: 4.1 (2022-01-23)
 Authors: Alexander Hartmaier, Ronak Shoghi, ICAMS/Ruhr University Bochum, Germany
 Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#52;&#48;rub&#46;de">alexander<span>&#46;</span>hartmaier<span>&#64;</span>rub<span>&#46;</span>de</a>
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.material.Material">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Material'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Material'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for Materials including material parameters (attributes), constitutive relations (methods)
 and derived properties und various loading conditions (dictionary)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of material (optional, default: ‘Material’)</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of material (optional, default: ‘Material’)</p></li>
+<li><p><strong>num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Material number (optional, default: 1)</p></li>
+</ul>
 </dd>
 </dl>
 <dl class="py attribute">
@@ -1438,6 +1528,17 @@ and derived properties und various loading conditions (dictionary)</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="pylabfea.material.Material.num">
+<span class="sig-name descname"><span class="pre">num</span></span><a class="headerlink" href="#pylabfea.material.Material.num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Material number</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -2411,7 +2512,7 @@ These subroutines are distributed here under the CC-BY-SA 4.0 license, see <a cl
 
 <dl class="py function">
 <dt class="sig sig-object py" id="pylabfea.training.training_score">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.training.</span></span><span class="sig-name descname"><span class="pre">training_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yf_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yf_ml</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/training.html#training_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.training.training_score" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pylabfea.training.</span></span><span class="sig-name descname"><span class="pre">training_score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yf_ref</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">yf_ml</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/training.html#training_score"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.training.training_score" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the accuracy of the training result in form of different measures
 as compared to given reference values.</p>
 <dl class="field-list simple">
