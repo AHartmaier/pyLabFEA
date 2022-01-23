@@ -1638,7 +1638,6 @@ class Model(object):
                 hx = [hx1, hx2, hx2, hx1]
                 hy = [-hh, -hh, hh, hh]
             else:
-<<<<<<< HEAD
                 hx = [0, 0, 0, 0]
                 hy = [0, 0, 0, 0]
                 k = [0, 3, 1, 2]
@@ -1650,15 +1649,6 @@ class Model(object):
                         hx[k[p]] += mag*self.u[j]
                         hy[k[p]] += mag*self.u[j+1]
                         
-=======
-                hx = np.zeros(4)
-                hy = np.zeros(4)
-                k = [0, 3, 1, 2]
-                for p, ih in enumerate(el.nodes):
-                    j = ih*self.dim
-                    hx[k[p]] = self.npos[j] + mag*self.u[j]
-                    hy[k[p]] = self.npos[j+1] + mag*self.u[j+1]
->>>>>>> f493dca653a70119d4c63c3fe7e930d633e82c55
             ax.fill(hx, hy, color=cmap(col[self.element.index(el)]))
             if (showmesh):
                 hx.append(hx[0])
