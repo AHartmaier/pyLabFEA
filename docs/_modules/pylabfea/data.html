@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pylabfea.data &#8212; pyLabFEA 4.0.0 documentation</title>
+    <title>pylabfea.data &#8212; pyLabFEA 4.1.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
     
@@ -26,7 +26,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.1.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pylabfea.data</a></li> 
       </ul>
@@ -285,7 +285,7 @@
             <span class="s1">&#39;nu_av&#39;</span>       <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">nu_av</span><span class="p">,</span><span class="c1"># Poisson ratio</span>
             <span class="s1">&#39;sy_av&#39;</span>       <span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sy_av</span> <span class="c1"># yield strength</span>
         <span class="p">}</span>
-        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mat_param</span><span class="p">)</span>
+        <span class="c1">#print(self.mat_param)</span>
         <span class="n">syld</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">Nset</span><span class="p">,</span><span class="n">Nlc_min</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>  <span class="c1"># Voigt stress tensor at onset of yielding</span>
         <span class="k">for</span> <span class="n">iset</span><span class="p">,</span> <span class="n">dset</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">set</span><span class="p">):</span>   <span class="c1"># loop over data sets</span>
             <span class="n">syld</span><span class="p">[</span><span class="n">iset</span><span class="p">,:,:]</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">syld</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">Nlc_min</span><span class="p">,:]</span>
@@ -1133,14 +1133,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.1.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pylabfea.data</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, 2021, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+        &#169; Copyright 2020, 2021, 2022, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

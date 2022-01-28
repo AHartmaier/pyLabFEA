@@ -5,7 +5,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>pylabfea.material &#8212; pyLabFEA 4.0.0 documentation</title>
+    <title>pylabfea.material &#8212; pyLabFEA 4.1.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/classic.css" />
     
@@ -26,7 +26,7 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.1.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pylabfea.material</a></li> 
       </ul>
@@ -1475,11 +1475,11 @@
 <span class="sd">        sname : str</span>
 <span class="sd">            Name of script that created this material</span>
 <span class="sd">        source : str</span>
-<span class="sd">            Source of parameters (optiona, default: None)</span>
+<span class="sd">            Source of parameters (optional, default: None)</span>
 <span class="sd">        file : str</span>
 <span class="sd">            Trunk of filename to which CSV flies are written (optional, default: None)</span>
 <span class="sd">        path : str</span>
-<span class="sd">            Path to which files are written (optional: default: &#39;&#39;)</span>
+<span class="sd">            Path to which files are written (optional: default: &#39;../../models/&#39;)</span>
 <span class="sd">        descr : list</span>
 <span class="sd">            List of names of model parameters used for generating this ML material (optional, default: [])</span>
 <span class="sd">        param : list</span>
@@ -1511,7 +1511,9 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Lists for descr and param must have the same lengths.&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">file</span> <span class="o">=</span> <span class="s1">&#39;abq_&#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span>
-        <span class="n">file</span> <span class="o">=</span> <span class="n">path</span><span class="o">+</span><span class="n">file</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
+        <span class="n">file</span> <span class="o">=</span> <span class="n">path</span> <span class="o">+</span> <span class="n">file</span>
         
         <span class="c1"># write parameters of trained SVC to file readable to Abaqus</span>
         <span class="n">dc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">svm_yf</span><span class="o">.</span><span class="n">dual_coef_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c1"># dual coefficients</span>
@@ -1621,6 +1623,8 @@
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mat_&#39;</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;.pkl&#39;</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;/&#39;</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">+=</span> <span class="s1">&#39;/&#39;</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="o">+</span><span class="n">name</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">output</span><span class="p">:</span>
             <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span><span class="p">)</span>
         <span class="k">return</span></div>
@@ -1790,7 +1794,8 @@
 <span class="sd">        grain shapes and porosities. Will invoke definition of elastic and plastic </span>
 <span class="sd">        parameters by calls to the methods `Material.elasticity` and `Material.plasticity` </span>
 <span class="sd">        with the parameters provided in the data set. </span>
-<span class="sd">        Also initializes current texture to first one in list and re-sets work-hardening parameters.</span>
+<span class="sd">        Also initializes current texture to first one in list and resets work hardening </span>
+<span class="sd">        parameters.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1839,6 +1844,23 @@
         <span class="n">tp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">Nset</span><span class="p">)</span>
         <span class="n">tp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_texture</span><span class="p">(</span><span class="n">tp</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="Material.from_MLparam"><a class="viewcode-back" href="../../pyLabFEA.html#pylabfea.material.Material.from_MLparam">[docs]</a>    <span class="k">def</span> <span class="nf">from_MLparam</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="s1">&#39;../../models/&#39;</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Define material properties from parameters of trained machine learning </span>
+<span class="sd">        models that have been written with `Material.export_MLparam`.</span>
+<span class="sd">        Will invoke definition of elastic parameters by calls to the methods </span>
+<span class="sd">        `Material.elasticity` with the parameters provided in the data set. </span>
+<span class="sd">        Also initializes current texture to first one in list and resets work hardening</span>
+<span class="sd">        parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : string</span>
+<span class="sd">            Name of parameter files (`name`.csv file and metadata file `name_meta.json`)</span>
+<span class="sd">        path : string</span>
+<span class="sd">            Path in which files are stored (optional, default: &#39;../../models/&#39;)            </span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s1">&#39;Import from ML parameters not yet implemented.&#39;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="Material.set_texture"><a class="viewcode-back" href="../../pyLabFEA.html#pylabfea.material.Material.set_texture">[docs]</a>    <span class="k">def</span> <span class="nf">set_texture</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">verb</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;Set parameters for current crystallographic texture of material as defined in microstructure.</span>
@@ -2478,14 +2500,14 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">pyLabFEA 4.1.1 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pylabfea.material</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, 2021, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+        &#169; Copyright 2020, 2021, 2022, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

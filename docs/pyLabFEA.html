@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>Modules &#8212; pyLabFEA 4.0.0 documentation</title>
+    <title>Modules &#8212; pyLabFEA 4.1.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -31,7 +31,7 @@
         <li class="right" >
           <a href="examples.html" title="Jupyter notebooks"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLabFEA 4.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyLabFEA 4.1.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Modules</a></li> 
       </ul>
     </div>  
@@ -56,7 +56,7 @@ Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.basic.Strain">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">Strain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#Strain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.Strain" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">Strain</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#Strain"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.Strain" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Stores and converts Voigt strain tensors into different formats,
 calculates principle strain and equivalent strain.</p>
@@ -130,7 +130,7 @@ calculates principle strain and equivalent strain.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.basic.Stress">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">Stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#Stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.Stress" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">Stress</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sv</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#Stress"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.Stress" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Stores and converts Voigt stress tensors into different formats,
 calculates principle stresses, equivalent stresses and transforms into cylindrical coordinates.</p>
@@ -267,13 +267,13 @@ J2 equivalent stress otherwise</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="pylabfea.basic.a_vec">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">a_vec</span></span><em class="property"> <span class="pre">=</span> <span class="pre">array([</span> <span class="pre">0.81649658,</span> <span class="pre">-0.40824829,</span> <span class="pre">-0.40824829])</span></em><a class="headerlink" href="#pylabfea.basic.a_vec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">a_vec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([</span> <span class="pre">0.81649658,</span> <span class="pre">-0.40824829,</span> <span class="pre">-0.40824829])</span></em><a class="headerlink" href="#pylabfea.basic.a_vec" title="Permalink to this definition">¶</a></dt>
 <dd><p>First unit vector spanning deviatoric stress plane (real axis)</p>
 </dd></dl>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="pylabfea.basic.b_vec">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">b_vec</span></span><em class="property"> <span class="pre">=</span> <span class="pre">array([</span> <span class="pre">0.</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">,</span>&#160; <span class="pre">0.70710678,</span> <span class="pre">-0.70710678])</span></em><a class="headerlink" href="#pylabfea.basic.b_vec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">b_vec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">array([</span> <span class="pre">0.</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">,</span>&#160; <span class="pre">0.70710678,</span> <span class="pre">-0.70710678])</span></em><a class="headerlink" href="#pylabfea.basic.b_vec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Second unit vector spanning deviatoric stress plane (imaginary axis)</p>
 </dd></dl>
 
@@ -335,7 +335,7 @@ J2 equivalent stress otherwise</p>
 
 <dl class="py data">
 <dt class="sig sig-object py" id="pylabfea.basic.ptol">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">ptol</span></span><em class="property"> <span class="pre">=</span> <span class="pre">0.005</span></em><a class="headerlink" href="#pylabfea.basic.ptol" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">ptol</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.005</span></em><a class="headerlink" href="#pylabfea.basic.ptol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plastic yielding if yield function &gt; ptol</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type</dt>
@@ -467,7 +467,7 @@ Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.model.Model">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">planestress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pylabfea.model.</span></span><span class="sig-name descname"><span class="pre">Model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">planestress</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for finite element model. Defines necessary attributes and methods
 for pre-processing (defining geometry, material assignments, mesh and
@@ -879,7 +879,7 @@ from element solutions (type: Voigt tensor)
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.model.Model.Element">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.Element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.Element" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ly</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/model.html#Model.Element"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.model.Model.Element" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Class for isoparametric elements; supports
 1-d elements with linear or quadratic shape function and full integration;
@@ -1509,7 +1509,7 @@ Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.material.Material">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Material'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pylabfea.material.</span></span><span class="sig-name descname"><span class="pre">Material</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Material'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for Materials including material parameters (attributes), constitutive relations (methods)
 and derived properties und various loading conditions (dictionary)</p>
@@ -1976,11 +1976,8 @@ if (E,nu) not given, either (C11,C12,C44) or CV must be specified)</p></li>
 (C11,C12,C44) or (E,nu) must be specified)</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None.</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2040,9 +2037,9 @@ that is readable to Abaqus (8 numbers per line).</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>sname</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of script that created this material</p></li>
-<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Source of parameters (optiona, default: None)</p></li>
+<li><p><strong>source</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Source of parameters (optional, default: None)</p></li>
 <li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Trunk of filename to which CSV flies are written (optional, default: None)</p></li>
-<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to which files are written (optional: default: ‘’)</p></li>
+<li><p><strong>path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Path to which files are written (optional: default: ‘../../models/’)</p></li>
 <li><p><strong>descr</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of names of model parameters used for generating this ML material (optional, default: [])</p></li>
 <li><p><strong>param</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of values of parameters used for generating this ML material (optional, default: []);
 descr and param must be of the same size</p></li>
@@ -2104,6 +2101,25 @@ used by search algorithm to find zeros of yield function.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="pylabfea.material.Material.from_MLparam">
+<span class="sig-name descname"><span class="pre">from_MLparam</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'../../models/'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material.from_MLparam"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material.from_MLparam" title="Permalink to this definition">¶</a></dt>
+<dd><p>Define material properties from parameters of trained machine learning
+models that have been written with <cite>Material.export_MLparam</cite>.
+Will invoke definition of elastic parameters by calls to the methods
+<cite>Material.elasticity</cite> with the parameters provided in the data set.
+Also initializes current texture to first one in list and resets work hardening
+parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<em>string</em>) – Name of parameter files (<cite>name</cite>.csv file and metadata file <cite>name_meta.json</cite>)</p></li>
+<li><p><strong>path</strong> (<em>string</em>) – Path in which files are stored (optional, default: ‘../../models/’)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.material.Material.from_data">
 <span class="sig-name descname"><span class="pre">from_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material.from_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material.from_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Define material properties from data sets generated in module <cite>Data</cite>:
@@ -2112,7 +2128,8 @@ for different crystallographic textures. Possible to extend to grain sizes,
 grain shapes and porosities. Will invoke definition of elastic and plastic
 parameters by calls to the methods <cite>Material.elasticity</cite> and <cite>Material.plasticity</cite>
 with the parameters provided in the data set.
-Also initializes current texture to first one in list and re-sets work-hardening parameters.</p>
+Also initializes current texture to first one in list and resets work hardening
+parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>param</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em> or </em><em>directories</em>) – <cite>Data.mat_param</cite> directories containing material data sets</p>
@@ -2147,11 +2164,8 @@ the filename will be the material name + ‘.pckl’.</p></li>
 <li><p><strong>path</strong> (<em>string</em>) – Path to location for pickles</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p></p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>None.</p>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>None.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -2573,7 +2587,7 @@ Email: <a class="reference external" href="mailto:alexander&#46;hartmaier&#37;&#
 distributed under GNU General Public License (GPLv3)</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.data.Data">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pylabfea.data.</span></span><span class="sig-name descname"><span class="pre">Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'password'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Dataset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_crit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_ep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pylabfea.data.</span></span><span class="sig-name descname"><span class="pre">Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path_json</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">host</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">17000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">username</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'user'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">password</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'password'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'Dataset'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sdim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mirror</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_crit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.002</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_ep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epl_max</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.03</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">npe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling data from virtual mechanical tests in micromechanical
 simulations and data from physical mechanical tests on materials with various
@@ -2731,7 +2745,7 @@ evaluated (optional, default: 5.e-4)</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.data.Data.Set_CSV">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Set_CSV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data.Set_CSV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data.Set_CSV" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Set_CSV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data.Set_CSV"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data.Set_CSV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling of a CSV dataset for one individual material. At
 least stress data must be provided in dataset. Strain data must be provided
@@ -2958,7 +2972,7 @@ around yield point (index space: [0,Ndat])</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.data.Data.Set_DB">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Set_DB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data.Set_DB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data.Set_DB" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Set_DB</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data.Set_DB"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data.Set_DB" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Define class for handling of a dataset from a Mongo databse</p>
 <dl class="field-list simple">
@@ -3182,7 +3196,7 @@ around yield point (index space: [0,Ndat])</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pylabfea.data.Data.Set_Data">
-<em class="property"><span class="pre">class</span> </em><span class="sig-name descname"><span class="pre">Set_Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data.Set_Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data.Set_Data" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Set_Data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/data.html#Data.Set_Data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.data.Data.Set_Data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Generate set from input data</p>
 </dd></dl>
@@ -3236,8 +3250,9 @@ raw data in deviatoric cyl. stress space</p>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table of Contents</a></h3>
-  <ul>
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
 <li><a class="reference internal" href="#">Modules</a><ul>
 <li><a class="reference internal" href="#module-pylabfea.basic">Module Basic</a></li>
 <li><a class="reference internal" href="#module-pylabfea.model">Module Model</a></li>
@@ -3248,9 +3263,12 @@ raw data in deviatoric cyl. stress space</p>
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="examples.html"
-                        title="previous chapter">Jupyter notebooks</a></p>
+  </div>
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="examples.html"
+                          title="previous chapter">Jupyter notebooks</a></p>
+  </div>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
@@ -3284,13 +3302,13 @@ raw data in deviatoric cyl. stress space</p>
         <li class="right" >
           <a href="examples.html" title="Jupyter notebooks"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pyLabFEA 4.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pyLabFEA 4.1.1 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">Modules</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2020, 2021, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.2.0.
+        &#169; Copyright 2020, 2021, 2022, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.4.0.
     </div>
   </body>
 </html>

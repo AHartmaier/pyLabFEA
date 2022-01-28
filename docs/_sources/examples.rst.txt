@@ -38,41 +38,51 @@ The properties of composites made from different
 elastic materials are analyzed, and the numerical solution is compared 
 with the expected values from mechanical models.
 
-.. _`pyLabFEA_Composites`: _static/pyLabFEA_Composites.html 
+.. _`Tutorial 2: Composites`: _static/pyLabFEA_Composites.html 
 .. _pyLabFEA_Composites: _static/pyLabFEA_Composites.html
+
    
+`Tutorial 3: Equivalent Stress`_
+--------------------------------
+
+`pyLabFEA_Equiv-Stress`_  |br|
+Introduction to equivalent stresses as basis for plastic flow rules.
+
+.. _`Tutorial 3: Equivalent Stress`: _static/pyLabFEA_Equiv-Stress.html
+.. _pyLabFEA_Equiv-Stress: _static/pyLabFEA_Equiv-Stress.html
    
-`Tutorial 3: Plasticity`_
+
+`Tutorial 4: Plasticity`_
 -------------------------
 
 `pyLabFEA_Plasticity`_  |br|
 Non-linear material behavior in form of plasticity and linear strain hardening 
 is introduced in this tutorial.
 
-.. _`Tutorial 3: Plasticity`: _static/pyLabFEA_Plasticity.html
+.. _`Tutorial 4: Plasticity`: _static/pyLabFEA_Plasticity.html
 .. _pyLabFEA_Plasticity: _static/pyLabFEA_Plasticity.html
 
 
-`Tutorial 4: Homogenization`_
+`Tutorial 5: Homogenization`_
 -----------------------------
 
 `pyLabFEA_Homogenization`_  |br|
 Laminate structures with different elastic-plastic materials are 
 analyzed with respect to their global mechanical behavior.
 
-.. _`Tutorial 4: Homogenization`: _static/pyLabFEA_Homogenization.html
+.. _`Tutorial 5: Homogenization`: _static/pyLabFEA_Homogenization.html
 .. _pyLabFEA_Homogenization: _static/pyLabFEA_Homogenization.html
    
    
-`Application 1: Machine Learning Flow Rule for Hill-like plasticity`_
+`Application 1: Machine Learning Flow Rule for Hill-type plasticity`_
 ---------------------------------------------------------------------
 
 `pyLabFEA_ML-FlowRule-Hill`_  |br|
 A machine learning algorithm is trained with 
-data from an anisotropic Hill-like yield criterion for pure normal stresses to
+data from an anisotropic Hill-type yield criterion for pure normal stresses to
 be used as constitutive model for anisotropic plasticity of metals.
 
-.. _`Application 1: Machine Learning Flow Rule for Hill-like plasticity`: _static/pyLabFEA_ML-FlowRule-Hill.html
+.. _`Application 1: Machine Learning Flow Rule for Hill-type plasticity`: _static/pyLabFEA_ML-FlowRule-Hill.html
 .. _pyLabFEA_ML-FlowRule-Hill: _static/pyLabFEA_ML-FlowRule-Hill.html
    
    
@@ -84,12 +94,12 @@ A machine learning algorithm is trained with
 data from a Tresca yield criterion for pure normal stresses to
 be used as constitutive model for plasticity of metals.
 
-.. _Application 2: Machine Learning Flow Rule for Tresca plasticity: _static/pyLabFEA_ML-FlowRule-Tresca.html
+.. _`Application 2: Machine Learning Flow Rule for Tresca plasticity`: _static/pyLabFEA_ML-FlowRule-Tresca.html
 .. _pyLabFEA_ML-FlowRule-Tresca: _static/pyLabFEA_ML-FlowRule-Tresca.html
    
    
-`Application 3: Machine Learning Flow Rule for training with full tensorial stresses`_
---------------------------------------------------------------------------------------
+`Application 3: Training of Machine Learning flow rule with full tensorial stresses`_
+-------------------------------------------------------------------------------------
 
 `pyLabFEA_ML-FlowRule-Training`_  |br|
 A machine learning algorithm is trained with 
@@ -97,7 +107,7 @@ full tensorial stress data, including normal and shear stresses,
 from anisotropic Hill and Barlat-type yield criteria to be used 
 as constitutive model for anisotropic plasticity of metals.
 
-.. _`Application 3: Machine Learning Flow Rule for training with full tensorial stresses`: _static/pyLabFEA_ML-FlowRule-Training.html
+.. _`Application 3: Training of Machine Learning flow rule with full tensorial stresses`: _static/pyLabFEA_ML-FlowRule-Training.html
 .. _pyLabFEA_ML-FlowRule-Training: _static/pyLabFEA_ML-FlowRule-Training.html
 
 
@@ -107,18 +117,17 @@ Examples
 Python routines contained in the directory 'examples' demonstrate 
 
 * how ML flow rules can be trained based on reference materials with significant plastic 
-anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. 
-The training data consists of different stress tensors that mark the onset of plastic 
-yielding of the material. It is important that these stress tensors cover the onset of 
-plastic yielding in the full 6-dimensional stress space, including normal and shear 
-stresses. The trained ML flow rules can be used in form of a user material (UMAT) for 
-the commercial FEA package Abaqus.
-
+  anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. 
+  The training data consists of different stress tensors that mark the onset of plastic 
+  yielding of the material. It is important that these stress tensors cover the onset of 
+  plastic yielding in the full 6-dimensional stress space, including normal and shear 
+  stresses. The trained ML flow rules can be used in form of a user material (UMAT) for 
+  the commercial FEA package Abaqus.
 * how more complex 2D models can be setup, e.g. an elastic inclusion in an elasto-plastic 
-matrix. Generally, models in pyLabFEA can have several sections where each section is 
-associated to a different material. For structured meshes, the assignment of each element
-to a section (or material) can be defined simply a 2D array, that has the same shape as
-the arrangement of elements in the model.
+  matrix. Generally, models in pyLabFEA can have several sections where each section is 
+  associated to a different material. For structured meshes, the assignment of each element
+  to a section (or material) can be defined simply a 2D array, that has the same shape as
+  the arrangement of elements in the model.
 
 .. |br| raw:: html
 

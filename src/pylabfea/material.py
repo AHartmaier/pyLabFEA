@@ -1754,7 +1754,8 @@ class Material(object):
         grain shapes and porosities. Will invoke definition of elastic and plastic 
         parameters by calls to the methods `Material.elasticity` and `Material.plasticity` 
         with the parameters provided in the data set. 
-        Also initializes current texture to first one in list and re-sets work-hardening parameters.
+        Also initializes current texture to first one in list and resets work hardening 
+        parameters.
 
         Parameters
         ----------
@@ -1806,17 +1807,18 @@ class Material(object):
         
     def from_MLparam(self, name, path='../../models/'):
         '''Define material properties from parameters of trained machine learning 
-        models that have been written with ``Material.export_MLparam`.
+        models that have been written with `Material.export_MLparam`.
         Will invoke definition of elastic parameters by calls to the methods 
-        ``Material.elasticity`` with the parameters provided in the data set. 
-        Also initializes current texture to first one in list and re-sets 
+        `Material.elasticity` with the parameters provided in the data set. 
+        Also initializes current texture to first one in list and resets work hardening
+        parameters.
 
         Parameters
         ----------
         name : string
-            Name of parameter files (`name`.csv file and metadata file `name`_meta.json)
+            Name of parameter files (`name`.csv file and metadata file `name_meta.json`)
         path : string
-            Path in which files are stored (optional, default: ../../models/'')            
+            Path in which files are stored (optional, default: '../../models/')            
         '''
         raise ModuleNotFoundError('Import from ML parameters not yet implemented.')
 
