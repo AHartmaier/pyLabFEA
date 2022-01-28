@@ -1719,6 +1719,8 @@ class Model(object):
         if annot:
             ax.set_xlabel('x (mm)')
             ax.set_ylabel('y (mm)')
+        ax.set_aspect('equal', 'box')  # enforce equal scale on both axes
+        #fig.tight_layout()
         #save plot to file if filename is provided
         if file is not None:
             fig.savefig(file+'.pdf', format='pdf', dpi=300)

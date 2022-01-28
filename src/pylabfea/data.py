@@ -245,7 +245,7 @@ class Data(object):
             'nu_av'       : self.nu_av,# Poisson ratio
             'sy_av'       : self.sy_av # yield strength
         }
-        print(self.mat_param)
+        #print(self.mat_param)
         syld = np.zeros((self.Nset,Nlc_min,6))  # Voigt stress tensor at onset of yielding
         for iset, dset in enumerate(self.set):   # loop over data sets
             syld[iset,:,:] = dset.syld[0:Nlc_min,:]

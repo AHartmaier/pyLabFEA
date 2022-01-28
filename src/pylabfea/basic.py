@@ -534,6 +534,8 @@ def pckl2mat(name, path='./'):
     '''
     if name is None:
         raise ValueError('Name for pickled material must be given.')
+    if path[-1] != '/':
+        path += '/'
     with open(path+name, 'rb') as input:
         pckl = pickle.load(input)
     return pckl

@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-pyLabFEA example of elastic inclusion in elastic-plastic matrix
+pyLabFEA example of square-shaped elastic inclusion in elastic-plastic matrix
+under uniaxial strain
 
-Inclusion can be stiffer or more compliant than matrix to observe diffences
+Inclusion can be stiffer or more compliant than matrix to observe differences
 in stress and strain fields.
 
 Laterial sides can be fixed or free.
@@ -24,8 +25,7 @@ E1 = 100.e3  # Young's modulus of matrix
 E2 = 3.e3    # Young's modulus of inclusion, change to 300.e3 for stiff inclusion
 
 # setup material definition for regular mesh
-NX=18
-NY=18
+NX = NY = 18
 NXi1 = int(NX/3)
 NXi2 = 2*NXi1
 NYi1 = int(NY/3)

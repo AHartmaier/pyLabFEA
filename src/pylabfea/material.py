@@ -1435,11 +1435,11 @@ class Material(object):
         sname : str
             Name of script that created this material
         source : str
-            Source of parameters (optiona, default: None)
+            Source of parameters (optional, default: None)
         file : str
             Trunk of filename to which CSV flies are written (optional, default: None)
         path : str
-            Path to which files are written (optional: default: '')
+            Path to which files are written (optional: default: '../../models/')
         descr : list
             List of names of model parameters used for generating this ML material (optional, default: [])
         param : list
@@ -1471,7 +1471,9 @@ class Material(object):
             raise ValueError('Lists for descr and param must have the same lengths.')
         if file is None:
             file = 'abq_'+self.name
-        file = path+file
+        if path[-1] != '/':
+            path += '/'
+        file = path + file
         
         # write parameters of trained SVC to file readable to Abaqus
         dc = self.svm_yf.dual_coef_[0] # dual coefficients
@@ -1581,6 +1583,8 @@ class Material(object):
         '''
         if name is None:
             name = 'mat_'+self.name + '.pkl'
+        if path[-1] != '/':
+            path += '/'
         with open(path+name, 'wb') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
         return
@@ -1799,6 +1803,22 @@ class Material(object):
         tp = np.zeros(self.Nset)
         tp[0] = 1.
         self.set_texture(tp)
+        
+    def from_MLparam(self, name, path='../../models/'):
+        '''Define material properties from parameters of trained machine learning 
+        models that have been written with ``Material.export_MLparam`.
+        Will invoke definition of elastic parameters by calls to the methods 
+        ``Material.elasticity`` with the parameters provided in the data set. 
+        Also initializes current texture to first one in list and re-sets 
+
+        Parameters
+        ----------
+        name : string
+            Name of parameter files (`name`.csv file and metadata file `name`_meta.json)
+        path : string
+            Path in which files are stored (optional, default: ../../models/'')            
+        '''
+        raise ModuleNotFoundError('Import from ML parameters not yet implemented.')
 
     def set_texture(self, current, verb=False):
         '''Set parameters for current crystallographic texture of material as defined in microstructure.
