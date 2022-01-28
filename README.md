@@ -1,3 +1,8 @@
+[![DOI](https://zenodo.org/badge/245484086.svg)](https://zenodo.org/badge/latestdoi/245484086) 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: CC BY-NC-SA 4.0](https://licensebuttons.net/l/by-nc-sa/4.0/80x15.png)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 # pyLabFEA
 
 ### Python Laboratory for Finite Element Analysis
@@ -34,7 +39,7 @@ $ python -m pip install . --user
 The correct implementation can be tested with
 
 ```
-$ pytest tests
+$ pytest tests -v
 ```
 
 After this, the package can be used within python, e.g. by importing the entire package with
@@ -58,8 +63,7 @@ elastic-plastic material behavior, and constitutive models based on
 machine learning algorithms are contained in the subfolder 'notebooks' of this repository and can be accessed via `index.ipynb`. An
 overview on the contents of the notebooks is also available [here](https://ahartmaier.github.io/pyLabFEA/examples.html).
 
-The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on Binder 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
+The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on [Binder](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
 ## Examples
 
