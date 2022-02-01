@@ -99,11 +99,8 @@ class Data(object):
             for iset, dset in enumerate(self.set):   # loop over data sets
                 if not self.flow_stress:
                     #data for stress tensor at yield onset provided in data
-                    '''if self.sdim==3:
-                        sf[iset,0,:,:] = dset.syc
-                    else:'''
                     sf[iset,0,:,:] = dset.sig
-                    sflow_av[iset,0] = np.average(dset.syc[:,0])    # average seq over polar angles
+                    sflow_av[iset,0] = dset.sy  # average yield strength of set
                 else:
                     i = 2 if mirror else 1
                     N0 = int(Nlc/i)
@@ -128,10 +125,6 @@ class Data(object):
                                 ipl = [len(ind)-1]
                             eel = dset.peeq_full[ind[iel[-1]]]  # last data point < peeq
                             epl = dset.peeq_full[ind[ipl[0]]]   # first data point > peeq
-                            '''if self.sdim==3:
-                                s0 = dset.sc_full[ind[iel[-1]],0]  # largest flow stress below peeq
-                                s1 = dset.sc_full[ind[ipl[0]],0]   # smallest flow stress above peeq
-                            else:'''
                             s0 = dset.sig[ind[iel[-1]],:]  # largest flow stress below peeq
                             s1 = dset.sig[ind[ipl[0]],:]   # smallest flow stress above peeq
                             ds = s1 - s0     # difference in seq b/w data points around peeq
@@ -139,28 +132,11 @@ class Data(object):
                             sint = s0
                             if np.abs(de) > 1.e-6:
                                 sint += (peeq-eel)*ds/de # linearly interpolated equiv. flow stress at peeq
-                            '''if self.sdim==3:
-                                theta = dset.sc_full[ind[iel[-1]],1] # polar angle (not interpolated)
-                                hs.append(sint)  # append interpolated equiv. flow stress
-                                ht.append(theta) # append original polar angle of load case
-                                if mirror:
-                                    hs.append(sint) # append twice to consider tension compression symmetry in material
-                                    theta -= np.pi  # mirror polar angle
-                                    if theta<-np.pi:
-                                        theta += 2*np.pi
-                                    ht.append(theta) # append mirrored polar angles
-                            else:'''
                             hs.append(sint) # append interpolated flow stress at PEEQ
                             if mirror:
                                 hs.append(-sint) # append mirrored flow stress values
                         ind = np.argsort(ht) # sort w.r.t. polar angle
                         ie = len(hs)
-                        '''if self.sdim==3:
-                            ind = np.argsort(ht) # sort w.r.t. polar angle
-                            sf[iset,ipeeq,0:ie,0] = np.array(hs)[ind]   # first component: seq
-                            sf[iset,ipeeq,0:ie,1] = np.array(ht)[ind]   # second component: polar angle
-                            sflow_av[iset,ipeeq] = np.average(hs)    # average seq over polar angles
-                        else:'''
                         ht = np.array(hs)
                         sf[iset,ipeeq,0:ie,:] = ht # store flow stresses for texture and PEEQ
                         sflow_av[iset,ipeeq] = np.average(seq_J2(ht)) # calculate average equiv. flow stress  
@@ -245,7 +221,7 @@ class Data(object):
             'sy_av'       : self.sy_av # yield strength
         }
         #print(self.mat_param)
-        syld = np.zeros((self.Nset,Nlc_min,6))  # Voigt stress tensor at onset of yielding
+        syld = np.zeros((self.Nset,Nlc_min, self.sdim))  # Voigt stress tensor at onset of yielding
         for iset, dset in enumerate(self.set):   # loop over data sets
             syld[iset,:,:] = dset.syld[0:Nlc_min,:]
         self.mat_param['sig_yld'] = syld
@@ -254,9 +230,6 @@ class Data(object):
         else:
             sflow_av = np.array([[self.set[0].sy]]) # average flow stress
             sf = np.zeros((1,1,Nlc_min,self.sdim))
-            '''if self.sdim==3:
-                sf[0,0,:,:] = s_cyl(dset.syld[0:Nlc_min,:])
-            else:'''
             sf[0,0,:,:] = dset.syld[0:Nlc_min,:]
         self.mat_param['flow_stress'] = sf       #  flow stresses at PEEQs in 'work_hard' for each texture
         self.mat_param['flow_seq_av'] = sflow_av # averaged equiv. flow stresses at PEEQs in 'work_hard' for each texture
@@ -307,8 +280,6 @@ class Data(object):
             Filtered indeces of data points lying in elastic regime
         i_pl_  : (Ndat,) array
             Filtered indeces for data points lying in plastic regime
-        syc    : (Nlc,3) array
-            Yield strength: interpolated cyl. stress tensor at onset of yielding for individual load cases
         load_case : list
             List of lists with data set indices belonging to one single load case from full data 
             (index space: [0,N])
@@ -473,10 +444,8 @@ class Data(object):
                 
             if not db.flow_stress:
                 #data provided only for stress tensor at yield point
-                self.syc  = s_cyl(self.sig)   # critical cylindrical stress tensor at yield onset
-                self.syld = np.zeros((self.N,6))
-                self.syld[:,0:db.sdim] = self.sig
-                self.sy   = np.average(self.syc[:,0]) # average value for yield strength of data set
+                self.syld = self.sig
+                self.sy   = np.average(seq_J2(self.sig)) # average value for yield strength of data set
                 self.Nlc  = self.N
                 self.Ndat = self.N
                 print('Estimated yield strength: %5.2f MPa, from %i data sets with PEEQ %5.3f' 
@@ -600,12 +569,9 @@ class Data(object):
                         ht.append(self.sfc_[ind[iel[-1]],1]) # polar angle of load case
                         hv.append(self.sig_[ind[iel[-1]],:] + dsig*dint/de)
                 ind = np.argsort(ht)   # sort w.r.t. polar angle
-                self.syc = np.zeros((self.Nlc,3))   # critical cylindrical stress tensor at yield onset
-                self.syc[:,0] = np.array(hs)[ind]   # first component: seq
-                self.syc[:,1] = np.array(ht)[ind]   # second component: polar angle
-                self.syld = np.zeros((len(ind),6))
-                self.syld[:,0:db.sdim] = np.array(hv)[ind]       # full Voigt stress at yield onset
-                self.sy = np.average(self.syc[:,0]) # refined value for yield strength of data set
+                self.syld = np.zeros((len(ind), db.sdim))
+                self.syld = np.array(hv)[ind]       # full Voigt stress at yield onset
+                self.sy = np.average(hs) # refined value for yield strength of data set
             
                 #select data points with eqiv. stress in range [0.1,0.4]sy => elastic constants
                 seq = seq_J2(self.sig)
@@ -668,8 +634,6 @@ class Data(object):
             Filtered indeces of data points lying in elastic regime
         i_pl_  : (Ndat,) array
             Filtered indeces for data points lying in plastic regime
-        syc    : (Nlc,3) array
-            Yield strength: interpolated cyl. stress tensor at onset of yielding for individual load cases
         load_case : list
             List of lists with data set indices belonging to one single load case from full data 
             (index space: [0,N])
@@ -888,12 +852,9 @@ class Data(object):
                     ht.append(self.sfc_[ind[iel[-1]],1]) # polar angle of load case
                     hv.append(self.sig_[ind[iel[-1]],:] + dsig*dint/de)
             ind = np.argsort(ht)   # sort w.r.t. polar angle
-            self.syc = np.zeros((self.Nlc,3))   # critical cylindrical stress tensor at yield onset
-            self.syc[:,0] = np.array(hs)[ind]   # first component: seq
-            self.syc[:,1] = np.array(ht)[ind]   # second component: polar angle
-            self.syld = np.zeros((len(ind),6))
-            self.syld[:,0:db.sdim] = np.array(hv)[ind]       # full Voigt stress at yield onset
-            self.sy = np.average(self.syc[:,0]) # refined value for yield strength of data set
+            self.syld = np.zeros((len(ind), db.sdim))
+            self.syld = np.array(hv)[ind]  # full Voigt stress at yield onset
+            self.sy = np.average(hs) # refined value for yield strength of data set
         
             #select data points with eqiv. stress in range [0.1,0.4]sy => elastic constants
             seq = seq_J2(self.sig)
@@ -919,9 +880,8 @@ class Data(object):
                 sig = np.append(sig, -sig, axis=0)
             self.N = len(sig)
             self.sig = sig
-            self.syc  = s_cyl(sig)   # critical cylindrical stress tensor at yield onset
             self.syld = sig
-            self.sy   = np.average(self.syc[:,0]) # average value for yield strength of data set
+            self.sy   = np.average(seq_J2(sig)) # average value for yield strength of data set
             self.Nlc  = self.N
             self.Ndat = self.N
             self.texture_type = 'Goss-100%'
@@ -1049,7 +1009,8 @@ class Data(object):
         plt.subplot(1, 2, 2) #, projection='polar')
         plt.plot(dset.sfc_[dset.i_pl_,1], dset.sfc_[dset.i_pl_,0], 'or')
         plt.plot(dset.sfc_[dset.i_el_,1], dset.sfc_[dset.i_el_,0], 'ob')
-        plt.plot(dset.syc[:,1], dset.syc[:,0], '-k')
+        syc = s_cyl(dset.syld)
+        plt.plot(syc[:,1], syc[:,0], '-k')
         plt.plot([-np.pi, np.pi], [dset.sy, dset.sy], '--k')
         plt.legend(['raw data above yield point', 'raw data below yield point', 
                        'interpolated yield strength', 'average yield strength'],loc=(1.04,0.8),fontsize=fontsize-2)
