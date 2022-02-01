@@ -99,10 +99,10 @@ class Data(object):
             for iset, dset in enumerate(self.set):   # loop over data sets
                 if not self.flow_stress:
                     #data for stress tensor at yield onset provided in data
-                    if self.sdim==3:
+                    '''if self.sdim==3:
                         sf[iset,0,:,:] = dset.syc
-                    else:
-                        sf[iset,0,:,:] = dset.sig
+                    else:'''
+                    sf[iset,0,:,:] = dset.sig
                     sflow_av[iset,0] = np.average(dset.syc[:,0])    # average seq over polar angles
                 else:
                     i = 2 if mirror else 1
@@ -128,19 +128,18 @@ class Data(object):
                                 ipl = [len(ind)-1]
                             eel = dset.peeq_full[ind[iel[-1]]]  # last data point < peeq
                             epl = dset.peeq_full[ind[ipl[0]]]   # first data point > peeq
-                            if self.sdim==3:
+                            '''if self.sdim==3:
                                 s0 = dset.sc_full[ind[iel[-1]],0]  # largest flow stress below peeq
                                 s1 = dset.sc_full[ind[ipl[0]],0]   # smallest flow stress above peeq
-                            else:
-                                s0 = dset.sig[ind[iel[-1]],:]  # largest flow stress below peeq
-                                s1 = dset.sig[ind[ipl[0]],:]   # smallest flow stress above peeq
+                            else:'''
+                            s0 = dset.sig[ind[iel[-1]],:]  # largest flow stress below peeq
+                            s1 = dset.sig[ind[ipl[0]],:]   # smallest flow stress above peeq
                             ds = s1 - s0     # difference in seq b/w data points around peeq
                             de = epl - eel  # difference in peeq for closest data points
-                            if np.abs(de)<1.e-6:
-                                sint=s0
-                            else:
-                                sint = s0 + (peeq-eel)*ds/de # linearly interpolated equiv. flow stress at peeq
-                            if self.sdim==3:
+                            sint = s0
+                            if np.abs(de) > 1.e-6:
+                                sint += (peeq-eel)*ds/de # linearly interpolated equiv. flow stress at peeq
+                            '''if self.sdim==3:
                                 theta = dset.sc_full[ind[iel[-1]],1] # polar angle (not interpolated)
                                 hs.append(sint)  # append interpolated equiv. flow stress
                                 ht.append(theta) # append original polar angle of load case
@@ -150,21 +149,21 @@ class Data(object):
                                     if theta<-np.pi:
                                         theta += 2*np.pi
                                     ht.append(theta) # append mirrored polar angles
-                            else:
-                                hs.append(sint) # append interpolated flow stress at PEEQ
-                                if mirror:
-                                    hs.append(-sint) # append mirrored flow stress values
+                            else:'''
+                            hs.append(sint) # append interpolated flow stress at PEEQ
+                            if mirror:
+                                hs.append(-sint) # append mirrored flow stress values
                         ind = np.argsort(ht) # sort w.r.t. polar angle
                         ie = len(hs)
-                        if self.sdim==3:
+                        '''if self.sdim==3:
                             ind = np.argsort(ht) # sort w.r.t. polar angle
                             sf[iset,ipeeq,0:ie,0] = np.array(hs)[ind]   # first component: seq
                             sf[iset,ipeeq,0:ie,1] = np.array(ht)[ind]   # second component: polar angle
                             sflow_av[iset,ipeeq] = np.average(hs)    # average seq over polar angles
-                        else:
-                            ht = np.array(hs)
-                            sf[iset,ipeeq,0:ie,:] = ht # store flow stresses for texture and PEEQ
-                            sflow_av[iset,ipeeq] = np.average(seq_J2(ht)) # calculate average equiv. flow stress  
+                        else:'''
+                        ht = np.array(hs)
+                        sf[iset,ipeeq,0:ie,:] = ht # store flow stresses for texture and PEEQ
+                        sflow_av[iset,ipeeq] = np.average(seq_J2(ht)) # calculate average equiv. flow stress  
             return sf, sflow_av
         
         self.name = name
@@ -255,10 +254,10 @@ class Data(object):
         else:
             sflow_av = np.array([[self.set[0].sy]]) # average flow stress
             sf = np.zeros((1,1,Nlc_min,self.sdim))
-            if self.sdim==3:
+            '''if self.sdim==3:
                 sf[0,0,:,:] = s_cyl(dset.syld[0:Nlc_min,:])
-            else:
-                sf[0,0,:,:] = dset.syld[0:Nlc_min,:]
+            else:'''
+            sf[0,0,:,:] = dset.syld[0:Nlc_min,:]
         self.mat_param['flow_stress'] = sf       #  flow stresses at PEEQs in 'work_hard' for each texture
         self.mat_param['flow_seq_av'] = sflow_av # averaged equiv. flow stresses at PEEQs in 'work_hard' for each texture
  
@@ -438,7 +437,7 @@ class Data(object):
                 self.evec    = np.zeros((self.N,3,3))
                 for i, hsv in enumerate(self.sig):
                     hso = Stress(hsv)  # define object of stress tensor
-                    self.sc_full[i,:] = hso.cyl() # transform princ. stress into cylindrical stress
+                    self.sc_full[i,:] = hso.cyl() # transform full stress into cylindrical stress
                     # store eigenvectors in form of rotation matrix from reference frame to princ. stress frame
                     self.evec[i,:,:]  = hso.evec 
             # calculate equiv. strains and correct for predeformation if applicable
@@ -783,14 +782,14 @@ class Data(object):
                 epl_0 = deepcopy(self.epl[0])
                 self.epl -= epl_0
             if db.sdim == 3:
-                self.sc_full = s_cyl(self.sig)   # transform pinc. stresses into cylindrical coordinates
+                self.sc_full = s_cyl(self.sig)   # transform princ. stresses into cylindrical coordinates
                 self.evec = None
             else:
                 self.sc_full = np.zeros((self.N,3))
                 self.evec    = np.zeros((self.N,3,3))
                 for i, hsv in enumerate(self.sig):
                     hso = Stress(hsv)  # define object of stress tensor
-                    self.sc_full[i,:] = hso.cyl() # transform princ. stress into cylindrical stress
+                    self.sc_full[i,:] = hso.cyl() # transform full stress into cylindrical stress
                     # store eigenvectors in form of rotation matrix from reference frame to princ. stress frame
                     self.evec[i,:,:]  = hso.evec             
 
@@ -931,24 +930,29 @@ class Data(object):
             self.E = 151220.
             self.nu = 0.3
         
-    def plot_yield_locus(self, active, set_ind=0, scatter=False, data=None, data_label=None,
-                         arrow=False, file=None, title=None, fontsize=18):
+    def plot_yield_locus(self, active, set_ind=0, scatter=False, data=None,
+                         data_label=None, arrow=False, file=None, title=None,
+                         fontsize=18):
         '''Plot yield loci of imported microstructures in database.
         
         Parameters
         ----------
         active  : str
-            'flow_stress', 'work_hard' or 'texture', selct which parameter to vary for set of plots
+            'flow_stress', 'work_hard' or 'texture', selct which parameter to
+            vary for set of plots
         set_ind : int
-            select data set for work hardening plots (corresponds to level of plastic strain) (optional, default: 0)
+            select data set for work hardening plots (corresponds to level of
+            plastic strain) (optional, default: 0)
         scatter : Boolean
             defines if raw data points are plotted (optional, default: False)
         data : (N,3) or (N,2) array
-            additional data to plot in form of cylindrical stresses (optional, default: None)
+            additional data to plot in form of cylindrical stresses
+            (optional, default: None)
         data_label : str
             label for legend of additional data (optional, default: None)
         arrow : Boolean
-            indicate if arrows for principal stress directions are drawn (optional, default: False)
+            indicate if arrows for principal stress directions are drawn
+            (optional, default: False)
         file   : str
             filename for output (optional, default: None (no output))
         title  : str
@@ -956,7 +960,8 @@ class Data(object):
         fontsize : int
             specifies fontsize used in plot (optional, default: 18)
         '''
-        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(15, 8))
+        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'},
+                               figsize=(15, 8))
         cmap = plt.cm.get_cmap('viridis', 10)
         #ms_max = np.amax(self.mat_param[active])
         Ndat = len(self.mat_param[active])
@@ -968,19 +973,15 @@ class Data(object):
             val = self.mat_param[active][i]
             hc = (val-v0)/scale
             if active=='work_hard':
-                sc = self.mat_param['flow_stress'][set_ind,i,:,:]
-                if self.sdim==6:
-                    sc = s_cyl(sc)
-                    ind = np.argsort(sc[:,1]) # sort dta points w.r.t. polar angle
-                    sc = sc[ind]
+                sc = s_cyl(self.mat_param['flow_stress'][set_ind,i,:,:])
+                ind = np.argsort(sc[:,1]) # sort dta points w.r.t. polar angle
+                sc = sc[ind]
                 label = 'PEEQ: '+str(val.round(decimals=4))
                 color = cmap(hc)
             elif active=='texture':
-                sc = self.mat_param['flow_stress'][i,0,:,:]
-                if self.sdim==6:
-                    sc = s_cyl(sc)
-                    ind = np.argsort(sc[:,1]) # sort dta points w.r.t. polar angle
-                    sc = sc[ind]
+                sc = s_cyl(self.mat_param['flow_stress'][i,0,:,:])
+                ind = np.argsort(sc[:,1]) # sort dta points w.r.t. polar angle
+                sc = sc[ind]
                 label = self.set[i].texture_name
                 color = (hc,0,1-hc)
             elif active=='flow_stress':
@@ -1018,8 +1019,8 @@ class Data(object):
         plt.show()
         
     def plot_set(self, dset, file=None, nth=15, fontsize=18):
-        '''Graphical output of equiv. stress vs. equic. total strain for selected load cases and 
-        raw data in deviatoric cyl. stress space
+        '''Graphical output of equiv. stress vs. equiv. total strain for
+        selected load cases and raw data in deviatoric cyl. stress space
         
         Parameters
         ----------

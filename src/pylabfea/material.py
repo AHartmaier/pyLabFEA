@@ -13,7 +13,7 @@ Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 from pylabfea.basic import a_vec, b_vec, \
                            eps_eq, polar_ang, ptol, \
-                           seq_J2, sp_cart, sprinc, sdev
+                           seq_J2, sp_cart, sprinc, sdev, s_cyl
 from pylabfea.model import Model
 from pylabfea.training import load_cases
 from scipy.optimize import root_scalar
@@ -317,7 +317,7 @@ class Material(object):
                 N = 1
             else:
                 N = len(sig)
-            x = np.zeros((N,self.Ndof))
+            x = np.zeros((N, self.Ndof))
             if self.sdim==3:
                 x[:,0] = seq_J2(sig)/self.scale_seq - 1.
                 x[:,1] = polar_ang(sig)/np.pi
@@ -328,7 +328,7 @@ class Material(object):
                 else:
                     x[:,0:3] = sig[:,0:3]/self.scale_seq
             if self.whdat:
-                x[:,self.ind_wh] = peeq/self.scale_wh - 1.
+                x[:, self.ind_wh] = peeq/self.scale_wh - 1.
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -965,25 +965,30 @@ class Material(object):
             plt.show()
         return train_sc, test_sc
 
-    def setup_yf_SVM_3D(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., fs=0.1,
-                     plot=False, cyl=False, gridsearch=False, cvals=None, gvals=None):
-        '''Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and test
-        data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal stresses will
-        be converted to cylindrical stresses, such that training is always performed in cylindrical stress space, with equiv. 
-        stress at yield onset and polar angle as degrees of freedom. Graphical output on the trained SVC yield function is 
-        possible.
+    def setup_yf_SVM_3D(self, x, y_train, x_test=None, y_test=None, C=10.,
+                        gamma=1., fs=0.1, plot=False, cyl=False,
+                        gridsearch=False, cvals=None, gvals=None):
+        '''Initialize and train Support Vector Classifier (SVC) as machine
+        learning (ML) yield function. Training and test data (features) are
+        accepted as either 3D principal stresses or cylindrical stresses, but
+        principal stresses will be converted to cylindrical stresses, such
+        that training is always performed in cylindrical stress space, with
+        equiv. stress at yield onset and polar angle as degrees of freedom. 
+        Graphical output on the trained SVC yield function is possible.
 
 
         Parameters
         ----------
         x   :  (N,2) or (N,3) array
-            Training data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2)
+            Training data either as Cartesian princ. stresses (N,3) or
+            cylindrical stresses (N,2)
         cyl : Boolean
             Indicator for cylindrical stresses if x is has shape (N,3)
         y_train : 1d-array
             Result vector for training data (same size as x)
         x_test  : (N,2) or (N,3) array
-            Test data either as Cartesian princ. stresses (N,3) or cylindrical stresses (N,2) (optional)
+            Test data either as Cartesian princ. stresses (N,3) or cylindrical
+            stresses (N,2) (optional)
         y_test
             Result vector for test data (optional)
         C  : float
@@ -991,11 +996,14 @@ class Material(object):
         gamma  : float
             Parameter for kernel function of SVC (optional, default: 1)
         fs  : float
-            Parameters for size of periodic continuation of training data (optional, default:0.1)
+            Parameters for size of periodic continuation of training data
+            (optional, default:0.1)
         plot : Boolean
-            Indicates if plot of decision function should be generated (optional, default: False)
+            Indicates if plot of decision function should be generated
+            (optional, default: False)
         gridsearch : Boolean
-            Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)
+            Perform grid search to optimize hyperparameters of ML flow rule
+            (optional, default: False)
 
         Returns
         -------
@@ -1021,11 +1029,11 @@ class Material(object):
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
         #sh = np.shape(x)
-        X_train = np.zeros((N,self.Ndof))
+        X_train = np.zeros((N, self.Ndof))
         if not cyl:
             #princ. stresses
-            X_train[:,0] = seq_J2(x)/self.scale_seq - 1.
-            X_train[:,1] = polar_ang(x)/np.pi
+            X_train[:,0] = seq_J2(x[:,0:3])/self.scale_seq - 1.
+            X_train[:,1] = polar_ang(x[:,0:3])/np.pi
             print('Converting principal stresses to cylindrical stresses for training')
         else:
             #cylindrical stresses
@@ -1033,11 +1041,11 @@ class Material(object):
             X_train[:,1] = x[:,1]/np.pi
             print('Using cylindrical stresses for training')
         if self.whdat:
-            X_train[:,self.ind_wh] = x[:,self.ind_wh]/self.scale_wh - 1.
+            X_train[:,self.ind_wh] = x[:,self.ind_wh+1]/self.scale_wh - 1.
             print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f' 
                   % (self.msparam[i]['ms_type'], self.msparam[0]['Npl'], self.msparam[0]['peeq_max']))
         if self.txdat:
-            ih = self.ind_tx
+            ih = self.ind_tx + 1
             for i in range(self.Nset):
                 X_train[:,ih+i] = x[:,ih+i]/self.scale_text[i] - 1.
                 print('Using texture data "%s" for training: %i data sets with texture_parameters in range [%4.2f,%4.2f]' 
@@ -1065,9 +1073,9 @@ class Material(object):
                 X_test[:,0] = x_test[:,0]/self.scale_seq - 1.
                 X_test[:,1] = x_test[:,1]/np.pi
             if self.whdat:
-                X_test[:,self.ind_wh] = x_test[:,self.ind_wh]/self.scale_wh - 1.
+                X_test[:,self.ind_wh] = x_test[:,self.ind_wh+1]/self.scale_wh - 1.
             if self.txdat:
-                ih = self.ind_tx
+                ih = self.ind_tx + 1
                 for i in range(self.Nset):
                     X_test[:,ih+i] = x_test[:,ih+i]/self.scale_text[i] - 1.
         #define and fit SVC
@@ -1123,53 +1131,67 @@ class Material(object):
         return train_sc, test_sc
  
     def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=True, 
-                  mat_ref=None, sdata=None, plot=False, fontsize=16, gridsearch=False, cvals=None, gvals=None):
-        '''Train SVC for all yield functions of the microstructures provided in msparam and for flow stresses to capture 
-        work hardening. In first step, the 
-        training data for each set is generated by creating stresses on the deviatoric plane and calculating their catgegorial
-        yield function ("-1": elastic, "+1": plastic). Furthermore, axes in different dimensions for microstructural
-        features are introduced that describe the relation between the different sets.
+                  mat_ref=None, sdata=None, plot=False, fontsize=16,
+                  gridsearch=False, cvals=None, gvals=None):
+        '''Train SVC for all yield functions of the microstructures provided
+        in msparam and for flow stresses to capture work hardening. In first
+        step, the training data for each set is generated by creating stresses
+        on the deviatoric plane and calculating their catgegorial
+        yield function ("-1": elastic, "+1": plastic). Furthermore, axes in
+        different dimensions for microstructural features are introduced that
+        describe the relation between the different sets.
         
         Parameters
         ----------
         C     : float
-            Parameter needed for training process, larger values lead to more flexibility (optional, default: 10)
+            Parameter needed for training process, larger values lead to more
+            flexibility (optional, default: 10)
         gamma : float
-            Parameter of Radial Basis Function of SVC kernel, larger values, lead to faster decay of influence of individual 
-            support vectors, i.e., to more short ranged kernels (optional, default: 4)
+            Parameter of Radial Basis Function of SVC kernel, larger values,
+            lead to faster decay of influence of individual 
+            support vectors, i.e., to more short ranged kernels
+            (optional, default: 4)
         Nlc   : int 
-            Number of load cases to be considered, will be overwritten if material has microstructure 
+            Number of load cases to be considered, will be overwritten if
+            material has microstructure 
             information (optional, default: 36)
         Nseq  : int
-            Number of training and test stresses to be generated in elastic regime, same number will be 
+            Number of training and test stresses to be generated in elastic
+            regime, same number will be 
             produced in plastic regime (optional, default: 25)
         fs : float
             Parameter to ensure peridicity of yield function wrt. theta
         extend : Boolean
-            Indicate whether training data should be extended further into plastic regime (optional, default: True)
+            Indicate whether training data should be extended further into
+            plastic regime (optional, default: True)
         mat_ref : object of class ``Material``
-            reference material needed to calculate yield function if only N is provided (optional, ignored if sdata is given)
-        sdata: (N,3) or (N,6) array
-            List of cylindrical stresses (N,3) or Voigt stresses (N,6) lying on yield locus. 
-            Based on these yield stresses, training data in entire deviatoric stress space is created
-            (optional, f no data in self.msparam is given, either sdata or N and mat_ref must be provided)
+            reference material needed to calculate yield function if only N is
+            provided (optional, ignored if sdata is given)
+        sdata: (N, sdim) array
+            List of Cartsian stresses lying on yield locus. Based on these
+            yield stresses, training data in entire deviatoric stress space
+            is created (optional, f no data in self.msparam is given, either
+                        sdata or N and mat_ref must be provided)
         plot  : Boolean
-            Indicate if graphical output should be performed (optional, default: False)
+            Indicate if graphical output should be performed
+            (optional, default: False)
         fontsize : int
             Fontsize for graph annotations (optional, default: 16)
         gridsearch : Boolean
-            Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)
+            Perform grid search to optimize hyperparameters of ML flow rule
+            (optional, default: False)
         '''
         print('\n---------------------------\n')
         print('SVM classification training')
         print('---------------------------\n')
-        #augment raw data and create result vector (yield function) for all data on work hardening and textures
+        # augment raw data and create result vector (yield function) for all
+        # data on work hardening and textures
         if self.msparam is None:
             Npl = 1
             Ntext = 1
             if sdata is None:
-                # create regular pattern of stresses in sdim-dimensional stress space
-                # based on reference material
+                # create regular pattern of stresses in sdim-dimensional stress
+                # space based on reference material
                 if mat_ref is None:
                     raise ValueError('create_data_sig: Neither sdata nor mat_ref are provided, cannot generate training data')
                 # define material parameters otherwise defines in material.plasticity
@@ -1202,7 +1224,21 @@ class Material(object):
                 Nt = self.Nset*Ntext*Npl*N0 # total number of training data points
             else:
                 Nt = Ntext*Npl*N0
-            xt = np.zeros((Nt,self.Ndof))
+            if self.sdim == 3:
+                dtrain = 3  # dimension of training data (Ndof+1 for sdim==3)
+                if self.whdat:
+                    iwh = dtrain
+                    dtrain += 1
+                if self.txdat:
+                    itx = dtrain
+                    dtrain += self.Nset
+            else:
+                dtrain = self.Ndof # dimension of training data (Ndof for sdim==6)
+                if self.whdat:
+                    iwh = self.ind_wh
+                if self.txdat:
+                    itx = self.ind_tx
+            xt = np.zeros((Nt, dtrain))
             yt = np.zeros(Nt)
             for m, ms in enumerate(self.msparam):
                 for k in range(Ntext):    # loop over all textures
@@ -1210,31 +1246,33 @@ class Material(object):
                         #create training data in entire deviatoric stress plane from raw data
                         #training data generated here is unscaled
                         #work hardening parameters are corrected for offset
-                        sc_train, yf_train = self.create_sig_data(sdata=ms['flow_stress'][k,j,:,:], 
+                        sig_train, yf_train = self.create_sig_data(sdata=ms['flow_stress'][k,j,:,:], 
                                             sflow=ms['flow_seq_av'][k,j], Nseq=Nseq, extend=True)
                         #sc_test, yf_test   = self.create_sig_data(sdata=self.msparam['flow_stress'][k,j,::12,:], Nseq=15, rand=False)
                         i0 = (j + k*Npl + m*Ntext)*N0
                         i1 = i0 + N0
-                        xt[i0:i1,0:self.sdim] = sc_train
+                        xt[i0:i1, 0:self.sdim] = sig_train
                         if self.whdat:
-                            #Add DOF for work hardening parameter, corrected for offset
-                            xt[i0:i1,self.ind_wh] = ms['work_hard'][j] - self.epc
+                            # Add DOF for work hardening parameter, corrected for offset
+                            xt[i0:i1, iwh] = ms['work_hard'][j] - self.epc
                         if self.txdat:
-                            #Add DOF for textures
-                            ih = self.ind_tx
-                            xt[i0:i1,ih+m] = ms['texture'][k]
+                            # Add DOF for textures
+                            xt[i0:i1, itx+m] = ms['texture'][k]
                         yt[i0:i1] = yf_train
             print('%i training data sets created from %i microstructures, with %i load cases each' % (Nt, self.Nset, Nlc))
 
         if np.any(np.abs(yt)<=0.99):
             warnings.warn('train_SVC: result vector for yield function contains more categories than "-1" and "+1". Will result in higher dimensional SVC.')
-        #Train SVC with data from all microstructures in data
+        # Train SVC with data from all microstructures in data
         if self.sdim == 3:
-            # assuming cylindrical stresses if sdim=3
-            train_sc, test_sc = self.setup_yf_SVM_3D(xt, yt, C=C, gamma=gamma, \
-                                fs=0.3, plot=False, gridsearch=gridsearch, cvals=cvals, gvals=gvals)
+            # assuming Cartesian stresses
+            train_sc, test_sc = \
+                self.setup_yf_SVM_3D(xt, yt, C=C, gamma=gamma, fs=0.3,
+                                     plot=False, gridsearch=gridsearch,
+                                     cvals=cvals, gvals=gvals)
         else:
-            train_sc, test_sc = self.setup_yf_SVM_6D(xt, yt, C=C, gamma=gamma, gridsearch=gridsearch)
+            train_sc, test_sc = self.setup_yf_SVM_6D(xt, yt, C=C, gamma=gamma,
+                                                     gridsearch=gridsearch)
 
         print(self.svm_yf)
         print("Training set score: {} %".format(train_sc))
@@ -1260,8 +1298,11 @@ class Material(object):
                 for j in range(0,Npl,np.maximum(1,int(Npl/5))):
                     #to-do: x_test and y_test should be setup properly above!!!
                     ind = list(range((j+k*Npl)*N0,(j+k*Npl+1)*N0,int(0.5*N0/Nlc)))
+                    x_test = s_cyl(xt[ind, 0:self.sdim])
                     y_test = yt[ind]
-                    x_test = xt[ind,:]
+                    ind = np.argsort(x_test[:,1]) # sort dta points w.r.t. polar angle
+                    x_test = x_test[ind, :]
+                    y_test = y_test[ind]
                     peeq = self.msparam[0]['work_hard'][j] - self.epc
                     sflow = self.get_sflow(peeq)
                     iel = np.nonzero(y_test<0.)[0]
@@ -1270,8 +1311,10 @@ class Material(object):
                     plt.gca().plot(x_test[ipl,1], x_test[ipl,0], 'r.', label='test data above yield point')
                     plt.gca().plot(x_test[iel,1], x_test[iel,0], 'b.', label='test data below yield point')
                     if self.msparam is not None:
-                        syc = self.msparam[0]['flow_stress'][k,j,:,:]
-                        plt.gca().plot(syc[:,1], syc[:,0], '-c', label='reference yield locus')
+                        syc = s_cyl(self.msparam[0]['flow_stress'][k,j,:,:])
+                        ind = np.argsort(syc[:,1])
+                        plt.gca().plot(syc[ind,1], syc[ind,0], '-c',
+                                       label='reference yield locus')
                     #ML yield fct: find norm of princ. stess vector lying on yield surface
                     snorm = sp_cart(np.array([sflow*np.ones(36)*np.sqrt(1.5), theta]).T)
                     x1 = fsolve(self.find_yloc, np.ones(36), args=(snorm,peeq), xtol=1.e-5)
@@ -1295,7 +1338,7 @@ class Material(object):
         '''Function to create consistent data sets on the deviatoric stress plane
         for training or testing of ML yield function. Either the number "N" of raw data points, i.e. load angles, to be 
         generated and a reference material "mat_ref" has to be provided, or a list of raw data points "sdata" with 
-        cylindrical stress tensors lying on the yield surface serves as input. Based on the raw data, stress tensors 
+        Cartesian stress tensors lying on the yield surface serves as input. Based on the raw data, stress tensors 
         from the yield locus are distributed into the entire deviatoric space, by linear downscaling into the elastic 
         region and upscaling into the plastic region. Data is created in form of cylindrical stresses that lie densly 
         around the expected yield locus and more sparsely in the outer plastic region.
@@ -1307,8 +1350,8 @@ class Material(object):
             either N and mat_ref or sdata must be provided)
         mat_ref : object of class ``Material``
             reference material needed to calculate yield function if only N is provided (optional, ignored if sdata is given)
-        sdata: (N,3) or (N,6) array
-            List of cylindrical stresses (N,3) or Voigt stresses (N,6) lying on yield locus. 
+        sdata: (N, sdim) array
+            List of Cartesian stress tensors lying on yield locus. 
             Based on these yield stresses, training data in entire deviatoric stress space is created
             (optional, either sdata or N and mat_ref must be provided)
         Nseq : int
@@ -1324,7 +1367,7 @@ class Material(object):
 
         Returns
         -------
-        st : (M,2) or (M,6) array
+        st : (M, sdim) array
             Cartesian training stresses, M = N (2 Nseq + Nextend)
         yt : (M,) array
             Result vector of categorial yield function (-1 or +1) for supervised training
@@ -1364,10 +1407,6 @@ class Material(object):
             if mat_ref is not None:
                 warnings.warn('create_sig_data: using sdata for training, ignoring mat_ref')
             N = i
-            '''if self.sdim==3:
-                sc    = sdata[:,0]
-                theta = sdata[:,1]
-            else:'''
             sdata = sdev(sdata) # make sure training stresses are purely deviatoric
         seq = np.linspace(offs, 0.95, Nseq)
         seq = np.append(seq, np.linspace(1.05, 2., Nseq))
@@ -1375,17 +1414,11 @@ class Material(object):
             # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
             seq = np.append(seq, np.array([2.4, 3., 4., 5.]))
         Nd = len(seq)  # numberof training stresses per load case
-        st = np.zeros((N*Nd,self.sdim))  # input vector with training stresses
+        st = np.zeros((N*Nd, self.sdim))  # input vector with training stresses
         yt = np.zeros(N*Nd)  # result vector for supervised learning
         for i in range(Nd):
             j0 = i*N
             j1 = (i+1)*N
-            '''if self.sdim==3:
-                # create regular stress grid in 2-dimensional deviatoric plane of princ. stress space
-                st[j0:j1,0] = seq[i]*sflow
-                st[j0:j1,1] = theta
-                yt[j0:j1] = np.sign(seq[i]*sflow - sc)
-            else:'''
             # scale sdata into elastic regime (seq<1) or into plastic regime (seq>=1)
             st[j0:j1,:] = sdata[:,0:self.sdim]*seq[i]
             yt[j0:j1] = -1. if i<Nseq else +1.                
