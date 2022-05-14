@@ -14,6 +14,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 print('pyLabFEA version', FE.__version__)
 
+# set standard font size
+font = {'size': 16}
+plt.rc('font', **font)
+
 # define Hill model as reference material
 E=200.e3  # Youngs modulus in MPa
 nu=0.3    # Poisson ratio

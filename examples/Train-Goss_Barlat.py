@@ -15,6 +15,10 @@ import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
 print('pyLabFEA version', FE.__version__)
 
+# set standard font size
+font = {'size': 16}
+plt.rc('font', **font)
+
 def find_yloc(x, sig, mat):
     # Expand unit stresses 'sig' by factor 'x' and calculate yield function
     return mat.calc_seq(sig*x[:,None]) - mat.sy
