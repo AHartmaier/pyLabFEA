@@ -33,7 +33,7 @@ mat_ml.export_MLparam(__file__, path='../models/')
 #analyze support vectors to plot them in stress space
 sv = mat_ml.svm_yf.support_vectors_ * mat_ml.scale_seq
 Nsv = len(sv)
-sc = FE.s_cyl(sv)
+sc = FE.sig_princ2cyl(sv)
 yf = mat_ml.calc_yf(sv, pred=True)
 print("ML material with {} support vectors, C={}, gamma={}, stress dimensions={}"\
     .format(Nsv,mat_ml.C_yf,mat_ml.gam_yf,mat_ml.sdim))
@@ -47,7 +47,7 @@ xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid),np.linspace(0, 2, ngrid))
 yy *= mat_ml.scale_seq
 xx *= np.pi
 hh = np.c_[yy.ravel(),xx.ravel()]
-st = FE.sp_cart(hh)
+st = FE.sig_cyl2princ(hh)
 Z = mat_ml.calc_yf(st)  # value of yield function for every grid point
 fig, ax  = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
 line = mat_ml.plot_data(Z, ax, xx, yy, c='black')

@@ -49,7 +49,7 @@ sunit[4,0] =  1./np.sqrt(3.)
 sunit[4,1] = -1./np.sqrt(3.)
 x1 = fsolve(find_yloc, np.ones(5) * mat_GB.sy, args=(sunit, mat_GB), xtol=1.e-5)
 sy_ref = sunit * x1[:, None]
-seq_ref = FE.seq_J2(sy_ref)
+seq_ref = FE.sig_eq_j2(sy_ref)
 
 # define material as basis for ML flow rule
 C=15.
@@ -67,7 +67,7 @@ print('Yield strength: Ref={}MPa, ML={}MPa'.format(mat_GB.sy, mat_mlGB.sy))
 
 # train SVC with data generated from Barlat model for material with Goss texture
 mat_mlGB.train_SVC(C=C, gamma=gamma)
-sc = FE.s_cyl(mat_mlGB.msparam[0]['sig_yld'][0])
+sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_yld'][0])
 mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True)
 # export ML paramaters for use in UMAT
 #mat_mlGB.export_MLparam(__file__, path='../models/')
@@ -75,7 +75,7 @@ mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True
 # analyze support vectors to plot them in stress space
 sv = mat_mlGB.svm_yf.support_vectors_ * mat_mlGB.scale_seq
 Nsv = len(sv)
-sc = FE.s_cyl(sv)
+sc = FE.sig_princ2cyl(sv)
 yf = mat_mlGB.calc_yf(sv, pred=True)
 print("ML material with {} support vectors, C={}, gamma={}, stress dimensions={}"\
     .format(Nsv,mat_mlGB.C_yf,mat_mlGB.gam_yf,mat_mlGB.sdim))
@@ -88,7 +88,7 @@ xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid),np.linspace(0, 2, ngrid))
 yy *= mat_mlGB.scale_seq
 xx *= np.pi
 hh = np.c_[yy.ravel(),xx.ravel()]
-Z = mat_mlGB.calc_yf(FE.sp_cart(hh))  # value of yield function for every grid point
+Z = mat_mlGB.calc_yf(FE.sig_cyl2princ(hh))  # value of yield function for every grid point
 fig, ax  = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
 line = mat_mlGB.plot_data(Z, ax, xx, yy, c='black')
 pts  = ax.scatter(sc[:,1], sc[:,0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k') # plot support vectors

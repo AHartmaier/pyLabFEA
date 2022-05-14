@@ -40,7 +40,7 @@ mat_mlh.train_SVC(C=C, gamma=gamma, mat_ref=mat_h, Nlc=300)
 # analyze support vectors to plot them in stress space
 sv = mat_mlh.svm_yf.support_vectors_ * mat_mlh.scale_seq
 Nsv = len(sv)
-sc = FE.s_cyl(sv)
+sc = FE.sig_princ2cyl(sv)
 yf = mat_mlh.calc_yf(sv, pred=True)
 print("ML material with {} support vectors, C={}, gamma={}, stress dimensions={}"\
     .format(Nsv,mat_mlh.C_yf,mat_mlh.gam_yf,mat_mlh.sdim))
@@ -55,7 +55,7 @@ xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid),np.linspace(0, 2, ngrid))
 yy *= mat_mlh.scale_seq
 xx *= np.pi
 hh = np.c_[yy.ravel(),xx.ravel()]
-Z = mat_mlh.calc_yf(FE.sp_cart(hh))  # value of yield function for every grid point
+Z = mat_mlh.calc_yf(FE.sig_cyl2princ(hh))  # value of yield function for every grid point
 fig, ax  = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
 line = mat_mlh.plot_data(Z, ax, xx, yy, c='black')
 pts  = ax.scatter(sc[:,1], sc[:,0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k') # plot support vectors

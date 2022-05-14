@@ -45,7 +45,7 @@ $ pytest tests -v
 After this, the package can be used within python, e.g. by importing the entire package with
 
 ```python
-import pylabfea as FE
+import pylabfea as fea
 ```
 
 

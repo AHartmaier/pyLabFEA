@@ -13,8 +13,8 @@ Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 
-from pylabfea.basic import Stress, eps_eq, polar_ang, s_cyl, \
-                           seq_J2, sp_cart, svoigt
+from pylabfea.basic import Stress, eps_eq, sig_polar_ang, sig_princ2cyl, \
+                           sig_eq_j2, sig_cyl2princ, sig_cyl2voigt
 import numpy as np
 import json
 import pandas as pd
@@ -139,7 +139,7 @@ class Data(object):
                         ie = len(hs)
                         ht = np.array(hs)
                         sf[iset,ipeeq,0:ie,:] = ht # store flow stresses for texture and PEEQ
-                        sflow_av[iset,ipeeq] = np.average(seq_J2(ht)) # calculate average equiv. flow stress  
+                        sflow_av[iset,ipeeq] = np.average(sig_eq_j2(ht)) # calculate average equiv. flow stress
             return sf, sflow_av
         
         self.name = name
@@ -382,7 +382,7 @@ class Data(object):
                             self.ubc = self.eps/eeq[:,None] # generate information on load case from normalized strain
                             self.ubc[ind] = self.ubc[ind+1] # cases with small strains inherit ubc from subsequent case
                         elif lc=='force':
-                            seq = seq_J2(self.sig)
+                            seq = sig_eq_j2(self.sig)
                             ind = np.nonzero(seq<1.e-4)[0]  # filter cases with small stresses
                             seq[ind] = 1.
                             self.ubc = self.sig/seq[:,None] # generate information on load case from normalized stress
@@ -401,7 +401,7 @@ class Data(object):
             #input completed, now the postprocessing of the data starts
             # calculate cylindrical stresses (containing equiv. stress)
             if db.sdim == 3:
-                self.sc_full = s_cyl(self.sig)   # transform princ. stresses into cylindrical coordinates
+                self.sc_full = sig_princ2cyl(self.sig)   # transform princ. stresses into cylindrical coordinates
                 self.evec = None
             else:
                 self.sc_full = np.zeros((self.N,3))
@@ -430,7 +430,7 @@ class Data(object):
                 print('Data for flow stresses at various plastic strains imported.')
             if db.predef:
                 print('\n###Mechanical data obtained after predeformation.')
-                print('Initial stress: ',sig_0, ' equiv. stress: ', seq_J2(sig_0))
+                print('Initial stress: ', sig_0, ' equiv. stress: ', sig_eq_j2(sig_0))
                 print('Initial total strain: ',eps_0, 'equiv. total strain', eps_eq(eps_0))
                 print('Initial plastic strain: ',epl_0, 'equiv. plastic strain: ',eps_eq(epl_0))
                 print('Initial values have been subtracted from stress-strain data.')
@@ -445,7 +445,7 @@ class Data(object):
             if not db.flow_stress:
                 #data provided only for stress tensor at yield point
                 self.syld = self.sig
-                self.sy   = np.average(seq_J2(self.sig)) # average value for yield strength of data set
+                self.sy   = np.average(sig_eq_j2(self.sig)) # average value for yield strength of data set
                 self.Nlc  = self.N
                 self.Ndat = self.N
                 print('Estimated yield strength: %5.2f MPa, from %i data sets with PEEQ %5.3f' 
@@ -509,11 +509,11 @@ class Data(object):
                     self.peeq_ = np.append(peeq_raw, peeq_raw, axis=0)
                     self.ubc_  = np.append(self.ubc[ind], ubc2, axis=0)
                     if db.sdim == 3:
-                        self.sig_  = sp_cart(self.sfc_) # transform back into 3D principle stress space
+                        self.sig_  = sig_cyl2princ(self.sfc_) # transform back into 3D principle stress space
                     else:
                         self.sig_ = np.zeros((self.Ndat,6))
                         for i,sc in enumerate(self.sfc_):
-                            self.sig_[i,:] = svoigt(sc, self.evec[i,:,:])
+                            self.sig_[i,:] = sig_cyl2voigt(sc, self.evec[i, :, :])
                 else: 
                     self.sfc_  = self.sc_full[ind]
                     self.peeq_ = self.peeq_full[ind]
@@ -574,9 +574,9 @@ class Data(object):
                 self.sy = np.average(hs) # refined value for yield strength of data set
             
                 #select data points with eqiv. stress in range [0.1,0.4]sy => elastic constants
-                seq = seq_J2(self.sig)
+                seq = sig_eq_j2(self.sig)
                 ind1 = np.nonzero(np.logical_and(seq>0.1*self.sy, seq<0.4*self.sy))[0]
-                seq = seq_J2(self.sig[ind1])
+                seq = sig_eq_j2(self.sig[ind1])
                 eeq = eps_eq(self.eps[ind1])
                 self.E = np.average(seq/eeq)
                 self.nu = 0.3
@@ -746,7 +746,7 @@ class Data(object):
                 epl_0 = deepcopy(self.epl[0])
                 self.epl -= epl_0
             if db.sdim == 3:
-                self.sc_full = s_cyl(self.sig)   # transform princ. stresses into cylindrical coordinates
+                self.sc_full = sig_princ2cyl(self.sig)   # transform princ. stresses into cylindrical coordinates
                 self.evec = None
             else:
                 self.sc_full = np.zeros((self.N,3))
@@ -763,7 +763,7 @@ class Data(object):
                 print('Data for flow stresses at various plastic strains imported.')
             if db.predef:
                 print('\n###Mechanical data obtained after predeformation.')
-                print('Initial stress: ',sig_0, ' equiv. stress: ', seq_J2(sig_0))
+                print('Initial stress: ', sig_0, ' equiv. stress: ', sig_eq_j2(sig_0))
                 print('Initial total strain: ',eps_0, 'equiv. total strain', eps_eq(eps_0))
                 print('Initial plastic strain: ',epl_0, 'equiv. plastic strain: ',eps_eq(epl_0))
                 print('Initial values have been subtracted from stress-strain data.')
@@ -795,7 +795,7 @@ class Data(object):
                 #add mirrored data to flow stresses and augment plastic strain arrays accordingly
                 self.Ndat *= 2    # number of data points in raw data
                 self.sig_  = np.append(self.sig[ind,:], hs2, axis=0)
-                self.sfc_  = s_cyl(self.sig_)
+                self.sfc_  = sig_princ2cyl(self.sig_)
                 self.peeq_ = np.append(peeq_raw, peeq_raw, axis=0)
                 self.ubc_  = np.append(self.ubc[ind], ubc2, axis=0)
             else: 
@@ -857,9 +857,9 @@ class Data(object):
             self.sy = np.average(hs) # refined value for yield strength of data set
         
             #select data points with eqiv. stress in range [0.1,0.4]sy => elastic constants
-            seq = seq_J2(self.sig)
+            seq = sig_eq_j2(self.sig)
             ind1 = np.nonzero(np.logical_and(seq>0.1*self.sy, seq<0.4*self.sy))[0]
-            seq = seq_J2(self.sig[ind1])
+            seq = sig_eq_j2(self.sig[ind1])
             eeq = eps_eq(self.eps[ind1])
             self.E = np.average(seq/eeq)
             self.nu = 0.3
@@ -881,7 +881,7 @@ class Data(object):
             self.N = len(sig)
             self.sig = sig
             self.syld = sig
-            self.sy   = np.average(seq_J2(sig)) # average value for yield strength of data set
+            self.sy   = np.average(sig_eq_j2(sig)) # average value for yield strength of data set
             self.Nlc  = self.N
             self.Ndat = self.N
             self.texture_type = 'Goss-100%'
@@ -933,13 +933,13 @@ class Data(object):
             val = self.mat_param[active][i]
             hc = (val-v0)/scale
             if active=='work_hard':
-                sc = s_cyl(self.mat_param['flow_stress'][set_ind,i,:,:])
+                sc = sig_princ2cyl(self.mat_param['flow_stress'][set_ind, i, :, :])
                 ind = np.argsort(sc[:,1]) # sort dta points w.r.t. polar angle
                 sc = sc[ind]
                 label = 'PEEQ: '+str(val.round(decimals=4))
                 color = cmap(hc)
             elif active=='texture':
-                sc = s_cyl(self.mat_param['flow_stress'][i,0,:,:])
+                sc = sig_princ2cyl(self.mat_param['flow_stress'][i, 0, :, :])
                 ind = np.argsort(sc[:,1]) # sort dta points w.r.t. polar angle
                 sc = sc[ind]
                 label = self.set[i].texture_name
@@ -998,8 +998,8 @@ class Data(object):
         plt.subplot(1,2,1)
         for i in range(0,N,nth):
             ind = dset.load_case[i]
-            col = polar_ang(dset.sig[ind[-1]])/np.pi
-            plt.plot(eps_eq(dset.eps[ind])*100, seq_J2(dset.sig[ind]), color=cmap(col)) #'.k')
+            col = sig_polar_ang(dset.sig[ind[-1]]) / np.pi
+            plt.plot(eps_eq(dset.eps[ind]) * 100, sig_eq_j2(dset.sig[ind]), color=cmap(col)) #'.k')
         plt.xlabel(r'$\epsilon_{eq}^\mathrm{tot}$ (%)', fontsize=fontsize)
         plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize)
         plt.title('Equiv. total strain vs. equiv. J2 stress', fontsize=fontsize)
@@ -1009,7 +1009,7 @@ class Data(object):
         plt.subplot(1, 2, 2) #, projection='polar')
         plt.plot(dset.sfc_[dset.i_pl_,1], dset.sfc_[dset.i_pl_,0], 'or')
         plt.plot(dset.sfc_[dset.i_el_,1], dset.sfc_[dset.i_el_,0], 'ob')
-        syc = s_cyl(dset.syld)
+        syc = sig_princ2cyl(dset.syld)
         plt.plot(syc[:,1], syc[:,0], '-k')
         plt.plot([-np.pi, np.pi], [dset.sy, dset.sy], '--k')
         plt.legend(['raw data above yield point', 'raw data below yield point', 

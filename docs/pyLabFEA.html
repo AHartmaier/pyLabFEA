@@ -218,12 +218,12 @@ if <code class="docutils literal notranslate"><span class="pre">Material</span><
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="pylabfea.basic.Stress.sJ2">
-<span class="sig-name descname"><span class="pre">sJ2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#Stress.sJ2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.Stress.sJ2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.Stress.seq_j2">
+<span class="sig-name descname"><span class="pre">seq_j2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#Stress.seq_j2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.Stress.seq_j2" title="Permalink to this definition">¶</a></dt>
 <dd><p>calculate J2 principal stress</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>sJ2</strong> – equivalent stress</p>
+<dd class="field-odd"><p><strong>seq_j2</strong> – equivalent stress</p>
 </dd>
 <dt class="field-even">Return type</dt>
 <dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
@@ -296,8 +296,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.pckl2mat">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">pckl2mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#pckl2mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.pckl2mat" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.pickle2mat">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">pickle2mat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#pickle2mat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.pickle2mat" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read pickled material file.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -316,8 +316,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.polar_ang">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">polar_ang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#polar_ang"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.polar_ang" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_polar_ang">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_polar_ang</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_polar_ang"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_polar_ang" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform stresses into polar angle on deviatoric plane spanned by a_vec and b_vec</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -325,7 +325,7 @@ J2 equivalent stress otherwise</p>
 (6,), (N,6): Voigt stress</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>theta</strong> – polar angles in deviatoric plane as positive angle between sprinc and a_vec in range [-pi,+p]</p>
+<dd class="field-even"><p><strong>theta</strong> – polar angles in deviatoric plane as positive angle between sig_princ and a_vec in range [-pi,+p]</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or (N,) array</p>
@@ -345,8 +345,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.s_cyl">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">s_cyl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#s_cyl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.s_cyl" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_princ2cyl">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_princ2cyl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_princ2cyl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_princ2cyl" title="Permalink to this definition">¶</a></dt>
 <dd><p>convert principal stress into cylindrical stress vector</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -365,8 +365,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.sdev">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sdev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sdev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sdev" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_dev">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_dev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_dev"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_dev" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate deviatoric stress component from given stress tensor</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -382,8 +382,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.seq_J2">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">seq_J2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#seq_J2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.seq_J2" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_eq_j2">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_eq_j2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_eq_j2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_eq_j2" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate J2 equivalent stress from any stress tensor</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -400,15 +400,15 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.sp_cart">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sp_cart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scyl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sp_cart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sp_cart" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_cyl2princ">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_cyl2princ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scyl</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_cyl2princ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_cyl2princ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert cylindrical stress into 3D Cartesian principle stress</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><p><strong>scyl</strong> (<em>(</em><em>2</em><em>,</em><em>)</em><em>, </em><em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>(</em><em>N</em><em>,</em><em>2</em><em>) or </em><em>(</em><em>N</em><em>,</em><em>3</em><em>) </em><em>array</em>) – Cylindrical stress in form (seq, theta, (optional: p))</p>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>sprinc</strong> – principle deviatoric stresses</p>
+<dd class="field-even"><p><strong>sig_princ</strong> – principle deviatoric stresses</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>(3,) or (N,3) array</p>
@@ -417,8 +417,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.sprinc">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sprinc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sprinc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sprinc" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_princ">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_princ</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sig</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_princ"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_princ" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert Voigt stress tensors into principal stresses and eigenvectors.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -435,8 +435,8 @@ J2 equivalent stress otherwise</p>
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="pylabfea.basic.svoigt">
-<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">svoigt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scyl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#svoigt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.svoigt" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="pylabfea.basic.sig_cyl2voigt">
+<span class="sig-prename descclassname"><span class="pre">pylabfea.basic.</span></span><span class="sig-name descname"><span class="pre">sig_cyl2voigt</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scyl</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">evec</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/basic.html#sig_cyl2voigt"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.basic.sig_cyl2voigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert cylindrical stress and eigenvectors into Voigt stress tensor</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -446,7 +446,7 @@ J2 equivalent stress otherwise</p>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>svoigt</strong> – Voigt stress tensor</p>
+<dd class="field-even"><p><strong>sig_cyl2voigt</strong> – Voigt stress tensor</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>(6,) or (N,6) array</p>
@@ -2272,7 +2272,7 @@ Will be set True automatically if 6 Hill parameters are provided</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="pylabfea.material.Material.polar_plot_yl">
-<span class="sig-name descname"><span class="pre">polar_plot_yl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">72</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sJ2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material.polar_plot_yl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material.polar_plot_yl" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">polar_plot_yl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">72</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmat</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dname</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'reference'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaling</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">field</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">predict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cbar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Np</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrow</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq_j2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pylabfea/material.html#Material.polar_plot_yl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pylabfea.material.Material.polar_plot_yl" title="Permalink to this definition">¶</a></dt>
 <dd><p>Plot yield locus as polar plot in deviatoric stress plane</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -2289,7 +2289,7 @@ Will be set True automatically if 6 Hill parameters are provided</p></li>
 <li><p><strong>cbar</strong> (<em>Boolean</em>) – Plot colorbar for field (optional, default: False)</p></li>
 <li><p><strong>file</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Name of PDF file to which plot is saved</p></li>
 <li><p><strong>arrow</strong> (<em>Boolean</em>) – Indicate if arrows for the pricipal stress directions are shown (optional, default: False)</p></li>
-<li><p><strong>sJ2</strong> (<em>Boolean</em>) – Indicate that J2 equivalent stress shall be used instead of material definition of
+<li><p><strong>seq_j2</strong> (<em>Boolean</em>) – Indicate that J2 equivalent stress shall be used instead of material definition of
 equivalent stress (optional, default: False)</p></li>
 </ul>
 </dd>

@@ -370,14 +370,14 @@ c ! 1-6: plastic strain (eplas)
       !based on the trained Support Vector Classification (SVC)
         implicit none
         integer :: i
-        real(8), dimension(ntens) :: sigma, sdev, gj2
+        real(8), dimension(ntens) :: sigma, sig_dev, gj2
         real(8), dimension(nsd) :: hs
         real(8) :: fsvc, kernelFunc
 
         fsvc = 0.
         do i=1, nsv
-            call calcDevStress(sigma, sdev)
-            hs(1:6) = sdev(1:6)/scale_seq 
+            call calcDevStress(sigma, sig_dev)
+            hs(1:6) = sig_dev(1:6)/scale_seq
             if (nsd>6) then
                 hs(7) = peeq/scale_wh - 1.
             end if
@@ -407,12 +407,12 @@ c ! 1-6: plastic strain (eplas)
         !strain hardening rate khard is also updated based on gradient ov SVC w.r.t peeq
         implicit none
         integer :: i
-        real(8), dimension(ntens) :: sigma, sdev, dfds, gj2
+        real(8), dimension(ntens) :: sigma, sig_dev, dfds, gj2
         real(8), dimension(nsd) :: hs, dk_dx, hg
         real(8) :: h0,h1,h2,h3,h4,h5,seq
 
-        call calcDevStress(sigma, sdev)
-        hs(1:6) = sdev(1:6)/scale_seq
+        call calcDevStress(sigma, sig_dev)
+        hs(1:6) = sig_dev(1:6)/scale_seq
         if (nsd>6) then
             hs(7) = peeq/scale_wh - 1.
         end if

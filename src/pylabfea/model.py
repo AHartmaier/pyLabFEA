@@ -12,7 +12,7 @@ distributed under GNU General Public License (GPLv3)'''
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
-from pylabfea.basic import Stress, eps_eq, seq_J2, ptol
+from pylabfea.basic import Stress, eps_eq, sig_eq_j2, yf_tolerance
 from matplotlib import colors, colorbar
 
 # =========================   
@@ -741,7 +741,6 @@ class Model(object):
         else:
             raise TypeError('bcnode: Unknown BC: {}'.format(bctype))
 
-            
     def mesh(self, elmts=None, nodes=None, NX=10, NY=1, SF=1):
         '''
         Import mesh or
@@ -810,7 +809,7 @@ class Model(object):
         
         if elmts is None:
             #Calculate number of elements per section -- only laminate structure
-            hh  = self.LS / self.lenx  # proportion of segment length to total length of model
+            hh = self.LS / self.lenx  # proportion of segment length to total length of model
             nes = [int(x) for x in np.round(hh*NX)]  # nes gives number of elements per segement in proportion 
             if (np.sum(nes) != NX):  # add or remove elements of largest section if necessary
                 im = np.argmax(self.LS)
@@ -899,18 +898,18 @@ class Model(object):
             else:
                 # save nodes on boundaries
                 tol = 0.001*self.lenx/NX
-                for i, pos in enumerate(self.npos):
+                for inode, pos in enumerate(self.npos):
                     nin = True
                     if pos < tol: 
-                        if DIM==1 or i%2==0:
+                        if DIM==1 or inode%2==0:
                             self.noleft.append(inode)
-                        if DIM==2 and i%2==1:
+                        if DIM==2 and inode%2==1:
                             self.nobot.append(inode)
                         nin = False
-                    if pos>self.lenx-tol and (DIM==1 or i%2==0):
+                    if pos>self.lenx-tol and (DIM==1 or inode%2==0):
                         self.noright.append(inode)
                         nin = False
-                    if pos>self.leny-tol and DIM==2 and i%2==1:
+                    if pos>self.leny-tol and DIM==2 and inode%2==1:
                         self.notop.append(inode)
                         nin = False
                     if nin:
@@ -1230,15 +1229,16 @@ class Model(object):
         # construct Voigt type tensor in loading direction for search of yield
         # point, used for scaling of load step for ML flow rules
         sld = np.zeros(6)
-        if np.abs(self.bcr[0])>1.e-6:
+        if np.abs(self.bcr[0]) > 1.e-6:
             sld[0] = np.sign(self.bcr[0])
-        if np.abs(self.bct[1])>1.e-6:
-            sld[1] = np.sign(self.bct[1])
-        if np.abs(self.bcr[1])>1.e-6:
-            sld[5] = np.sign(self.bcr[1])
-        if np.abs(self.bct[0])>1.e-6:
+        if self.dim > 1:
+            if np.abs(self.bct[1]) > 1.e-6:
+                sld[1] = np.sign(self.bct[1])
+            if np.abs(self.bcr[1]) > 1.e-6:
+                sld[5] = np.sign(self.bcr[1])
+        if np.abs(self.bct[0]) > 1.e-6:
             sld[5] = np.sign(self.bct[0])
-        if (np.linalg.norm(sld)<1.e-3):
+        if np.linalg.norm(sld) < 1.e-3:
             warnings.warn('solve: inconsistent BC sld={}, bct={}, bcr={}'
                           .format(sld, self.bct, self.bcr))
             sld[0] = 1.
@@ -1343,12 +1343,12 @@ class Model(object):
                         else:
                             f.append(0.)
                     f = np.array(f)
-                    conv = np.all(f<=ptol*1.0001)
+                    conv = np.all(f <= yf_tolerance * 1.0001)
                     if verb:
                         if not conv:
                             print('\n  ###  Warning: No convergence of plasticity algorithm in trial step #',nit)
                             print('  ###  yield function=',f)#,'residual forces on inner nodes=',fres[jin])
-                            print('  ###  Convergence stats (ptol=',ptol,'):')
+                            print('  ###  Convergence stats (ptol=', yf_tolerance, '):')
                             for j,el in enumerate(self.element):
                                 print('EL #',j,'iteration steps:', \
                                   el.stat_nlin['max_steps'], 'max. Dstiff:',el.stat_nlin['max_dstiff']) 
@@ -1412,7 +1412,7 @@ class Model(object):
                 print('Global strain: ', np.around(self.glob['eps'],decimals=5))
                 print('Global stress: ', np.around(self.glob['sig'],decimals=3))
                 print('Global plastic strain: ', np.around(self.glob['epl'],decimals=6))
-                seq = seq_J2(self.glob['sig'])
+                seq = sig_eq_j2(self.glob['sig'])
                 if seq>1.e-3:
                     hh =  np.abs(self.glob['sbc1'] - self.glob['sig'][0])
                     hh += np.abs(self.glob['sbc2'] - self.glob['sig'][1])
@@ -1558,70 +1558,87 @@ class Model(object):
         '''
         fig, ax = plt.subplots(1)
         cmap = plt.cm.get_cmap(colormap, cdepth)
+
         def strain1():
             hh = [el.eps[0]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{tot}_{11}$ (%)'
             return hh, text_cb
+
         def strain2():
             hh = [el.eps[1]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{tot}_{22}$ (%)'
             return hh, text_cb
+
         def strain12():
             hh = [el.eps[5]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{tot}_{12}$ (%)'
             return hh, text_cb
+
         def stress1():
             hh = [el.sig[0] for el in self.element]
             text_cb = r'$\sigma_{11}$ (MPa)'
             return hh, text_cb
+
         def stress2():
             hh = [el.sig[1] for el in self.element]
             text_cb = r'$\sigma_{22}$ (MPa)'
             return hh, text_cb
+
         def stress12():
             hh = [el.sig[5] for el in self.element]
             text_cb = r'$\sigma_{12}$ (MPa)'
             return hh, text_cb
+
         def plastic1():
             hh = [el.epl[0]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{pl}_{11}$ (%)'
             return hh, text_cb
+
         def plastic2():
             hh = [el.epl[1]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{pl}_{22}$ (%)'
             return hh, text_cb
+
         def plastic12():
             hh = [el.epl[5]*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{pl}_{12}$ (%)'
             return hh, text_cb
+
         def stress_eq():
             hh = [Stress(el.sig).seq(el.Mat) for el in self.element]
             text_cb = r'$\sigma_{eq}$ (MPa)'
             return hh, text_cb
+
         def stress_eqJ2():
-            hh = [Stress(el.sig).sJ2() for el in self.element]
+            hh = [Stress(el.sig).seq_j2() for el in self.element]
             text_cb = r'$\sigma^\mathrm{J2}_{eq}$ (MPa)'
             return hh, text_cb
+
         def strain_peeq():
             hh = [eps_eq(el.epl)*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{pl}_{eq}$ (%)'
             return hh, text_cb
+
         def strain_etot():
             hh = [eps_eq(el.eps)*100 for el in self.element]
             text_cb = r'$\epsilon^\mathrm{tot}_{eq}$ (%)'
             return hh, text_cb
+
         def disp_x():
             hh = [el.eps[0]*self.lenx for el in self.element]
             text_cb = r'$u_x$ (mm)'
             return hh, text_cb
+
         def disp_y():
             hh = [el.eps[1]*self.leny for el in self.element]
             text_cb = r'$u_y$ (mm)'
             return hh, text_cb
+
         def disp_mat():
             hh = [el.Mat.num for el in self.element]
             text_cb = 'Material number'
             return hh, text_cb
+
         field={
             'strain1'  : strain1(),
             'strain2'  : strain2(),

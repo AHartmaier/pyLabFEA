@@ -12,8 +12,8 @@ Authors: Alexander Hartmaier, Ronak Shoghi, ICAMS/Ruhr University Bochum, German
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)'''
 from pylabfea.basic import a_vec, b_vec, \
-                           eps_eq, polar_ang, ptol, \
-                           seq_J2, sp_cart, sprinc, sdev, s_cyl
+                           eps_eq, sig_polar_ang, yf_tolerance, \
+                           sig_eq_j2, sig_cyl2princ, sig_princ, sig_dev, sig_princ2cyl
 from pylabfea.model import Model
 from pylabfea.training import load_cases
 from scipy.optimize import root_scalar
@@ -187,7 +187,7 @@ class Material(object):
         sig = np.array(sig) # produce copy of sig to avoid changes to original
         depl = np.zeros(6) # initialize plastic strain increment
         peeq = eps_eq(epl) # equiv. plastic strain at start of step
-        toler = ptol*self.get_sflow(peeq)
+        toler = yf_tolerance * self.get_sflow(peeq)
         dsig = CV @ deps   # predictor of stress increment
         st_scal = 1.
         niter = 0
@@ -319,10 +319,10 @@ class Material(object):
                 N = len(sig)
             x = np.zeros((N, self.Ndof))
             if self.sdim==3:
-                x[:,0] = seq_J2(sig)/self.scale_seq - 1.
-                x[:,1] = polar_ang(sig)/np.pi
+                x[:,0] = sig_eq_j2(sig) / self.scale_seq - 1.
+                x[:,1] = sig_polar_ang(sig) / np.pi
             else:
-                sig = sdev(sig)
+                sig = sig_dev(sig)
                 if sh==(N,6) or sh==(6,):
                     x[:,0:6] = sig[:,0:6]/self.scale_seq
                 else:
@@ -524,11 +524,11 @@ class Material(object):
             sig = np.append(sig,np.zeros((N,3)), axis=1)
         elif sh==(6,):
             N = 1
-            sp = sprinc(sig)[0]
+            sp = sig_princ(sig)[0]
             sp = np.array([sp])
             sig = np.array([sig])
         elif sh==(N,6):
-            sp = sprinc(sig)[0]
+            sp = sig_princ(sig)[0]
         else:
             print('*** calc_seq: N={}, sh={}, caller={}'.format(N, sh, sys._getframe().f_back.f_code.co_name))
             raise TypeError('Unknown format of stress in calc_seq')
@@ -593,11 +593,11 @@ class Material(object):
         seq : float
             Equivalent stress
         '''
-        sd = sdev(sv)
+        sd = sig_dev(sv)
         st1  = self.Bar_m1 @ sd  # first linearly transformed stress deviator s_tilda_'
         st2  = self.Bar_m2 @ sd  # second linearly transformed stress deviator s_tilda_''
-        Stp1 = sprinc(st1)[0]  # principal stress of transformed stress
-        Stp2 = sprinc(st2)[0]
+        Stp1 = sig_princ(st1)[0]  # principal stress of transformed stress
+        Stp2 = sig_princ(st2)[0]
         a = self.barlat_exp
         seq  = np.abs(Stp1[0]-Stp2[0])**a  + np.abs(Stp1[0]-Stp2[1])**a  + np.abs(Stp1[0]-Stp2[2])**a + \
                np.abs(Stp1[1]-Stp2[0])**a  + np.abs(Stp1[1]-Stp2[1])**a  + np.abs(Stp1[1]-Stp2[2])**a + \
@@ -657,7 +657,7 @@ class Material(object):
                 return grad            #define Jacobian of coordinate transformation
             def Jac(sig):
                 J = np.ones((3,3))
-                dev = sdev(sig)  # deviatoric princ. stress
+                dev = sig_dev(sig)  # deviatoric princ. stress
                 vn = np.linalg.norm(dev)*np.sqrt(1.5)  #norm of stress vector
                 if vn>0.1:
                     # calculate Jacobian only if sig>0
@@ -672,10 +672,10 @@ class Material(object):
                 return J
             x = np.zeros((N,self.Ndof))
             if self.sdim==3:
-                x[:,0] = seq_J2(sig)/self.scale_seq - 1.
-                x[:,1] = polar_ang(sig)/np.pi
+                x[:,0] = sig_eq_j2(sig) / self.scale_seq - 1.
+                x[:,1] = sig_polar_ang(sig) / np.pi
             else:
-                x[:,0:6] = sdev(sig)[:,0:6]/self.scale_seq
+                x[:,0:6] = sig_dev(sig)[:, 0:6] / self.scale_seq
             if self.whdat:
                 x[:,self.ind_wh] = peeq/self.scale_wh - 1.
             if self.txdat:
@@ -711,7 +711,7 @@ class Material(object):
             d3 = self.drucker/3.
             if (seq is None):
                 seq = self.calc_seq(sig)
-            sig = sdev(sig)
+            sig = sig_dev(sig)
             fgrad[:,0] = ((h0+h2)*sig[:,0] - h0*sig[:,1] - h2*sig[:,2])/(2.*seq) + d3
             fgrad[:,1] = ((h1+h0)*sig[:,1] - h0*sig[:,0] - h1*sig[:,2])/(2.*seq) + d3
             fgrad[:,2] = ((h2+h1)*sig[:,2] - h2*sig[:,0] - h1*sig[:,1])/(2.*seq) + d3
@@ -794,13 +794,13 @@ class Material(object):
             print('*** Warning in epl_dot: Step crosses yield surface')
             print('sig, epl, deps, yfun, yf0, peeq,caller', sig, epl, deps, yfun, yf0, peeq, sys._getframe().f_back.f_code.co_name)
             yfun=0. # catch error that can be produced for anisotropic materials'''
-        if (yfun<=ptol):
+        if (yfun<=yf_tolerance):
             pdot = np.zeros(6)
             #print('WARNING: Test for small stresses will be depracted in next version')
         else:
             if self.sdim==3:
                 a = np.zeros(6)
-                a[0:3] = self.calc_fgrad(sprinc(sig)[0], peeq=peeq)
+                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], peeq=peeq)
             else:
                 a = self.calc_fgrad(sig, peeq=peeq)
             hh = a.T @ Cel @ a + self.khard
@@ -829,7 +829,7 @@ class Material(object):
         '''
         if self.sdim==3:
             a = np.zeros(6)
-            a[0:3] = self.calc_fgrad(sprinc(sig)[0], peeq=peeq)
+            a[0:3] = self.calc_fgrad(sig_princ(sig)[0], peeq=peeq)
         else:
             a = self.calc_fgrad(sig, peeq=peeq)
         hh = a.T @ Cel @ a + self.khard
@@ -1032,8 +1032,8 @@ class Material(object):
         X_train = np.zeros((N, self.Ndof))
         if not cyl:
             #princ. stresses
-            X_train[:,0] = seq_J2(x[:,0:3])/self.scale_seq - 1.
-            X_train[:,1] = polar_ang(x[:,0:3])/np.pi
+            X_train[:,0] = sig_eq_j2(x[:, 0:3]) / self.scale_seq - 1.
+            X_train[:,1] = sig_polar_ang(x[:, 0:3]) / np.pi
             print('Converting principal stresses to cylindrical stresses for training')
         else:
             #cylindrical stresses
@@ -1067,8 +1067,8 @@ class Material(object):
             Ntest = len(x_test)
             X_test = np.zeros((Ntest,self.Ndof))
             if not cyl:
-                X_test[:,0] = seq_J2(x_test)/self.scale_seq - 1.
-                X_test[:,1] = polar_ang(x_test)/np.pi
+                X_test[:,0] = sig_eq_j2(x_test) / self.scale_seq - 1.
+                X_test[:,1] = sig_polar_ang(x_test) / np.pi
             else:
                 X_test[:,0] = x_test[:,0]/self.scale_seq - 1.
                 X_test[:,1] = x_test[:,1]/np.pi
@@ -1205,7 +1205,7 @@ class Material(object):
             else:
                 # based on given yield stresses
                 Nlc = len(sdata[:,0])
-                seq = seq_J2(sdata)
+                seq = sig_eq_j2(sdata)
                 self.plasticity(sy=np.mean(seq), sdim=len(sdata[0,:]))
                 xt, yt = self.create_sig_data(sdata=sdata,  Nseq=Nseq, extend=extend)
                 print('Training data created from {}-dimensional yield stresses with {} load cases.'\
@@ -1298,7 +1298,7 @@ class Material(object):
                 for j in range(0,Npl,np.maximum(1,int(Npl/5))):
                     #to-do: x_test and y_test should be setup properly above!!!
                     ind = list(range((j+k*Npl)*N0,(j+k*Npl+1)*N0,int(0.5*N0/Nlc)))
-                    x_test = s_cyl(xt[ind, 0:self.sdim])
+                    x_test = sig_princ2cyl(xt[ind, 0:self.sdim])
                     y_test = yt[ind]
                     ind = np.argsort(x_test[:,1]) # sort dta points w.r.t. polar angle
                     x_test = x_test[ind, :]
@@ -1311,15 +1311,15 @@ class Material(object):
                     plt.gca().plot(x_test[ipl,1], x_test[ipl,0], 'r.', label='test data above yield point')
                     plt.gca().plot(x_test[iel,1], x_test[iel,0], 'b.', label='test data below yield point')
                     if self.msparam is not None:
-                        syc = s_cyl(self.msparam[0]['flow_stress'][k,j,:,:])
+                        syc = sig_princ2cyl(self.msparam[0]['flow_stress'][k, j, :, :])
                         ind = np.argsort(syc[:,1])
                         plt.gca().plot(syc[ind,1], syc[ind,0], '-c',
                                        label='reference yield locus')
                     #ML yield fct: find norm of princ. stess vector lying on yield surface
-                    snorm = sp_cart(np.array([sflow*np.ones(36)*np.sqrt(1.5), theta]).T)
+                    snorm = sig_cyl2princ(np.array([sflow * np.ones(36) * np.sqrt(1.5), theta]).T)
                     x1 = fsolve(self.find_yloc, np.ones(36), args=(snorm,peeq), xtol=1.e-5)
                     sig = snorm*x1[:,None]
-                    s_yld = seq_J2(sig)
+                    s_yld = sig_eq_j2(sig)
                     plt.gca().plot(theta, s_yld, '-k', label='ML yield locus', linewidth=2)
                     if self.msparam is None:
                         plt.title=self.name
@@ -1388,16 +1388,16 @@ class Material(object):
                     theta = 2.*(np.random.rand(N)-0.5)*np.pi
                 sc = np.ones((N,2))
                 sc[:,1] = theta
-                su = sp_cart(sc)
+                su = sig_cyl2princ(sc)
             else:
                 if N is None:
                     warnings.warn('create_sig_data: Neither N not theta provided. Continuing with N=300 (sdim=6)')
                     N = 300
                 n3 = int(N/3)
                 n6 = N - n3
-                su = sdev(load_cases(n3, n6))
+                su = sig_dev(load_cases(n3, n6))
             x1 = fsolve(mat_ref.find_yloc, np.ones(N)*mat_ref.sy, args=(su), xtol=1.e-5)
-            sdata = sdev(su*x1[:, None])  # yield stress tensors representing ground truth
+            sdata = sig_dev(su * x1[:, None])  # yield stress tensors representing ground truth
         else:
             # read stress data as seeding points for generation of further training stresses in entire 
             # sdim-dimensional stress space
@@ -1407,7 +1407,7 @@ class Material(object):
             if mat_ref is not None:
                 warnings.warn('create_sig_data: using sdata for training, ignoring mat_ref')
             N = i
-            sdata = sdev(sdata) # make sure training stresses are purely deviatoric
+            sdata = sig_dev(sdata) # make sure training stresses are purely deviatoric
         seq = np.linspace(offs, 0.95, Nseq)
         seq = np.append(seq, np.linspace(1.05, 2., Nseq))
         if extend:
@@ -2251,7 +2251,7 @@ class Material(object):
             self.prop[sel]['seq']  = seq
             self.prop[sel]['eeq']  = eeq
             self.prop[sel]['peeq'] = peeq
-            seq  = seq_J2(fe.sgl)   # store time dependent mechanical data of model
+            seq  = sig_eq_j2(fe.sgl)   # store time dependent mechanical data of model
             eeq  = eps_eq(fe.egl)
             peeq = eps_eq(fe.epgl)
             iys = np.nonzero(peeq<1.e-6)  # take stress at last index of elastic regime
@@ -2422,11 +2422,11 @@ class Material(object):
                 cbar.ax.set_ylabel("yield function (MPa)", rotation=-90)
         #find norm of princ. stess vector lying on yield surface
         theta = np.linspace(0.,2*np.pi,Na)
-        snorm = sp_cart(np.array([self.sy*np.ones(Na)*np.sqrt(1.5), theta]).T)
+        snorm = sig_cyl2princ(np.array([self.sy * np.ones(Na) * np.sqrt(1.5), theta]).T)
         x1 = fsolve(self.find_yloc, np.ones(Na), args=snorm, xtol=1.e-5)
         sig = snorm*np.array([x1,x1,x1]).T
         if sJ2:
-            s_yld = seq_J2(sig)
+            s_yld = sig_eq_j2(sig)
         else:
             s_yld = self.calc_seq(sig)
         ax.plot(theta, s_yld*sf, '-r', linewidth=2, label=self.name)
@@ -2437,7 +2437,7 @@ class Material(object):
                 x1 = fsolve(mat.find_yloc, np.ones(Na), args=snorm, xtol=1.e-5)
                 sig = snorm*np.array([x1,x1,x1]).T
                 if sJ2:
-                    s_yld = seq_J2(sig)
+                    s_yld = sig_eq_j2(sig)
                 else:
                     s_yld = self.calc_seq(sig)
                 ax.plot(theta, s_yld*sf, color=cmap(i/N), linewidth=2, label=mat.name)

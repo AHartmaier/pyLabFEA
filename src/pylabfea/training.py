@@ -17,7 +17,7 @@ https://stackoverflow.com/questions/57123194/how-to-distribute-points-evenly-on-
 These subroutines are distributed here under the CC-BY-SA 4.0 license, see https://creativecommons.org/licenses/by-sa/4.0/
 '''
 
-from pylabfea.basic import seq_J2
+from pylabfea.basic import sig_eq_j2
 import numpy as np
 from itertools import count
 from scipy.special import gamma
@@ -133,7 +133,7 @@ def load_cases(number_3d, number_6d, method='brentq'):
     sig_3d[:,0:3] = uniform_hypersphere(3, number_3d, method=method)
     sig_6d = uniform_hypersphere(6, number_6d)
     allsig = np.concatenate((sig_3d, sig_6d))
-    seq = seq_J2(allsig)
+    seq = sig_eq_j2(allsig)
     ind = np.nonzero(seq < 1.e-3)[0]
     if len(ind) > 0:
         print('WARNING: Small stresses detected:', ind)
