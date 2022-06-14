@@ -543,3 +543,27 @@ def pickle2mat(name, path='./'):
     with open(path + name, 'rb') as inp:
         pcl = pickle.load(inp)
     return pcl
+
+# =================================================
+# Alias functions to ensure backwards compatibility
+# with legacy versions of pyLabFEA
+# THESE FUNCTIONS SHOULD NOT BE USED ANY MORE!
+# =================================================
+def seq_J2(sig):
+    return sig_eq_j2(sig)
+
+def sprinc(sig):
+    return sig_princ(sig)
+
+def sp_cart(scyl):
+    return sig_cyl2princ(scyl)
+
+def svoigt(scyl, evec):
+    return sig_cyl2voigt(scyl, evec)
+
+def s_cyl(sig, mat=None):
+    return sig_princ2cyl(sig, mat)
+
+def sdev(sig):
+    return sig_dev(sig)
+          
