@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Train ML flow rule to reference material with Goss texture
-reference material described by paramaters for Barlat Yld2004-18p model
+reference material described by parameters for Barlat Yld2004-18p model
 application of trained ML flow rule in FEA
 
 Authors: Ronak Shoghi, Alexander Hartmaier
@@ -13,15 +13,18 @@ import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.optimize import fsolve
+
 print('pyLabFEA version', FE.__version__)
 
 # set standard font size
 font = {'size': 16}
 plt.rc('font', **font)
 
+
 def find_yloc(x, sig, mat):
     # Expand unit stresses 'sig' by factor 'x' and calculate yield function
-    return mat.calc_seq(sig*x[:,None]) - mat.sy
+    return mat.calc_seq(sig * x[:, None]) - mat.sy
+
 
 # define Barlat material for Goss texture
 # fitted to micromechanical data
@@ -38,27 +41,27 @@ N = len(sunit)
 x1 = fsolve(find_yloc, np.ones(N) * mat_GB.sy, args=(sunit, mat_GB), xtol=1.e-5)
 sig = sunit * x1[:, None]
 
-#calculate reference yield stresses for uniaxial, equi-biaxial and pure shear load cases
-sunit =np.zeros((5,6))
-sunit[0,0] = 1.
-sunit[1,1] = 1.
-sunit[2,2] = 1.
-sunit[3,0] = 1.
-sunit[3,1] = 1.
-sunit[4,0] =  1./np.sqrt(3.)
-sunit[4,1] = -1./np.sqrt(3.)
+# calculate reference yield stresses for uniaxial, equi-biaxial and pure shear load cases
+sunit = np.zeros((5, 6))
+sunit[0, 0] = 1.
+sunit[1, 1] = 1.
+sunit[2, 2] = 1.
+sunit[3, 0] = 1.
+sunit[3, 1] = 1.
+sunit[4, 0] = 1. / np.sqrt(3.)
+sunit[4, 1] = -1. / np.sqrt(3.)
 x1 = fsolve(find_yloc, np.ones(5) * mat_GB.sy, args=(sunit, mat_GB), xtol=1.e-5)
 sy_ref = sunit * x1[:, None]
 seq_ref = FE.sig_eq_j2(sy_ref)
 
 # define material as basis for ML flow rule
-C=15.
-gamma=2.5
-nbase='ML-Goss-Barlat'
-name = '{0}_C{1}_G{2}'.format(nbase,int(C),int(gamma*10))
-data_GS = FE.Data(sig, None, name="Goss-Barlat", sdim=6, mirror=False)
+C = 15.
+gamma = 2.5
+nbase = 'ML-Goss-Barlat'
+name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
+data_GS = FE.Data(sig, name="Goss-Barlat", sdim=6, mirror=False)
 mat_mlGB = FE.Material(name, num=1)  # define material
-mat_mlGB.from_data(data_GS.mat_param)  # data-based defininition of material
+mat_mlGB.from_data(data_GS.mat_param)  # data-based definition of material
 
 print('\nComparison of basic material parameters:')
 print('Youngs modulus: Ref={}MPa, ML={}MPa'.format(mat_GB.E, mat_mlGB.E))
@@ -69,35 +72,35 @@ print('Yield strength: Ref={}MPa, ML={}MPa'.format(mat_GB.sy, mat_mlGB.sy))
 mat_mlGB.train_SVC(C=C, gamma=gamma)
 sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_yld'][0])
 mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True)
-# export ML paramaters for use in UMAT
-#mat_mlGB.export_MLparam(__file__, path='../models/')
+# export ML parameters for use in UMAT
+# mat_mlGB.export_MLparam(__file__, path='../models/')
 
 # analyze support vectors to plot them in stress space
 sv = mat_mlGB.svm_yf.support_vectors_ * mat_mlGB.scale_seq
 Nsv = len(sv)
 sc = FE.sig_princ2cyl(sv)
 yf = mat_mlGB.calc_yf(sv, pred=True)
-print("ML material with {} support vectors, C={}, gamma={}, stress dimensions={}"\
-    .format(Nsv,mat_mlGB.C_yf,mat_mlGB.gam_yf,mat_mlGB.sdim))
+print("ML material with {} support vectors, C={}, gamma={}, stress dimensions={}"
+      .format(Nsv, mat_mlGB.C_yf, mat_mlGB.gam_yf, mat_mlGB.sdim))
 mat_mlGB.polar_plot_yl(data=sc, dname='support vectors', cmat=[mat_GB], arrow=True)
 
 # create plot of trained yield function in cylindrical stress space
 print('Plot of trained SVM classification with test data in 2D cylindrical stress space')
 ngrid = 50
-xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid),np.linspace(0, 2, ngrid))
+xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
 yy *= mat_mlGB.scale_seq
 xx *= np.pi
-hh = np.c_[yy.ravel(),xx.ravel()]
+hh = np.c_[yy.ravel(), xx.ravel()]
 Z = mat_mlGB.calc_yf(FE.sig_cyl2princ(hh))  # value of yield function for every grid point
-fig, ax  = plt.subplots(nrows=1, ncols=1, figsize=(10,8))
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
 line = mat_mlGB.plot_data(Z, ax, xx, yy, c='black')
-pts  = ax.scatter(sc[:,1], sc[:,0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k') # plot support vectors
+pts = ax.scatter(sc[:, 1], sc[:, 0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k')  # plot support vectors
 ax.set_xlabel(r'$\theta$ (rad)', fontsize=20)
 ax.set_ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=20)
 ax.tick_params(axis="x", labelsize=16)
 ax.tick_params(axis="y", labelsize=16)
-plt.legend([line[0], pts], ['ML yield locus', 'support vectors'],loc='lower right')
-plt.ylim(0.,2.*mat_mlGB.sy)
+plt.legend([line[0], pts], ['ML yield locus', 'support vectors'], loc='lower right')
+plt.ylim(0., 2. * mat_mlGB.sy)
 plt.show()
 
 # analyze training result
@@ -105,15 +108,15 @@ loc = 40
 scale = 10
 size = 200
 offset = 5
-X1 = np.random.normal(loc=loc, scale=scale, size=int(size/4))
-X2 = np.random.normal(loc=(loc-offset), scale=scale, size=int(size/2))
-X3 = np.random.normal(loc=(loc+offset), scale=scale, size=int(size/4))
+X1 = np.random.normal(loc=loc, scale=scale, size=int(size / 4))
+X2 = np.random.normal(loc=(loc - offset), scale=scale, size=int(size / 2))
+X3 = np.random.normal(loc=(loc + offset), scale=scale, size=int(size / 4))
 X = np.concatenate((X1, X2, X3))
 sunittest = FE.load_cases(number_3d=0, number_6d=len(X))
 sig_test = sunittest * X[:, None]
 yf_ml = mat_mlGB.calc_yf(sig_test)
 yf_GB = mat_GB.calc_yf(sig_test)
-FE.training_score(yf_GB,yf_ml)
+FE.training_score(yf_GB, yf_ml)
 
 # calculate and plot stress strain curves
 print('Calculating stress-strain data ...')
@@ -137,23 +140,23 @@ plt.show()
 # in elastic-plastic material with trained ML flow rule
 mat_el = FE.Material(num=2)  # define soft elastic material for inclusion
 mat_el.elasticity(E=1.e3, nu=0.27)
-#define array for geometrical arrangement
+# define array for geometrical arrangement
 NX = NY = 12
 el = np.ones((NX, NY))  # field with material 1: ML plasticity
-NXi1 = int(NX/3)
-NXi2 = 2*NXi1
-NYi1 = int(NY/3)
-NYi2 = 2*NYi1
+NXi1 = int(NX / 3)
+NXi2 = 2 * NXi1
+NYi1 = int(NY / 3)
+NYi2 = 2 * NYi1
 el[NXi1:NXi2, NYi1:NYi2] = 2  # center material 2: elastic
 
 # create FE model to perform uniaxial tensile test of model with inclusion
-fem=FE.Model(dim=2,planestress=False)
-fem.geom(sect=2, LX=4., LY=4.) # define geometry with two sections
+fem = FE.Model(dim=2, planestress=False)
+fem.geom(sect=2, LX=4., LY=4.)  # define geometry with two sections
 fem.assign([mat_mlGB, mat_el])  # define sections for reference, ML and elastic material
 fem.bcbot(0., 'disp')  # fixed bottom layer
 fem.bcleft(0., 'force')  # free lateral edges
 fem.bcright(0., 'force')
-fem.bctop(0.005*fem.leny, 'disp')  # apply displacement at top nodes (uniax y-stress)
+fem.bctop(0.005 * fem.leny, 'disp')  # apply displacement at top nodes (uniax y-stress)
 fem.mesh(elmts=el, NX=NX, NY=NY)
 # fix lateral displacements of corner node to prevent rigid body motion
 hh = [no in fem.nobot for no in fem.noleft]
