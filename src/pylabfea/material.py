@@ -113,6 +113,7 @@ class Material(object):
     # epl_dot: calculate plastic strain rate
 
     def __init__(self, name='Material', num=1):
+        self.khard = None
         self.ind_tx = None
         self.ind_wh = None
         self.epc = None
@@ -206,30 +207,29 @@ class Material(object):
         # initialize quantities needed
         sig = np.array(sig)  # produce copy of sig to avoid changes to original
         depl = np.zeros(6)  # initialize plastic strain increment
-        peeq = eps_eq(epl)  # equiv. plastic strain at start of step
-        toler = yf_tolerance * self.get_sflow(peeq)
+        toler = yf_tolerance * self.get_sflow(eps_eq(epl))
         dsig = CV @ deps  # predictor of stress increment
         st_scal = 1.
         niter = 0
 
         # evaluate yield function for elastic predictor step
         if self.ML_yf:
-            fy1 = self.ML_full_yf(sig + dsig, peeq=peeq)
+            fy1 = self.ML_full_yf(sig + dsig, epl=epl)
         else:
-            fy1 = self.calc_yf(sig + dsig, peeq=peeq)
+            fy1 = self.calc_yf(sig + dsig, epl=epl)
         if fy1 < toler:
             # purely elastic load step
             sig += dsig  # update stress
             grad_stiff = np.array(CV)  # gradient stiffness is elastic stiffness
         else:
             # elastic predictor step reaches to plastic regime
-            fy0 = self.calc_yf(sig, peeq=peeq)  # yield fct. at start of load step
+            fy0 = self.calc_yf(sig, epl=epl)  # yield fct. at start of load step
             if fy0 < -0.15:
                 # load step starts in elastic regime and ends in plastic regime
                 # must be split into elastic and plastic parts
                 if self.ML_yf:
                     # for categorial ML yield function, calculate fy0 as distance to yield surface
-                    fy0 = self.ML_full_yf(sig, peeq=peeq)  # distance of initial stress state to yield locus
+                    fy0 = self.ML_full_yf(sig)  # distance of initial stress state to yield locus
                 st_scal += fy0 / self.calc_seq(dsig)
                 deps_el = deps * (1. - st_scal)  # calculate elastic part of load step
                 sig += CV @ deps_el  # update stress which lies now on yield locus
@@ -242,14 +242,14 @@ class Material(object):
 
             # do a first trial step with full deps_r
             ddepl = self.epl_dot(sig, epl, CV, deps_r)  # plastic strain increment
-            t_stiff = self.C_tan(sig, CV, peeq=peeq)  # tangent stiffness
-            peeqt = eps_eq(epl + depl + ddepl)
+            t_stiff = self.C_tan(sig, CV, epl=epl)  # tangent stiffness
+            eplt = epl + depl + ddepl
             dsig = t_stiff @ deps_r  # update stress with current tangent stiffness
             # evaluate yield function at the end of this step
             if self.ML_yf:  # and self.msparam is not None:
-                fy1 = self.ML_full_yf(sig + dsig, peeq=peeqt)
+                fy1 = self.ML_full_yf(sig + dsig, epl=eplt)
             else:
-                fy1 = self.calc_yf(sig + dsig, peeq=peeqt)
+                fy1 = self.calc_yf(sig + dsig, epl=eplt)
 
             # if remaining step deps_r is too large, better to subdivide it
             if fy1 > toler:
@@ -264,15 +264,15 @@ class Material(object):
                 # and the yield function fy1 points outside
                 # in the following, the remaining load step is performed 
                 ddepl = self.epl_dot(sig, epl, CV, deps_r)  # plastic strain increment
-                t_stiff = self.C_tan(sig, CV, peeq=peeq)  # tangent stiffness
-                peeq = eps_eq(epl + depl + ddepl)
+                t_stiff = self.C_tan(sig, CV, epl=epl)  # tangent stiffness
+                eplt = epl + depl + ddepl
                 dsig = t_stiff @ deps_r  # update stress with current tangent stiffness
                 sig += dsig
                 # evaluate yield function at the end of this step
                 if self.ML_yf:  # and self.msparam is not None:
-                    fy1 = self.ML_full_yf(sig, peeq=peeq)
+                    fy1 = self.ML_full_yf(sig, epl=eplt)
                 else:
-                    fy1 = self.calc_yf(sig, peeq=peeq)
+                    fy1 = self.calc_yf(sig, epl=eplt)
 
                 if fy1 > toler:
                     # the step size was too large because it ends outside of the yield locus
@@ -290,7 +290,7 @@ class Material(object):
                     sig -= dsig  # reduce stress about excess stress
                     ddepl += SV @ dsig  # add plastic strain to balance the elastic strain, violation of volume 
                     # conservation! 
-                    peeq = eps_eq(epl + depl + ddepl)
+                    eplt = epl + depl + ddepl
                     # calculate tangent stiffness matrix for correction step
                     a = np.array([[deps_r[0], 0., 0., 0., deps_r[2], deps_r[1]],
                                   [0., deps_r[1], 0., deps_r[2], 0., deps_r[0]],
@@ -304,23 +304,23 @@ class Material(object):
                     t_stiff -= Ct
                     # update yield function
                     if self.ML_yf:  # and self.msparam is not None:
-                        fy1 = self.ML_full_yf(sig, peeq=peeq)
+                        fy1 = self.ML_full_yf(sig, epl=eplt)
                     else:
-                        fy1 = self.calc_yf(sig, peeq=peeq)
+                        fy1 = self.calc_yf(sig, epl=eplt)
                 grad_stiff += t_stiff * st_scal / nsteps
                 depl += ddepl
         self.msg['nsteps'] = niter
         return fy1, sig, depl, grad_stiff
 
-    def calc_yf(self, sig, peeq=0., ana=False, pred=False):
+    def calc_yf(self, sig, epl=None, ana=False, pred=False):
         """Calculate yield function
 
         Parameters
         ----------
         sig  : (sdim,) or (N, sdim) array
             Stresses (arrays of Voigt or principal stresses)
-        peeq : float or array
-            Equivalent plastic strain (scalar or same length as sig) (optional, default: 0)
+        epl : (sdim, ) array
+            Equivalent plastic strain tensor (optional, default: 0)
         ana  : Boolean
             Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)
         pred : Boolean
@@ -332,6 +332,8 @@ class Material(object):
             Yield function for given stress (same length as sig)
         """
         sh = np.shape(sig)
+        if epl is None:
+            epl = np.zeros(self.sdim)
         if self.ML_yf and not ana:
             if sh == (3,) or sh == (6,):
                 sig = np.array([sig])
@@ -349,7 +351,7 @@ class Material(object):
                 else:
                     x[:, 0:3] = sig[:, 0:3] / self.scale_seq
             if self.whdat:
-                x[:, self.ind_wh] = peeq / self.scale_wh - 1.
+                x[:, self.ind_wh:self.ind_wh+self.sdim] = epl / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -365,11 +367,11 @@ class Material(object):
             if N == 1:
                 f = f[0]
         else:
-            f = self.calc_seq(sig) - self.get_sflow(peeq)
+            f = self.calc_seq(sig) - self.get_sflow(eps_eq(epl))
             self.msg['yield_fct'] = 'analytical'
         return f
 
-    def ML_full_yf(self, sig, peeq=0., ld=None, verb=True):
+    def ML_full_yf(self, sig, epl=None, ld=None, verb=True):
         """Calculate full ML yield function as distance of a single given stress
         tensor to the yield locus in loading direction.
         
@@ -377,7 +379,7 @@ class Material(object):
         ----------
         sig : (sdim,) array
             Voigt stress tensor
-        peeq : float
+        epl : (sdim,) array
             Equivalent plastic strain (optional, default: 0)
         ld  : (6,) array
             Vector of loading direction in princ. stress space (optional)
@@ -389,12 +391,14 @@ class Material(object):
         yf : float
             Full ML yield function, i.e. distance of sig to yield locus in ld-direction
         """
+        if epl is None:
+            epl = np.zeros(self.sdim)
         sh = sig.shape
         if sh != (3,) and sh != (6,):
             raise ValueError(
                 'Only individual stress tensors supported in material.ML_full_yf. Shape of argument is {}'.format(sh))
         seq = self.calc_seq(sig)
-        sflow = self.get_sflow(peeq)
+        sflow = self.get_sflow(eps_eq(epl))
         if seq < 0.01 and ld is None:
             # return conservative estimate of yield function for small stresses
             # and unknown loading direction
@@ -405,7 +409,6 @@ class Material(object):
                 su = sig / seq
             else:
                 # convert ld to unit stress
-                su = np.zeros(self.sdim)
                 hh = np.linalg.norm(ld)
                 if hh < 1.e-3:
                     warnings.warn('ML_full_yf called with inconsistent ld={}'.format(ld))
@@ -416,7 +419,7 @@ class Material(object):
                 su = ld[0:self.sdim] * np.sqrt(1.5) / hh
             if np.any(np.isnan(sig)) or np.any(np.isnan(su)):
                 print('NaN detected (MP_full_yf): sig={}, su={}'.format(sig, su))
-                print('SEQ={}, ld={}, peeq={}'.format(seq, ld, peeq))
+                print('SEQ={}, ld={}, peeq={}'.format(seq, ld, eps_eq(epl)))
             x0 = sflow  # starting value of yield point search
             if su[0] * su[1] < -1.e-5:
                 # correction of starting value for pure shear cases
@@ -425,25 +428,21 @@ class Material(object):
                 else:
                     x0 *= 0.5
             x1 = x0
-            while self.find_yloc_scalar(x0, su, peeq) >= 0. and x0 > 0.01:
+            while self.find_yloc_scalar(x0, su, epl) >= 0. and x0 > 0.01:
                 # find x0 with negative yield fct
                 x0 *= 0.95
-            while self.find_yloc_scalar(x1, su, peeq) < 0. and x1 < 4. * sflow:
+            while self.find_yloc_scalar(x1, su, epl) < 0. and x1 < 4. * sflow:
                 # find x1 with positive yield fct
                 x1 *= 1.05
-            f0 = self.find_yloc_scalar(x0, su, peeq)
-            f1 = self.find_yloc_scalar(x1, su, peeq)
+            f0 = self.find_yloc_scalar(x0, su, epl)
+            f1 = self.find_yloc_scalar(x1, su, epl)
             if f0 * f1 > 0.:
                 warnings.warn('ML_full_yf: Could not bracket yield function: ' \
                               + 'sig={}, x0={}, f0={}, x1={}, f1={}'.format(sig, x0, f0, x1, f1))
                 return seq - 0.85 * sflow
-                # x1, infodict, ier, msg = fsolve(self.find_yloc, x0, args=(su,peeq), xtol=1.e-5, full_output=True)
-            # xs = x1[0]
-            # ys = infodict['fvec']
-            # xs, r = bisect(self.find_yloc_scalar, x0, x1, args=(su,peeq), xtol=1.e-5, full_output=True)
-            # ys = self.find_yloc(xs, su, peeq)
+
             res = root_scalar(self.find_yloc_scalar, method=self.root_method, bracket=[x0, x1],
-                              args=(su, peeq), xtol=1.e-5)
+                              args=(su, epl), xtol=1.e-5)
             xs = res.root
             if res.converged and xs < 4. * sflow:
                 # zero of ML yield fct. detected at x1*su
@@ -452,13 +451,13 @@ class Material(object):
                 # zero of ML yield fct. not found: get conservative estimate
                 yf = seq - 0.85 * sflow
                 if verb:
-                    ys = self.find_yloc_scalar(xs, su, peeq)
+                    ys = self.find_yloc_scalar(xs, su, epl)
                     warnings.warn('ML_full_yf')
                     print('*** detection not successful. yf={}, seq={}, ld={}, su:{}'.format(yf, seq, ld, su))
                     print('*** optimization result (x1={},y1={},msg={}):'.format(xs, ys, res))
         return yf
 
-    def find_yloc(self, x, su, peeq=0.):
+    def find_yloc(self, x, su, epl=None):
         """Function to expand unit stresses by factor and calculate yield function;
         used by search algorithm to find zeros of yield function.
 
@@ -468,7 +467,7 @@ class Material(object):
             Multiplyer for stress
         su : (N,sdim) array
             Unit stress
-        peeq : float
+        epl : float
             Equivalent plastic strain (optional, default: 0)
         
         Returns
@@ -477,10 +476,10 @@ class Material(object):
             Yield function evaluated at sig=x.sp
         """
 
-        f = self.calc_yf(x[:, None] * su, peeq=peeq)
+        f = self.calc_yf(x[:, None] * su, epl=epl)
         return f
 
-    def find_yloc_scalar(self, x, su, peeq=0.):
+    def find_yloc_scalar(self, x, su, epl=None):
         """Function to expand unit stresses by factor and calculate yield function;
         used by search algorithm to find zeros of yield function.
 
@@ -490,7 +489,7 @@ class Material(object):
             Multiplier for stress
         su : (sdim,) array
             Unit stress
-        peeq : float
+        epl : float
             Equivalent plastic strain (optional, default: 0)
         
         Returns
@@ -499,7 +498,7 @@ class Material(object):
             Yield function evaluated at sig=x.sp
         """
 
-        f = self.calc_yf(x * su, peeq=peeq)
+        f = self.calc_yf(x * su, epl=epl)
         return f
 
     def calc_seq(self, sig):
@@ -627,7 +626,7 @@ class Material(object):
         seq = (0.25 * seq) ** (1. / a)
         return seq
 
-    def calc_fgrad(self, sig, peeq=0., seq=None, ana=False):
+    def calc_fgrad(self, sig, epl=None, seq=None, ana=False):
         """Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield
         function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield
         function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function
@@ -637,6 +636,8 @@ class Material(object):
         ----------
         sig : (sdim,) or (N,sdim) array
             Stress value (Pricipal stress or full stress tensor)
+        epl : (sdim,) array
+            Plastic strain tensor (optional, default = 0)
         seq : float or (N,) array
             Equivalent stresses (optional)
         ana : Boolean
@@ -647,6 +648,8 @@ class Material(object):
         fgrad : (sdim,), (N,sdim) array
             Gradient to yield surface at given position in stress space, same dimension as sdim
         """
+        if epl is None:
+            epl = np.zeros(self.sdim)
         N = len(sig)
         sh = np.shape(sig)
         if sh == (3,) or sh == (6,):
@@ -701,7 +704,7 @@ class Material(object):
             else:
                 x[:, 0:6] = sig_dev(sig)[:, 0:6] / self.scale_seq
             if self.whdat:
-                x[:, self.ind_wh] = peeq / self.scale_wh - 1.
+                x[:, self.ind_wh:self.ind_wh+self.sdim] = epl / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 x[:, ih:ih + self.Nset] = [self.tx_cur[i] / self.scale_text[i] - 1. for i in range(self.Nset)]
@@ -773,9 +776,9 @@ class Material(object):
         sflow : float
             Average flow stress"""
 
-        if self.msparam is None:
-            sflow = self.sy + peeq * self.khard
-        else:
+        # if self.msparam is None:
+        sflow = self.sy + peeq * self.khard
+        '''else:
             sm = np.sum(self.tx_cur)
             if sm < 1.e-3:
                 wght = np.ones(self.Nset) / self.Nset
@@ -783,7 +786,7 @@ class Material(object):
                 wght = self.tx_cur / sm
             sflow = 0.
             for i, ms in enumerate(self.msparam):
-                sflow += np.interp(peeq + self.epc, ms['work_hard'], ms['sy_av'][self.ms_index[i], :]) * wght[i]
+                sflow += np.interp(peeq + self.epc, ms['work_hard'], ms['sy_av'][self.ms_index[i], :]) * wght[i]'''
         return sflow
 
     def epl_dot(self, sig, epl, Cel, deps):
@@ -807,8 +810,8 @@ class Material(object):
         pdot : Voigt tensor
             Plastic strain increment
         """
-        peeq = eps_eq(epl)  # equiv. plastic strain
-        yfun = self.calc_yf(sig + Cel @ deps, peeq=peeq)
+        # peeq = eps_eq(epl)  # equiv. plastic strain
+        yfun = self.calc_yf(sig + Cel @ deps, epl=epl)
         # for DEBUGGING
         '''yf0  = self.calc_yf(sig, peeq=peeq)
         if yf0<-ptol and yfun>ptol and peeq<1.e-5:
@@ -824,15 +827,15 @@ class Material(object):
         else:
             if self.sdim == 3:
                 a = np.zeros(6)
-                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], peeq=peeq)
+                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl)
             else:
-                a = self.calc_fgrad(sig, peeq=peeq)
+                a = self.calc_fgrad(sig, epl=epl)
             hh = a.T @ Cel @ a + self.khard
             lam_dot = a.T @ Cel @ deps / hh  # deps must not contain elastic strain components
             pdot = lam_dot * a
         return pdot
 
-    def C_tan(self, sig, Cel, peeq=0.):
+    def C_tan(self, sig, Cel, epl=None):
         """Calculate tangent stiffness relaxing stress back to yield locus;
         Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
         Chapter 6, Eqs. (6.9) and (6.18)
@@ -843,19 +846,21 @@ class Material(object):
             Stress
         Cel : (6,6) array
             Elastic stiffness tensor used for predictor step
-        peeq : float
-            Equivalent plastic strain (optional, default: 0.)
+        epl : (sdim,) array
+            Equivalent plastic strain tensor (optional, default: 0.)
 
         Returns
         -------
         Ct : (6,6) array
             Tangent stiffness tensor
         """
+        if epl is None:
+            epl = np.zeros(self.sdim)
         if self.sdim == 3:
             a = np.zeros(6)
-            a[0:3] = self.calc_fgrad(sig_princ(sig)[0], peeq=peeq)
+            a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl)
         else:
-            a = self.calc_fgrad(sig, peeq=peeq)
+            a = self.calc_fgrad(sig, epl=epl)
         hh = a.T @ Cel @ a + self.khard
         ca = Cel @ a
         Ct = Cel - np.kron(ca, ca).reshape(6, 6) / hh
@@ -913,14 +918,14 @@ class Material(object):
             self.scale_wh = 0.
             self.scale_text = np.zeros(self.Nset)
             for i in range(self.Nset):
-                self.scale_seq += np.average(self.msparam[i]['sy_av']) / self.Nset
-                self.scale_wh += (np.average(self.msparam[i]['peeq_max']) - self.epc) / self.Nset
+                self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
+                self.scale_wh += (self.msparam[i]['peeq_max'] - self.epc) / self.Nset
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
         X_train = np.zeros((N, self.Ndof))
         X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
         if self.whdat:
-            X_train[:, self.ind_wh] = x[:, self.ind_wh] / self.scale_wh - 1.
+            X_train[:, self.ind_wh:self.ind_wh+6] = x[:, self.ind_wh:self.ind_wh+6] / self.scale_wh
             print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f'
                   % (self.msparam[0]['ms_type'], self.msparam[0]['Npl'], self.msparam[0]['peeq_max']))
         if self.txdat:
@@ -938,7 +943,7 @@ class Material(object):
             X_test = np.zeros((Ntest, self.Ndof))
             X_test[:, 0:6] = x_test[:, 0:6] / self.scale_seq
             if self.whdat:
-                X_test[:, self.ind_wh] = x_test[:, self.ind_wh] / self.scale_wh - 1.
+                X_test[:, self.ind_wh:self.ind_wh+6] = x_test[:, self.ind_wh:self.ind_wh+6] / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -1045,8 +1050,8 @@ class Material(object):
             self.scale_wh = 0.
             self.scale_text = np.zeros(self.Nset)
             for i in range(self.Nset):
-                self.scale_seq += np.average(self.msparam[i]['sy_av']) / self.Nset
-                self.scale_wh += (np.average(self.msparam[i]['peeq_max']) - self.epc) / self.Nset
+                self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
+                self.scale_wh += (self.msparam[i]['peeq_max'] - self.epc) / self.Nset
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
         X_train = np.zeros((N, self.Ndof))
@@ -1303,7 +1308,7 @@ class Material(object):
         print("Training set score: {} %".format(train_sc))
 
         if plot:
-            '''WARNING: Incompatible with 6D structure of msparam !!!'''
+            '''WARNING: untested for 6D structure of msparam !!!'''
             # plot ML yield loci with reference and test data
             print('Plot ML yield loci with reference curve and test data')
             if self.whdat:
@@ -1315,13 +1320,15 @@ class Material(object):
                 Npl = 1  # only plot initial yield surface
 
             ncol = 2
+            Npl = 4
             nrow = int(Npl * Ntext / ncol + 0.95)
             plt.figure(figsize=(20, 8 * nrow))
             plt.subplots_adjust(hspace=0.3)
             theta = np.linspace(-np.pi, np.pi, 36)
+            work_hard = np.linspace(self.epc, self.msparam[0]['peeq_max'], Npl)
             for k in range(Ntext):
                 self.set_texture(self.msparam[0]['texture'][k], verb=False)
-                for j in range(0, Npl, np.maximum(1, int(Npl / 5))):
+                for j in range(0, Npl, np.maximum(1, int(Npl / 4))):
                     # to-do: x_test and y_test should be setup properly above!!!
                     ind = list(range((j + k * Npl) * N0, (j + k * Npl + 1) * N0, int(0.5 * N0 / Nlc)))
                     x_test = sig_princ2cyl(xt[ind, 0:self.sdim])
@@ -1329,7 +1336,7 @@ class Material(object):
                     ind = np.argsort(x_test[:, 1])  # sort dta points w.r.t. polar angle
                     x_test = x_test[ind, :]
                     y_test = y_test[ind]
-                    peeq = self.msparam[0]['work_hard'][j] - self.epc
+                    peeq = work_hard[j] - self.epc
                     sflow = self.get_sflow(peeq)
                     iel = np.nonzero(y_test < 0.)[0]
                     ipl = np.nonzero(np.logical_and(y_test >= 0., x_test[:, 0] < sflow * 1.5))[0]
@@ -1351,7 +1358,7 @@ class Material(object):
                         plt.title = self.name
                     else:
                         plt.title(
-                            'Flow stress, PEEQ=' + str(self.msparam[0]['work_hard'][j].round(decimals=4)) + ', TP='
+                            'Flow stress, PEEQ=' + str(work_hard[j].round(decimals=4)) + ', TP='
                             + str(self.msparam[0]['texture'][k].round(decimals=2)), fontsize=fontsize)
                     # plt.xlabel(r'$\theta$ (rad)', fontsize=fontsize-2)
                     # plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize-2)
@@ -1838,7 +1845,7 @@ class Material(object):
             warnings.warn('from_data: Microstructure has changed definition of sdim. New value={}'.format(self.sdim))
         if self.sdim != 3 and self.sdim != 6:
             raise ValueError('Value of sdim must be either 3 or 6')
-        # self.epc = self.msparam[0]['epc']
+        self.epc = self.msparam[0]['epc']
         for i in range(1, self.Nset):
             h1 = self.msparam[i]['Nlc'] != Nlc
             h3 = self.msparam[i]['Ntext'] != Ntext

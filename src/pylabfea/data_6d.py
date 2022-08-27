@@ -18,18 +18,17 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 
-Texture_Translate = {"Random": "Rnd"}
 
 class Data(object):
     """Define class for handling data from virtual mechanical tests in micromechanical
     simulations and data from physical mechanical tests on materials with various
     microstructures. Data is used to train machine learning flow rules in pyLabFEA.
     """
-    def __init__(self, fname, mat_name="Simulanium", sdim=6, epl_crit=2.e-3, d_ep=5.e-4, epl_max=0.03, plot=False):
+
+    def __init__(self, fname, mat_name="Simulanium", epl_crit=2.e-3, d_ep=5.e-4, epl_max=0.03, plot=False):
         self.mat_data = dict()
-        if sdim != 3 and sdim != 6:
-            raise ValueError(f'Parameter sdim must be either 3 or 6, not {sdim}')
-        self.sdim = sdim
+        self.mat_data['epc'] = epl_crit
+        self.mat_data['sdim'] = 6
         self.mat_data['Name'] = mat_name
         self.mat_data['wh_data'] = True
         self.mat_data['Ntext'] = 1
@@ -47,10 +46,9 @@ class Data(object):
                        "Hash_Orientation": parameters[3], "Texture_Type": parameters[5]}
         return Keys_Parsed
 
-
     def read_data(self, Data_File):
         data = json.load(open(Data_File))
-        Final_Data = {}
+        Final_Data = dict()
 
         for key, val in data.items():
             res = val['Results']
@@ -72,19 +70,18 @@ class Data(object):
                 seq_full[i] = FE.sig_eq_j2(Stress_6D)
 
                 E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
-                                E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
+                                         E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
                 Original_Plastic_Strains[i, :] = E_Plastic_6D
                 peeq_full[i] = FE.eps_eq(E_Plastic_6D)
 
                 E_Total_6D = np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
-                              E_Total[3][i], E_Total[4][i], E_Total[5][i]])
+                                       E_Total[3][i], E_Total[4][i], E_Total[5][i]])
                 Original_Total_Strains[i] = E_Total_6D
             Final_Data[key] = {"SEQ": seq_full, "PEEQ": peeq_full, "Load": Load,
                                "Stress": Original_Stresses,
                                "Plastic_Strain": Original_Plastic_Strains, "Total_Strain": Original_Total_Strains}
 
         return Final_Data
-
 
     def parse_data(self, db, epl_crit, epl_max, d_ep):
         """
@@ -108,9 +105,9 @@ class Data(object):
         E_av = 0.
         nu_av = 0.
         sy_av = 0.
+        peeq_max = 0.
         sig = []
         epl = []
-        peeq_max = 0.
         for key, val in db:
             # estimate yield point for load case
             iel = np.nonzero(val['PEEQ'] < epl_crit)[0]
@@ -119,9 +116,9 @@ class Data(object):
             s1 = val['SEQ'][ipl[0]]
             e0 = val['PEEQ'][iel[-1]]
             e1 = val['PEEQ'][ipl[0]]
-            sy = s0 + (epl_crit - e0)*(s1 - s0)/(e1 - e0)
-            sy_av += sy/Nlc
-            epl = FE.eps_eq(val['PEEQ'][ipl[-1]])
+            sy = s0 + (epl_crit - e0) * (s1 - s0) / (e1 - e0)
+            sy_av += sy / Nlc
+            epl = val['PEEQ'][ipl[-1]]
             if epl > peeq_max:
                 peeq_max = epl
             for i in ipl:
@@ -131,13 +128,13 @@ class Data(object):
 
             # estimate  elastic constants from stresses in range [0.1,0.4]sy
             ''' WARNING: This needs to be improved !!!'''
-            ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2*sy, val['SEQ'] < 0.4*sy))[0]
+            ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
             seq = val['SEQ'][ind]
             eeq = FE.eps_eq(val['Total_Strain'][ind])
             E = np.average(seq / eeq)
             nu = 0.3
-            E_av += E/Nlc
-            nu_av += nu/Nlc
+            E_av += E / Nlc
+            nu_av += nu / Nlc
 
             # get texture name
             ''' Warning: This should be read only once from metadata !!!'''
@@ -151,59 +148,12 @@ class Data(object):
         self.mat_data['nu_av'] = nu_av
         self.mat_data['sy_av'] = sy_av
         self.mat_data['Nlc'] = Nlc
+        print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
+        print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print('Estimated elastic constants: E=%5.2f GPa, nu=%4.2f' % (E_av / 1000, nu_av))
         print('Estimated yield strength: %5.2f MPa at PEEQ = %5.3f' % (sy_av, epl_crit))
 
-
-    def Post_Processing_Data(self, db, Texture, epl_crit):
-        prop = np.zeros(3)
-        micr = []
-        name = []
-        Nset = len(db.keys())
-        syld = np.zeros((Nset, 6))
-        peeq_max = 0.  # maximum equiv. plastic strain reached in data sets
-        Textrue_Type = Texture_Translate[Texture]
-
-        for i, key in enumerate(db.keys()):
-            Key_Translated = key_parser(key)
-            prop += np.array(
-                [db[key]["Parsed_Data"]["S_y"], db[key]["Parsed_Data"]["E"], db[key]["Parsed_Data"]["nu"]])
-            micr.append(Key_Translated["Hash_Orientation"])
-            name.append(Key_Translated["Texture_Type"])
-            peeq_max = np.maximum(peeq_max, np.amax(db[key]['peeq_full']))
-            syld[i, :] = db[key]["Parsed_Data"]["S_yld"]
-            # Nlc_min = np.minimum(Nlc_min, i*len(dset.load_case))
-            if Key_Translated["Texture_Type"] != Textrue_Type and Textrue_Type != 'Random':
-                print('Warning: Different texture types')
-
-        prop /= Nset  # average properties over all microstructures
-        sy_av = prop[0]  # information needed when material.plasticity is initiated
-        E_av = prop[1]  # information needed when material.elasticity is initiated
-        nu_av = prop[2]
-        print(f'\n###   Data set "{name}"  ###')
-        print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
-        print(f'Imported {Nset} data sets for textures, with %i hardening stages')
-        print('Averaged properties : E_av=%5.2f GPa, nu_av=%4.2f, sy_av=%4.2f MPa' % (E_av / 1000, nu_av, sy_av))
-        mat_param = {
-            # this information of the data will be copied into the material upon definition of its microstructure
-            'ms_type': Key_Translated["Texture_Type"],  # unimodal texture type
-            'sdim': 6,  # dimensionality of stress values in data (3: only princ. stresses, 6: full stresses)
-            'wh_data': True  # Work hardening data is available
-            'Nlc': Nset,  # number of load cases covered in data
-            'tx_name': name,  # list of names of different textures
-            'peeq_max': peeq_max,  # maximum PEEQ covered in data
-            'epc': epl_crit,  # critical PEEQ for with yield stress is defined
-            'E_av': E_av,  # Young's modulus
-            'nu_av': nu_av,  # Poisson ratio
-            'sy_av': sy_av,  # yield strength
-            'Ntext': 1,
-            'flow_stress': sf,  # flow stresses at corresponding plastic strains for each texture
-            'plastic_strain': epl  # plastic strain tensors corresponding to flow stresses for each texture
-        }
-        return mat_param
-
-
-    def plot_set(self, db, mat_param, nth=15, fontsize=18):
+    def plot_set(self, db, mat_param):
         fontsize = 18
         cmap = plt.cm.get_cmap('viridis', 10)
         plt.figure(figsize=(18, 7))
@@ -243,7 +193,6 @@ class Data(object):
         plt.tick_params(axis="x", labelsize=fontsize - 4)
         plt.tick_params(axis="y", labelsize=fontsize - 4)
         plt.show()
-
 
     def plot_yield_locus(self, db, mat_param, active, scatter=False, data=None,
                          data_label=None, arrow=False, file=None, title=None,
@@ -314,16 +263,3 @@ class Data(object):
         if file is not None:
             plt.savefig(file + '.pdf', format='pdf', dpi=300)
         plt.show()
-
-
-def Run(Data_File, Texture='Random', epl_crit=2.e-3, d_ep=5.e-4, epl_max=0.03, npe=4, plot=True):
-    db = read_data(Data_File)
-    db = Parse_Data(db, epl_crit, d_ep, epl_max)
-    mat_param = Post_Processing_Data(db, Texture, epl_max, npe, epl_crit)
-    if plot:
-        plot_set(db, mat_param)
-        plot_yield_locus(db, mat_param, 'work_hard', scatter=False)
-    return (db, mat_param)
-
-
-Run("Data_Base_Final_New.json")
