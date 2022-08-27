@@ -1931,7 +1931,7 @@ class Material(object):
             hh = ms['texture'] - self.tx_cur[i]
             index.append(np.argmin(np.abs(hh)))
             # redefine plasticity parameters according to texture parameter
-            sy = np.interp(self.tx_cur[i], ms['texture'], ms['flow_seq_av'][:, 0])
+            sy = ms['sy_av']  # np.interp(self.tx_cur[i], ms['texture'], ms['flow_seq_av'][:, 0])
             self.sy += sy * wght[i]
             '''if self.whdat:
                 #set strain hardening parameters to initial value for selected texture
