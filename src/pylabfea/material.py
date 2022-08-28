@@ -669,19 +669,19 @@ class Material(object):
             # use gradient of SVC yield fct. in stress space
             # gradient of SVC kernel function w.r.t. feature vector
             def grad_rbf(x, xp):
-                # x.shape=(5,)
-                # xp.shape=(Nsv,5)
-                # grad.shape=(Nsv,5)
+                # calculate gradient of radial basis function kernel
+                # x.shape=(Ndof,)
+                # xp.shape=(Nsv,Ndof)
+                # grad.shape=(Nsv,Ndof)
                 hv = x - xp
                 hh = np.sum(hv * hv, axis=1)  # ||x-x'||^2=sum_i(x_i-x'_i)^2
                 k = np.exp(-self.gam_yf * hh)
                 arg = -2. * self.gam_yf * hv
                 grad = k[:, None] * arg
-                # arg = -2.*self.gam_yf*np.sqrt(hh)/np.linalg.norm(hv,axis=1)
-                # grad = (k*arg)[:,None]*hv
-                return grad  # define Jacobian of coordinate transformation
+                return grad
 
             def Jac(sig):
+                # define Jacobian of coordinate transformation
                 J = np.ones((3, 3))
                 dev = sig_dev(sig)  # deviatoric princ. stress
                 vn = np.linalg.norm(dev) * np.sqrt(1.5)  # norm of stress vector
@@ -710,17 +710,17 @@ class Material(object):
                 x[:, ih:ih + self.Nset] = [self.tx_cur[i] / self.scale_text[i] - 1. for i in range(self.Nset)]
             dc = self.svm_yf.dual_coef_[0, :]
             sv = self.svm_yf.support_vectors_
-            hk = 0.
+            hk = np.zeros(self.sdim)
             for i in range(N):
                 hh = grad_rbf(x[i, :], sv)
                 dKdx = np.sum(dc[:, None] * hh, axis=0)
-                if self.whdat:
-                    hk -= dKdx[self.ind_wh] * self.scale_seq / self.scale_wh
                 if self.sdim == 3:
                     fgrad[i, :] = Jac(sig[i, :]) @ np.array([1, dKdx[1], 0])
                 else:
                     fgrad[i, 0:6] = dKdx[0:6] / self.scale_seq
-            self.khard = hk / N
+                if self.whdat:
+                    hk -= dKdx[self.ind_wh:self.ind_wh+self.sdim] * self.scale_seq / self.scale_wh
+            self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation
             self.msg['gradient'] = 'gradient to ML_yf'
         else:
             # calculate analytical gradient based on the active material formulation 
