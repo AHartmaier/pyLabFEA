@@ -17,6 +17,7 @@ import pylabfea as FE
 import json
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import interpolate
 
 
 class Data(object):
@@ -108,6 +109,7 @@ class Data(object):
         peeq_max = 0.
         sig = []
         epl = []
+        ept = []
         ct = 0
         for key, val in db.items():
             # estimate yield point for load case
@@ -134,7 +136,6 @@ class Data(object):
                 '''WARNING: select only values in intervals of d_epl for storing in data set !!!'''
                 sig.append(val['Stress'][i])
                 epl.append(val['Plastic_Strain'][i])
-
             # estimate  elastic constants from stresses in range [0.1,0.4]sy
             ''' WARNING: This needs to be improved !!!'''
             ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
@@ -204,72 +205,85 @@ class Data(object):
         plt.tick_params(axis="y", labelsize=fontsize - 4)
         plt.show()
 
-    def plot_yield_locus(self, db, mat_param, active, scatter=False, data=None,
+    def plot_yield_locus(self, db, mat_data, active, scatter=False, data=None,
                          data_label=None, arrow=False, file=None, title=None,
                          fontsize=18):
         fig, ax = plt.subplots(subplot_kw={'projection': 'polar'},
                                figsize=(15, 8))
         cmap = plt.cm.get_cmap('viridis', 10)
         # ms_max = np.amax(self.mat_param[active])
-        Ndat = len(mat_param[active])
-        v0 = mat_param[active][0]
-        scale = mat_param[active][-1] - v0
+        Ndat = len(mat_data[active])
+        v0 = mat_data[active][0]
+        scale = mat_data[active][-1] - v0
         if np.any(np.abs(scale) < 1.e-3):
             scale = 1.
-
+        sc = []
+        ppe = []
+        scy = []
         for i in range(Ndat):
-            sc = []
-            for set_ind, key in enumerate(db.keys()):
-                val = mat_param[active][i]
-                hc = (val - v0) * 10
-                if active == 'work_hard':
-                    sc.append(FE.s_cyl(mat_param['flow_stress'][set_ind, i, 0, :]))
-                    label = 'PEEQ: ' + str(val.round(decimals=4))
-                    color = cmap(hc)
-                elif active == 'texture':
-                    sc = FE.s_cyl(mat_param['flow_stress'][i, 0, :, :])
-                    ind = np.argsort(sc[:, 1])  # sort dta points w.r.t. polar angle
-                    sc = sc[ind]
-                    label = mat_param['ms_type']
-                    color = (hc, 0, 1 - hc)
-                elif active == 'flow_stress':
-                    sc = mat_param['flow_stress'][0, 0, :, :]
-                    ax.plot(sc[:, 1], sc[:, 0], '.r', label='shear')
-                    sc = mat_param['flow_stress'][0, 0, :, :]
-                    label = 'Flow Stress'
-                    color = 'b'
-                else:
-                    raise ValueError('Undefined value for active field in "plot_yield_locus"')
-            Degree = []
-            Radius = []
-            for data in sc:
-                Degree.append(data[0])
-                Radius.append(data[1])
-            Radius, Degree = zip(*sorted(zip(Radius, Degree)))
-
-            if scatter:
-                ax.plot(Radius, Degree, '.m', label=label)
-            if data is not None:
-                ax.plot(Radius, Degree, '.r', label=data_label)
-            ax.plot(Radius, Degree, label=label, color=color)
-
-        plt.legend(loc=(1.04, 0.7), fontsize=fontsize - 2)
-        plt.tick_params(axis="x", labelsize=fontsize - 4)
-        plt.tick_params(axis="y", labelsize=fontsize - 4)
-        if arrow:
-            dr = mat_param['sy_av']
-            drh = 0.08 * dr
-            plt.arrow(0, 0, 0, dr, head_width=0.05, width=0.004,
-                      head_length=drh, color='r', length_includes_head=True)
-            plt.text(-0.12, dr * 0.87, r'$\sigma_1$', color='r', fontsize=22)
-            plt.arrow(2.0944, 0, 0, dr, head_width=0.05,
-                      width=0.004, head_length=drh, color='r', length_includes_head=True)
-            plt.text(2.26, dr * 0.92, r'$\sigma_2$', color='r', fontsize=22)
-            plt.arrow(-2.0944, 0, 0, dr, head_width=0.05,
-                      width=0.004, head_length=drh, color='r', length_includes_head=True)
-            plt.text(-2.04, dr * 0.95, r'$\sigma_3$', color='r', fontsize=22)
-        if title is not None:
-            plt.title(title)
-        if file is not None:
-            plt.savefig(file + '.pdf', format='pdf', dpi=300)
+            if active == 'flow_stress':
+                sc.append(FE.s_cyl(mat_data['flow_stress'][i]))
+                ppe.append(FE.eps_eq(mat_data['plastic_strain'][i]))
+                for j in range(len(ppe)):
+                    if ppe[j] < 0.0020155:
+                        scy.append(sc[j])
+        label='Flow Stress'
+        color='b'
+        scy=np.array(scy)
+        scy=np.array(scy)
+        scy=np.array(scy)
+        ax.scatter(scy[:, 1], scy[:, 0], marker = ".")
         plt.show()
+  
+
+
+            # for set_ind, key in enumerate(db.keys()):
+            #     val = mat_param[active][i]
+            #     hc = (val - v0) * 10
+            #     if active == 'work_hard':
+            #         sc.append(FE.s_cyl(mat_data['flow_stress'][set_ind, i, 0, :]))
+            #         label = 'PEEQ: ' + str(val.round(decimals=4))
+            #         color = cmap(hc)
+            #     elif active == 'texture':
+            #         sc = FE.s_cyl(mat_data['flow_stress'][i, 0, :, :])
+            #         ind = np.argsort(sc[:, 1])  # sort dta points w.r.t. polar angle
+            #         sc = sc[ind]
+            #         label = mat_data['ms_type']
+            #         color = (hc, 0, 1 - hc)
+            #     elif active == 'flow_stress':
+            #         sc = mat_data['flow_stress'][0, 0, :, :]
+            #         ax.plot(sc[:, 1], sc[:, 0], '.r', label='shear')
+            #         sc = mat_data['flow_stress'][0, 0, :, :]
+            #         label = 'Flow Stress'
+            #         color = 'b'
+            # #     else:
+            #         raise ValueError('Undefined value for active field in "plot_yield_locus"')
+
+
+    #     Degree = []
+    #     Radius = []
+    #     for data in sc:
+    #         Degree.append(data[0])
+    #         Radius.append(data[1])
+    #     Radius, Degree = zip(*sorted(zip(Radius, Degree)))
+    #     if scatter:
+    #         ax.plot(Radius, Degree, '.m', label=label)
+    #     if data is not None:
+    #         ax.plot(Radius, Degree, '.r', label=data_label)
+    #     ax.plot(Radius, Degree, label=label, color=color)
+    #     if arrow:
+    #         plt.legend(loc=(1.04, 0.7), fontsize= 18 - 2)
+    #         plt.tick_params(axis="x", labelsize= 18 - 4)
+    #         plt.tick_params(axis="y", labelsize= 18 - 4)
+    #         dr = mat_data["sv_av"]
+    #         drh = 0.08 * dr
+    #         plt.arrow(0, 0, 0, dr, head_width=0.05, width=0.004,
+    #                   head_length=drh, color='r', length_includes_head=True)
+    #         plt.text(-0.12, dr * 0.87, r'$\sigma_1$', color='r', fontsize=22)
+    #         plt.arrow(2.0944, 0, 0, dr, head_width=0.05,
+    #                   width=0.004, head_length=drh, color='r', length_includes_head=True)
+    #         plt.text(2.26, dr * 0.92, r'$\sigma_2$', color='r', fontsize=22)
+    #         plt.arrow(-2.0944, 0, 0, dr, head_width=0.05,
+    #                   width=0.004, head_length=drh, color='r', length_includes_head=True)
+    #         plt.text(-2.04, dr * 0.95, r'$\sigma_3$', color='r', fontsize=22)
+    # plt.show()
