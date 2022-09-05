@@ -36,7 +36,8 @@ import getpass
 
 class Material(object):
     """Define class for Materials including material parameters (attributes), constitutive relations (methods)
-    and derived properties und various loading conditions (dictionary)
+    and derived properties und various loading conditions (dictionary).
+
 
     Parameters
     ----------
@@ -926,8 +927,8 @@ class Material(object):
         X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
         if self.whdat:
             X_train[:, self.ind_wh:self.ind_wh+6] = x[:, self.ind_wh:self.ind_wh+6] / self.scale_wh
-            print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f'
-                  % (self.msparam[0]['ms_type'], self.msparam[0]['Npl'], self.msparam[0]['peeq_max']))
+            print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
+                  % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
         if self.txdat:
             ih = self.ind_tx
             for i in range(self.Nset):
@@ -1156,7 +1157,7 @@ class Material(object):
             plt.show()
         return train_sc, test_sc
 
-    def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=True,
+    def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=False,
                   mat_ref=None, sdata=None, plot=False, fontsize=16,
                   gridsearch=False, cvals=None, gvals=None):
         """Train SVC for all yield functions of the microstructures provided
@@ -1241,54 +1242,35 @@ class Material(object):
         else:
             '''WARNING: There are no more hardening levels, Npl, epc in undefined !!!'''
             Nlc = self.msparam[0]['Nlc']
-            Npl = self.msparam[0]['Npl']
-            Ntext = self.msparam[0]['Ntext']
-            if extend:
-                Ne = 4
-            else:
-                Ne = 0
-            N0 = Nlc * (2 * Nseq + Ne)  # total number of training data points per level of PEEQ for each microstructure
+            N0 = Nlc * (2 * Nseq)  # total number of training data points per Ppl for each microstructure
+            Nt = len(self.msparam[0]['plastic_strain']) * (2 * Nseq)
+            dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
+            if self.whdat:
+                iwh = self.ind_wh
             if self.txdat:
-                Nt = self.Nset * Ntext * Npl * N0  # total number of training data points
-            else:
-                Nt = Ntext * Npl * N0
-            if self.sdim == 3:
-                dtrain = 3  # dimension of training data (Ndof+1 for sdim==3)
-                if self.whdat:
-                    iwh = dtrain
-                    dtrain += 1
-                if self.txdat:
-                    itx = dtrain
-                    dtrain += self.Nset
-            else:
-                dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
-                if self.whdat:
-                    iwh = self.ind_wh
-                if self.txdat:
-                    itx = self.ind_tx
+                itx = self.ind_tx
             xt = np.zeros((Nt, dtrain))
             yt = np.zeros(Nt)
-            for m, ms in enumerate(self.msparam):
-                for k in range(Ntext):  # loop over all textures
-                    for j in range(Npl):  # loop over work hardening levels for each texture
-                        # create training data in entire deviatoric stress plane from raw data
-                        # training data generated here is unscaled
-                        # work hardening parameters are corrected for offset
-                        sig_train, yf_train = self.create_sig_data(sdata=ms['flow_stress'][k, j, :, :],
-                                                                   sflow=ms['flow_seq_av'][k, j], Nseq=Nseq,
-                                                                   extend=True)
-                        i0 = (j + k * Npl + m * Ntext) * N0
-                        i1 = i0 + N0
-                        xt[i0:i1, 0:self.sdim] = sig_train
-                        if self.whdat:
-                            # Add DOF for work hardening parameter, corrected for offset
-                            xt[i0:i1, iwh] = ms['work_hard'][j] - self.epc
-                        if self.txdat:
-                            # Add DOF for textures
-                            xt[i0:i1, itx + m] = ms['texture'][k]
-                        yt[i0:i1] = yf_train
+
+            for j in range(len(self.msparam[0]['plastic_strain'])): #for each plastic strain
+                # create training data in entire deviatoric stress plane from raw data
+                # training data generated here is unscaled
+                # work hardening parameters are corrected for offset
+                sig_train, yf_train = self.create_sig_data(sdata=self.msparam[0]['flow_stress'][j],
+                                                           sflow=self.msparam[0]['flow_stress'][j], Nseq=Nseq,
+                                                           extend=True)
+                i0 = j * (2 * Nseq)
+                i1 = i0 + (2 * Nseq)
+                xt[i0:i1, 0:self.sdim] = sig_train
+                if self.whdat:
+                    for row in range (i0, i1):
+                    # Add DOF for work Plastic Strain NOTE!! hardening parameter Check the offset control (epc)
+                        xt[row, 6:2*iwh] = self.msparam[0]['plastic_strain'][j] #- self.epc
+
+                yt[i0:i1] = yf_train
+
             print(
-                '%i training data sets created from %i microstructures, with %i load cases each' % (Nt, self.Nset, Nlc))
+                '%i training data sets created, with %i load cases' % (Nt, Nlc))
 
         if np.any(np.abs(yt) <= 0.99):
             warnings.warn(
@@ -1436,27 +1418,29 @@ class Material(object):
         else:
             # read stress data as seeding points for generation of further training stresses in entire 
             # sdim-dimensional stress space
-            i = len(sdata)
+            i = 1#len(sdata)
             if (N is not None) and (N != i):
                 warnings.warn(f'create_sig_data: N and dimension of sdata do not agree. Continuing with N ={i}')
             if mat_ref is not None:
                 warnings.warn('create_sig_data: using sdata for training, ignoring mat_ref')
             N = i
-            sdata = sig_dev(sdata)  # make sure training stresses are purely deviatoric
+            #sdata = sig_dev(sdata)  # make sure training stresses are purely deviatoric
         seq = np.linspace(offs, 0.95, Nseq)
         seq = np.append(seq, np.linspace(1.05, 2., Nseq))
-        if extend:
-            # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
-            seq = np.append(seq, np.array([2.4, 3., 4., 5.]))
+        # if extend:
+        #      # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
+        #      seq = np.append(seq, np.array([2.4, 3., 4., 5.]))
         Nd = len(seq)  # number of training stresses per load case
         st = np.zeros((N * Nd, self.sdim))  # input vector with training stresses
         yt = np.zeros(N * Nd)  # result vector for supervised learning
         for i in range(Nd):
-            j0 = i * N
-            j1 = (i + 1) * N
+            # j0 = i * N
+            # j1 = (i + 1) * N
             # scale sdata into elastic regime (seq<1) or into plastic regime (seq>=1)
-            st[j0:j1, :] = sdata[:, 0:self.sdim] * seq[i]
-            yt[j0:j1] = -1. if i < Nseq else +1.
+            # st[j0:j1, :] = sdata[:, 0:self.sdim] * seq[i]
+            # yt[j0:j1] = -1. if i < Nseq else +1.
+            st[i] = np.multiply(sdata , seq[i])
+            yt[i]=-1. if i < Nseq else +1.
         return st, yt
 
     def setup_fgrad_SVM(self, X_grad_train, y_grad_train, C=10., gamma=0.1):
