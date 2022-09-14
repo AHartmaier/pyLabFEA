@@ -572,3 +572,7 @@ def s_cyl(sig, mat=None):
 
 def sdev(sig):
     return sig_dev(sig)
+
+
+def polar_ang(sig):
+    return sig_polar_ang(sig)     
