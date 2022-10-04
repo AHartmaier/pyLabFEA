@@ -5,7 +5,7 @@ one-element-model
 Requires Abaqus installation
 uses NumPy and abaqus API
 
-Version: 1.0 (2021-11-27)
+Version: 1.1 (2022-10-02)
 Authors: Abhishek Biswas, Mahesh R.G. Prasad, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)
@@ -96,8 +96,12 @@ sep = ';' # CSV separator
 names = sep.join(sig_names) + sep + sep.join(eps_names) + sep + \
         sep.join(epl_names) + sep + sep.join(ubc_names) # string for header line
 today = str(date.today())  # date
-owner = os.getlogin()  # username
-sys = os.uname()  # system information
+try:
+    owner = os.environ.get('USER', os.environ.get('USERNAME'))  # username
+    sys = os.uname()  # system information
+except:
+    owner = 'unknown'
+    sys = 'unknown'
 
 # Create metadata
 meta = {

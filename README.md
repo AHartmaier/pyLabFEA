@@ -67,7 +67,9 @@ The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on [Bind
 
 ## Examples
 
-Python routines contained in the subfolder 'examples' of this repository demonstrate how ML flow rules can be trained based on reference materials with significant plastic anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. The training data consists of different stress tensors that mark the onset of plastic yielding of the material. It is important that these stress tensors cover the onset of plastic yielding in the full 6-dimensional stress space, including normal and shear stresses. The trained ML flow rules can be used in form of a user material (UMAT) for the commercial FEA package Abaqus.
+Python routines contained in the subfolder 'examples' of this repository demonstrate how ML flow rules can be trained based on reference materials with significant plastic anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. The training data consists of different stress tensors that mark the onset of plastic yielding of the material. It is important that these stress tensors cover the onset of plastic yielding in the full 6-dimensional stress space, including normal and shear stresses. 
+
+The trained ML flow rules can be used in form of a user material (UMAT) for the commercial FEA package Abaqus (Dassault Systems), as described in the README file in the subdirectory 'src/umat'.
 
 ## Contributions
 
