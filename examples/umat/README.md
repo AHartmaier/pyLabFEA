@@ -13,7 +13,8 @@ These models have been generated with the python scripts contained in the subfol
 ```
 $ abaqus python calc_properties.py {material_name}
 ```
-The results will be stored in form of CSV and JSON files in the subfolder 'results'.
+The results will be stored in form of CSV and JSON files in the subfolder 'results'. The following figures gives a graphical representation of the resulting stresses on the pi-plane (plane of deviatoric stresses in principa stress space) together with the yield locus for the material model ML-Goss-Barlat\_C15\_G25.
+![](results/load_cases.png)
 
 ## Example 2: Simulation of simple shear on a thin plate
 In this example, trained ML flow rules are used as constitutive models during the application of simple shear boundary conditions on a thin plate. The FE model is represented in the Abaqus stack 'plate_shear.inp' and the 'umat\_ml.f' subroutine is invoked directly in Abaqus jobs by the command
@@ -21,8 +22,14 @@ In this example, trained ML flow rules are used as constitutive models during th
 ```
 $ abaqus job=shear_iso_ML inp=plate_shear.inp user=umat_ml.f int
 ```
+
 The example provided here uses an ML flow rule that has been trained on isotropic material with the python script 'example/Train\_J2.py'. Other trained material models can be included by changing lines 402 and 403 in the file 'plate_shear.inp'. The in-built J2 plasticity model can be invoked by changing line 370 into:  
-```*Solid Section, elset=Set-2, material=Material-J2``` 
+```*Solid Section, elset=Set-2, material=Material-J2```  
+
+The following figures provide a comparison of the results obtained for J2 plasticity (left) and the ML flow rule (right) of a corresponding isotropic material. In the first figure it is seen that the stresses obtained from both material models agree to a very good degree.
+![](results/shear8_iso_s12.png)
+The resulting plastic shear strains exhibit some quantitative deviations between J2 plasticity (left) and the ML flow rule (right).
+![](results/shear8_iso_ep12.png)
 
 
 
