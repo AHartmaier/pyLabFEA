@@ -1025,19 +1025,18 @@ class Model(object):
                 # test if yield criterion is exceeded
                 sref = Stress(el.dsig()).seq(el.Mat) # max. element stress increment
                 if el.Mat.sy!=None and sref>0.1:  # not necessary for elastic material or small steps
-                    peeq = eps_eq(el.epl) # calculate equiv. plastic strain
-                    yf0 = el.Mat.calc_yf(el.sig, peeq=peeq)  # yield fct. at start of load step
+                    yf0 = el.Mat.calc_yf(el.sig, epl=el.epl)  # yield fct. at start of load step
                     #if element starts in elastic regime load step can only touch yield surface
                     if  yf0 < -0.15:
                         if el.Mat.ML_yf:
                             # for categorial ML yield function, calculate yf0
                             # as exact distance to yield surface
-                            yf0 = el.Mat.ML_full_yf(el.sig, peeq, ld=sld, verb=verb)
+                            yf0 = el.Mat.ML_full_yf(el.sig, el.epl, ld=sld, verb=verb)
                         hh = np.minimum(1., -yf0/sref)
                         sc_list.append(hh)
                     else:
                         # make sure load step does not exceed yield surface too much
-                        hh = np.minimum(1., np.sqrt(1.5)*el.Mat.get_sflow(peeq)/sref)
+                        hh = np.minimum(1., np.sqrt(1.5)*el.Mat.get_sflow(eps_eq(el.epl))/sref)
                     sc_list.append(hh)
             # select scaling appropriate scaling such that no element crosses yield surface
             if len(sc_list)==0: sc_list=[1.]
@@ -1364,7 +1363,7 @@ class Model(object):
                     nit += 1
                 # end while change
             # end if nonlin    
-            #update internal variables with results of load step
+            # update internal variables with results of load step
             self.u += self.du
             self.f += K @ self.du
             for el in self.element:
@@ -1376,7 +1375,7 @@ class Model(object):
                     el.sig = el.res_sig    
                 el.eps = el.eps_t()
 
-            #update load step
+            # update load step
             il += 1
             niter.append(nit-1)
             co_nconv.append(nconv)

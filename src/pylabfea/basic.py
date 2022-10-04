@@ -197,7 +197,7 @@ def sig_cyl2princ(s_cyl) -> np.ndarray:
     theta = s_cyl[:, 1]
     s_princ = (np.tensordot(np.cos(theta), a_vec, axes=0) +
                np.tensordot(np.sin(theta), b_vec, axes=0)) * \
-               np.sqrt(2. / 3.) * np.array([seq, seq, seq]).T
+              np.sqrt(2. / 3.) * np.array([seq, seq, seq]).T
     if sh[0] == 3:
         p = s_cyl[:, 2]
         s_princ += np.array([p, p, p]).T / 3.
@@ -544,6 +544,7 @@ def pickle2mat(name, path='./'):
         pcl = pickle.load(inp)
     return pcl
 
+
 # =================================================
 # Alias functions to ensure backwards compatibility
 # with legacy versions of pyLabFEA
@@ -552,20 +553,26 @@ def pickle2mat(name, path='./'):
 def seq_J2(sig):
     return sig_eq_j2(sig)
 
+
 def sprinc(sig):
     return sig_princ(sig)
+
 
 def sp_cart(scyl):
     return sig_cyl2princ(scyl)
 
+
 def svoigt(scyl, evec):
     return sig_cyl2voigt(scyl, evec)
+
 
 def s_cyl(sig, mat=None):
     return sig_princ2cyl(sig, mat)
 
+
 def sdev(sig):
     return sig_dev(sig)
+
 
 def polar_ang(sig):
     return sig_polar_ang(sig)     
