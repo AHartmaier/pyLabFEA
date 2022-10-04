@@ -53,7 +53,8 @@ c ! 30..nsv+29: dual coefficients
 c ! nsv+30..+5*nsv+29: support vectors (5-dimensional)
 c !========================================================================
 c ! State variables
-c ! 1-6: plastic strain (eplas)
+c ! 1-6: plastic strain tensor (eplas, components 11, 22, 33, 12, 13, 23)
+c ! 7  : equivalent plastic strain (PEEQ)
  
       implicit none
  
@@ -268,6 +269,9 @@ c ! 1-6: plastic strain (eplas)
       statev(4) = eplas(6)   ! store in Abaqus convention
       statev(5) = eplas(5)
       statev(6) = eplas(4)
+      call calcEqStrain(eplas, peeq)
+      statev(7) = peeq
+      
       !update material Jacobian
       ddsdde = ddsdde*sc_elstep + Ct*(1.d0-sc_elstep)
       ! exchange column 6 and 4 and row 6 and 4 in stiffness tensor to meet Abaqus convention
@@ -331,22 +335,25 @@ c ! 1-6: plastic strain (eplas)
         !Calculate the equivalent strain
         real(8), dimension(ntens) :: eps
         real(8) :: eeq
-        real(8), dimension(ntens) :: ed
-        real(8) :: ev, hdi, hsh
-        integer :: i
-  
-        ev = 0.d0
-        do i=1,ndi
-            ev = ev + eps(i)
-        end do
-        ed = eps
-        hdi = 0.d0
-        hsh = 0.d0
-        do i=1,ndi
-            hdi = hdi + (eps(i)-ev)**2
-            hsh = hsh + eps(ndi+i)**2
-        end do
-        eeq = sqrt((2.d0*hdi+hsh)/3.)
+C       real(8), dimension(ntens) :: ed
+C       real(8) :: ev, hdi, hsh
+C       integer :: i
+C 
+C       ev = 0.d0
+C       do i=1,ndi
+C           ev = ev + eps(i)
+C       end do
+C       ed = eps
+C       hdi = 0.d0
+C       hsh = 0.d0
+C       do i=1,ndi
+C           hdi = hdi + (eps(i)-ev)**2
+C           hsh = hsh + eps(ndi+i)**2
+C       end do
+C       eeq = sqrt((2.d0*hdi+hsh)/3.)
+        eeq =  dqsrt(2.0*(eplas(1)**2 + eplas(2)**2 + eplas(3)**2
+     &             + 2.0*(eplas(4)**2 + eplas(5)**2 + eplas(6)**2))
+     &             / 3.0)
       end subroutine calcEqStrain
 
       subroutine calcKernelFunction(x, i_sv, kernelFunc)
