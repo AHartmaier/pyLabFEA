@@ -5,12 +5,12 @@ one-element-model
 Requires Abaqus installation
 uses NumPy and abaqus API
 
-Version: 1.1 (2022-10-02)
+Version: 1.2 (2022-10-05)
 Authors: Abhishek Biswas, Mahesh R.G. Prasad, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
 distributed under GNU General Public License (GPLv3)
 
-November 2021
+October 2022
 '''
 
 import numpy as np
@@ -22,17 +22,15 @@ from abaqusConstants import *
 from odbMaterial import *
 from odbSection import *
 
-ml_name = str(sys.argv[1])
-path = './'
-print('Processing material data defined for ',ml_name)
 
 def fclear():
     fname =['.odb','.msg','.dat','.com','.prt','.sim','.sta','.log','.lck']
     for i in fname:
-      try:
-        os.remove(abq_job+i)
-      except:pass
-    return None
+        try:
+            os.remove(abq_job+i)
+        except:
+            pass
+    return
 
 def write_res():
     odb=openOdb(abq_job+'.odb',readOnly=True)
@@ -60,6 +58,23 @@ def write_res():
     return None
 
 # Initialization
+ml_name = str(sys.argv[1])
+print('Processing material data defined for ',ml_name)
+
+# set paths and check for existence
+path_m = 'models/'
+path_r = 'results/'
+file_m = path_m + 'abq_' + ml_name + '-svm.csv
+if not os.path.isdir(path_m):
+    raise NotADirectoryError(f'Path {path_m} is not a directory.')
+if not os.path.exists(file_m):
+    raise FileNotFoundError(f'Model file {file_m} not found.')
+if not os.path.isdir(path_r):
+    if os.path.exists(path_r):
+        raise NotADirectoryError(f'Path {path_r} exists, but is not a directory.')
+    else:
+        os.mkdir(path_r)
+
 # string constants
 sig_names = ['S11','S22','S33','S23','S13','S12']
 epl_names = ['Ep11','Ep22','Ep33','Ep23','Ep13','Ep12']
@@ -72,8 +87,12 @@ fbc_names = ['fx', 'fy', 'fz']
 sdv_names = ['SDV1', 'SDV2', 'SDV3', 'SDV4', 'SDV5', 'SDV6']
 
 # read metadata of Support Vector file
-with open('models/abq_'+ml_name+'-svm_meta.json') as f:
-    meta = json.load(f)
+meta_fname = path_m + abq_'+ml_name+'-svm_meta.json'
+try:
+    with open(meta_fname) as f:
+        meta = json.load(f)
+except:
+    raise FileNotFoundError(f'Meta-data file {meta_fname} could not be loaded.')
 
 name  = meta['Model']['Names']
 param = meta['Model']['Parameters']
@@ -88,8 +107,7 @@ abq_job = 'femBlock'  # Abaqus .inp file
 abq_umat = 'ml_umat' # umat
 f_name = 'abq_'+ml_name+'-res.csv'  # result file
 meta_fname = 'abq_'+ml_name+'-res_meta.json'  # metadata file
-path_m = 'models/'
-path_r = 'results/'
+
 
 # paramaters for metadata
 sep = ';' # CSV separator
@@ -124,7 +142,7 @@ meta = {
     "Version"   : "6.14-2",
     "Input"     : abq_job,
     "Material"  : abq_umat,
-    "Path"      : "./"
+    "Path"      : os.getcwd()
   },
   "Parameters"  : {
       "Creator" : 'pylabfea',
@@ -150,6 +168,7 @@ meta = {
       "Header"   : 0
   },
 }
+
 with open(path_r+meta_fname,'w') as fp:
     json.dump(meta, fp, indent=2)
 
@@ -178,7 +197,7 @@ for jj in lc:
       
     # pass information about SVM file
     data[87] = '*User Material, constants='+str(Ndata)+'\n'
-    data[88] = '*include, input=models/abq_'+ml_name+'-svm.csv\n'
+    data[88] = '*include, input='+file_m+'\n'
  
     if not xload==0:
       data[113] = 'Set-15,1,1, '+str(xload)+'\n'

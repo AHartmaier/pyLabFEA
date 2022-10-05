@@ -20,7 +20,7 @@ The results will be stored in form of CSV and JSON files in the subfolder 'resul
 In this example, trained ML flow rules are used as constitutive models during the application of simple shear boundary conditions on a thin plate. The FE model is represented in the Abaqus stack 'plate_shear.inp' and the 'umat\_ml.f' subroutine is invoked directly in Abaqus jobs by the command
 
 ```
-$ abaqus job=shear_iso_ML inp=plate_shear.inp user=umat_ml.f int
+$ abaqus job=shear_iso_ML inp=plate_shear.inp user=ml_umat.f int
 ```
 
 The example provided here uses an ML flow rule that has been trained on isotropic material with the python script 'example/Train\_J2.py'. Other trained material models can be included by changing lines 402 and 403 in the file 'plate_shear.inp'. The in-built J2 plasticity model can be invoked by changing line 370 into:  

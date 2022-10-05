@@ -351,7 +351,7 @@ C           hdi = hdi + (eps(i)-ev)**2
 C           hsh = hsh + eps(ndi+i)**2
 C       end do
 C       eeq = sqrt((2.d0*hdi+hsh)/3.)
-        eeq =  dqsrt(2.0*(eplas(1)**2 + eplas(2)**2 + eplas(3)**2
+        eeq =  dsqrt(2.0*(eplas(1)**2 + eplas(2)**2 + eplas(3)**2
      &             + 2.0*(eplas(4)**2 + eplas(5)**2 + eplas(6)**2))
      &             / 3.0)
       end subroutine calcEqStrain
