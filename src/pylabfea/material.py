@@ -320,7 +320,7 @@ class Material(object):
         sig  : (sdim,) or (N, sdim) array
             Stresses (arrays of Voigt or principal stresses)
         epl : (sdim, ) array
-            Equivalent plastic strain tensor (optional, default: 0)
+            Equivalent plastic strain tensor (optional, default: None)
         ana  : Boolean
             Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)
         pred : Boolean
@@ -334,6 +334,8 @@ class Material(object):
         sh = np.shape(sig)
         if epl is None:
             epl = np.zeros(self.sdim)
+        if type(epl) == float:
+            epl = np.array([epl, 0., 0., 0., 0., 0.])
         if self.ML_yf and not ana:
             if sh == (3,) or sh == (6,):
                 sig = np.array([sig])
@@ -351,7 +353,7 @@ class Material(object):
                 else:
                     x[:, 0:3] = sig[:, 0:3] / self.scale_seq
             if self.whdat:
-                x[:, self.ind_wh:self.ind_wh+self.sdim] = epl / self.scale_wh
+                x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -704,7 +706,7 @@ class Material(object):
             else:
                 x[:, 0:6] = sig_dev(sig)[:, 0:6] / self.scale_seq
             if self.whdat:
-                x[:, self.ind_wh:self.ind_wh+self.sdim] = epl / self.scale_wh
+                x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 x[:, ih:ih + self.Nset] = [self.tx_cur[i] / self.scale_text[i] - 1. for i in range(self.Nset)]
@@ -719,7 +721,7 @@ class Material(object):
                 else:
                     fgrad[i, 0:6] = dKdx[0:6] / self.scale_seq
                 if self.whdat:
-                    hk -= dKdx[self.ind_wh:self.ind_wh+self.sdim] * self.scale_seq / self.scale_wh
+                    hk -= dKdx[self.ind_wh:self.ind_wh + self.sdim] * self.scale_seq / self.scale_wh
             self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation
             self.msg['gradient'] = 'gradient to ML_yf'
         else:
@@ -869,6 +871,20 @@ class Material(object):
     # ==============================================================
     # subroutines for ML flow rule, training
     # ==============================================================
+    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1.,
+                     fs=0.1, plot=False, cyl=False, gridsearch=False, cvals=None, gvals=None):
+        """
+        Generic function call to setup and train the SVM yield function, for details see the specific functions
+        setup_yf_SVM_6D and setup_yf_SVM_3D.
+        """
+        if self.sdim == 3:
+            train_sc, test_sc = self.setup_yf_SVM_3D(x, y_train, x_test=x_test, y_test=y_test,
+                                                     C=C, gamma=gamma, fs=fs, plot=plot, cyl=cyl,
+                                                     gridsearch=gridsearch, cvals=cvals, gvals=gvals)
+        else:
+            train_sc, test_sc = self.setup_yf_SVM_6D(x, y_train, x_test=x_test, y_test=y_test,
+                                                     C=C, gamma=gamma, plot=plot, gridsearch=gridsearch)
+        return train_sc, test_sc
 
     def setup_yf_SVM_6D(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., plot=False, gridsearch=False):
         """Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and 
@@ -925,7 +941,7 @@ class Material(object):
         X_train = np.zeros((N, self.Ndof))
         X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
         if self.whdat:
-            X_train[:, self.ind_wh:self.ind_wh+6] = x[:, self.ind_wh:self.ind_wh+6] / self.scale_wh
+            X_train[:, self.ind_wh:self.ind_wh + 6] = x[:, self.ind_wh:self.ind_wh + 6] / self.scale_wh
             print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f'
                   % (self.msparam[0]['ms_type'], self.msparam[0]['Npl'], self.msparam[0]['peeq_max']))
         if self.txdat:
@@ -943,7 +959,7 @@ class Material(object):
             X_test = np.zeros((Ntest, self.Ndof))
             X_test[:, 0:6] = x_test[:, 0:6] / self.scale_seq
             if self.whdat:
-                X_test[:, self.ind_wh:self.ind_wh+6] = x_test[:, self.ind_wh:self.ind_wh+6] / self.scale_wh
+                X_test[:, self.ind_wh:self.ind_wh + 6] = x_test[:, self.ind_wh:self.ind_wh + 6] / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -1068,7 +1084,7 @@ class Material(object):
         if self.whdat:
             X_train[:, self.ind_wh] = x[:, self.ind_wh + 1] / self.scale_wh - 1.
             print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
-                  % (self.msparam[0]['ms_type'],  self.msparam[0]['peeq_max']))
+                  % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
         if self.txdat:
             ih = self.ind_tx + 1
             for i in range(self.Nset):
@@ -1135,7 +1151,7 @@ class Material(object):
         if x_test is None:
             test_sc = None
         else:
-            test_sc = 100 * self.svm_yf.score(x_test, y_test)
+            test_sc = 100 * self.svm_yf.score(X_test, y_test)
         # create plot if requested
         if plot:
             print('Plot of extended training data for SVM classification in 2D cylindrical stress space')
@@ -1851,7 +1867,7 @@ class Material(object):
             h3 = self.msparam[i]['Ntext'] != Ntext
             h4 = self.msparam[i]['sdim'] != self.sdim
             if h1 or h3 or h4:
-                print('Error: Structure of data set #', i, ' is inconsistent:', Nlc,  Ntext, self.sdim, h1, h3, h4)
+                print('Error: Structure of data set #', i, ' is inconsistent:', Nlc, Ntext, self.sdim, h1, h3, h4)
                 raise ValueError('Inconsistent data structure')
                 # Conditions can be relaxed by modifying train_SVC
 
@@ -2195,7 +2211,7 @@ class Material(object):
             else:
                 sf = 1.
             if fun is None:
-                Z = self.calc_yf(sig, peeq=peeq, pred=True) * sf
+                Z = self.calc_yf(sig, epl=peeq, pred=True) * sf
             else:
                 Z = fun(sig, pred=True) * sf
             if label is None:
@@ -2205,7 +2221,7 @@ class Material(object):
             labels.extend([label])
             # plot reference function if provided
             if ref_mat is not None:
-                Z = ref_mat.calc_yf(sig, peeq=peeq, pred=True) * sf
+                Z = ref_mat.calc_yf(sig, epl=peeq, pred=True) * sf
                 labels.extend([ref_mat.name])
                 hl = self.plot_data(Z, ax, xx, yy, field=False, c='black')
                 lines.extend(hl)
@@ -2225,7 +2241,7 @@ class Material(object):
                 dsel = np.nonzero(np.logical_and(np.abs(dat[:, si3]) < trange,
                                                  np.logical_and(dat[:, axis1[j]] > xstart, dat[:, axis1[j]] < xend)))
                 ir = dsel[0]
-                yf = np.sign(self.calc_yf(data[ir, :], peeq=peeq))
+                yf = np.sign(self.calc_yf(data[ir, :], epl=peeq))
                 ax.scatter(dat[ir, axis1[j]], dat[ir, axis2[j]], s=60, c=yf,
                            cmap=plt.cm.Paired, edgecolors='k')
             ax.legend(lines, labels, loc='upper left', fontsize=fontsize - 4)
