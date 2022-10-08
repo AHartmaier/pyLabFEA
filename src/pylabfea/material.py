@@ -334,9 +334,9 @@ class Material(object):
         sh = np.shape(sig)
         if epl is None:
             epl = np.zeros(self.sdim)
-        if type(epl) == float or type(epl) == np.float64:
+        if type(epl) in (float, np.float64):
             # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
-            epl = epl*np.array([1., -0.5, -0.5, 0., 0., 0.])
+            epl = epl * np.array([1., -0.5, -0.5, 0., 0., 0.])
         if self.ML_yf and not ana:
             if sh == (3,) or sh == (6,):
                 sig = np.array([sig])
@@ -784,7 +784,7 @@ class Material(object):
             Average flow stress"""
 
         # if self.msparam is None:
-        if type(epl) == float or type(epl) == np.float64:
+        if type(epl) in (float, np.float64):
             peeq = epl
         else:
             peeq = eps_eq(epl)
@@ -881,7 +881,7 @@ class Material(object):
     # ==============================================================
     # subroutines for ML flow rule, training
     # ==============================================================
-    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1.,
+    def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=15., gamma=2.5,
                      fs=0.1, plot=False, cyl=False, gridsearch=False, cvals=None, gvals=None):
         """
         Generic function call to setup and train the SVM yield function, for details see the specific functions
@@ -893,10 +893,12 @@ class Material(object):
                                                      gridsearch=gridsearch, cvals=cvals, gvals=gvals)
         else:
             train_sc, test_sc = self.setup_yf_SVM_6D(x, y_train, x_test=x_test, y_test=y_test,
-                                                     C=C, gamma=gamma, plot=plot, gridsearch=gridsearch)
+                                                     C=C, gamma=gamma, plot=plot,
+                                                     gridsearch=gridsearch, cvals=cvals, gvals=gvals)
         return train_sc, test_sc
 
-    def setup_yf_SVM_6D(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., plot=False, gridsearch=False):
+    def setup_yf_SVM_6D(self, x, y_train, x_test=None, y_test=None, C=15., gamma=2.5, plot=False,
+                        gridsearch=False, cvals=None, gvals=None):
         """Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and 
         test data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal 
         stresses will be converted to cylindrical stresses, such that training is always performed in cylindrical 
@@ -922,7 +924,11 @@ class Material(object):
         plot : Boolean
             Indicates if plot of decision function should be generated (optional, default: False)
         gridsearch : Boolean
-            Perform grid search to optimize hyperparameters of ML flow rule (optional, default: False)
+            Perform grid search to optimize hyper parameters of ML flow rule (optional, default: False)
+        cvals : array
+            Values for SVC training parameter C in gridsearch (optional, default: None)
+        gvals: array
+            Values for SVC parameter gamma in gridsearch (optional, default: None)
 
         Returns
         -------
@@ -977,20 +983,28 @@ class Material(object):
         # define and fit SVC
         if gridsearch:
             print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
-            param_grid = {'C': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15], 'gamma': [0.5, 1, 1.5, 2, 2.5, 3]}
-            self.grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
-            self.grid.fit(X_train, y_train)
-            print('The best hyper parameters are:', self.grid.best_params_)
-            self.gam_yf = self.grid.best_params_["gamma"]
-            self.C_yf = self.grid.best_params_["C"]
+            # define search grid and add user parameters if not present in grid
+            if cvals is None:
+                cvals = [4, 6, 8, 10, 15, 20]
+                if C not in cvals:
+                    cvals.append(C)
+            if gvals is None:
+                gvals = [1, 1.5, 2, 2.5, 3]
+                if gamma not in gvals:
+                    gvals.append(gamma)
+            param_grid = {'C': cvals, 'gamma': gvals}
+            grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
+            grid.fit(X_train, y_train)
+            print('The best hyperparameters are:', grid.best_params_)
+            self.gam_yf = grid.best_params_["gamma"]
+            self.C_yf = grid.best_params_["C"]
             self.svm_yf = svm.SVC(kernel='rbf', C=self.C_yf, gamma=self.gam_yf)
             self.svm_yf.fit(X_train, y_train)
-            self.ML_yf = True
             print('Original values: C={}, gamma={}'.format(C, gamma))
         else:
             self.svm_yf = svm.SVC(kernel='rbf', C=C, gamma=gamma)
             self.svm_yf.fit(X_train, y_train)
-            self.ML_yf = True
+        self.ML_yf = True
         # calculate scores
         train_sc = 100 * self.svm_yf.score(X_train, y_train)
         if x_test is None:
@@ -1018,7 +1032,7 @@ class Material(object):
         return train_sc, test_sc
 
     def setup_yf_SVM_3D(self, x, y_train, x_test=None, y_test=None, C=10.,
-                        gamma=1., fs=0.1, plot=False, cyl=False,
+                        gamma=2., fs=0.1, plot=False, cyl=False,
                         gridsearch=False, cvals=None, gvals=None):
         """Initialize and train Support Vector Classifier (SVC) as machine
         learning (ML) yield function. Training and test data (features) are
@@ -1056,6 +1070,10 @@ class Material(object):
         gridsearch : Boolean
             Perform grid search to optimize hyperparameters of ML flow rule
             (optional, default: False)
+        cvals : array
+            Values for SVC training parameter C in gridsearch (optional, default: None)
+        gvals: array
+            Values for SVC parameter gamma in gridsearch (optional, default: None)
 
         Returns
         -------
@@ -1135,7 +1153,7 @@ class Material(object):
             print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
             # define search grid and add user parameters if not present in grid
             if cvals is None:
-                cvals = [2, 4, 6, 8, 10, 20]
+                cvals = [4, 6, 8, 10, 15, 20]
                 if not C in cvals:
                     cvals.append(C)
             if gvals is None:
