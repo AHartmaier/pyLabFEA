@@ -207,7 +207,7 @@ class Material(object):
         # initialize quantities needed
         sig = np.array(sig)  # produce copy of sig to avoid changes to original
         depl = np.zeros(6)  # initialize plastic strain increment
-        toler = yf_tolerance * self.get_sflow(eps_eq(epl))
+        toler = yf_tolerance * self.get_sflow(epl)
         dsig = CV @ deps  # predictor of stress increment
         st_scal = 1.
         niter = 0
@@ -335,7 +335,8 @@ class Material(object):
         if epl is None:
             epl = np.zeros(self.sdim)
         if type(epl) == float:
-            epl = np.array([epl, 0., 0., 0., 0., 0.])
+            # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
+            epl = epl*np.array([1., -0.5, -0.5, 0., 0., 0.])
         if self.ML_yf and not ana:
             if sh == (3,) or sh == (6,):
                 sig = np.array([sig])
@@ -369,7 +370,7 @@ class Material(object):
             if N == 1:
                 f = f[0]
         else:
-            f = self.calc_seq(sig) - self.get_sflow(eps_eq(epl))
+            f = self.calc_seq(sig) - self.get_sflow(epl)
             self.msg['yield_fct'] = 'analytical'
         return f
 
@@ -400,7 +401,7 @@ class Material(object):
             raise ValueError(
                 'Only individual stress tensors supported in material.ML_full_yf. Shape of argument is {}'.format(sh))
         seq = self.calc_seq(sig)
-        sflow = self.get_sflow(eps_eq(epl))
+        sflow = self.get_sflow(epl)
         if seq < 0.01 and ld is None:
             # return conservative estimate of yield function for small stresses
             # and unknown loading direction
@@ -765,13 +766,17 @@ class Material(object):
             fgrad = fgrad[0, :]
         return fgrad
 
-    def get_sflow(self, peeq):
-        """Calculate average flow stress of current texture for given equiv plastic strain.
+    def get_sflow(self, epl):
+        """Calculate an estimate of the scalar flow stress (strength) of the material
+        for a given plastic strain.
+
+        NOTE: Currently assumes only linear isotropic hardening with the current hardening rate,
+        does not include texture information and needs to be adapted to data contained in ms.param
         
         Parameters
         ----------
-        peeq : float
-            Current value of equiv. plastic strain
+        epl : float or (sdim,) array
+            Current value of equiv. plastic strain (float) or plastic strain tensor
             
         Yields
         ------
@@ -779,6 +784,11 @@ class Material(object):
             Average flow stress"""
 
         # if self.msparam is None:
+        if type(epl) == float:
+            peeq = epl
+        else:
+            peeq = eps_eq(epl)
+
         sflow = self.sy + peeq * self.khard
         '''else:
             sm = np.sum(self.tx_cur)
