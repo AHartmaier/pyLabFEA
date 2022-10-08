@@ -334,7 +334,7 @@ class Material(object):
         sh = np.shape(sig)
         if epl is None:
             epl = np.zeros(self.sdim)
-        if type(epl) == float:
+        if type(epl) == float or type(epl) == np.float64:
             # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
             epl = epl*np.array([1., -0.5, -0.5, 0., 0., 0.])
         if self.ML_yf and not ana:
@@ -784,7 +784,7 @@ class Material(object):
             Average flow stress"""
 
         # if self.msparam is None:
-        if type(epl) == float:
+        if type(epl) == float or type(epl) == np.float64:
             peeq = epl
         else:
             peeq = eps_eq(epl)
