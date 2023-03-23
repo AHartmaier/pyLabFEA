@@ -64,14 +64,14 @@ print('Processing material data defined for ',ml_name)
 # set paths and check for existence
 path_m = 'models/'
 path_r = 'results/'
-file_m = path_m + 'abq_' + ml_name + '-svm.csv
+file_m = path_m + 'abq_-' + ml_name + '-svm.csv'
 if not os.path.isdir(path_m):
-    raise NotADirectoryError(f'Path {path_m} is not a directory.')
+    raise NotADirectoryError('Path '+path_m+' is not a directory.')
 if not os.path.exists(file_m):
-    raise FileNotFoundError(f'Model file {file_m} not found.')
+    raise FileNotFoundError('Model file '+file_m+' not found.')
 if not os.path.isdir(path_r):
     if os.path.exists(path_r):
-        raise NotADirectoryError(f'Path {path_r} exists, but is not a directory.')
+        raise NotADirectoryError('Path '+path_r+' exists, but is not a directory.')
     else:
         os.mkdir(path_r)
 
@@ -87,12 +87,12 @@ fbc_names = ['fx', 'fy', 'fz']
 sdv_names = ['SDV1', 'SDV2', 'SDV3', 'SDV4', 'SDV5', 'SDV6']
 
 # read metadata of Support Vector file
-meta_fname = path_m + abq_'+ml_name+'-svm_meta.json'
+meta_fname = path_m + 'abq_'+ml_name+'-svm_meta.json'
 try:
     with open(meta_fname) as f:
         meta = json.load(f)
 except:
-    raise FileNotFoundError(f'Meta-data file {meta_fname} could not be loaded.')
+    raise FileNotFoundError('Meta-data file '+meta_fname+' could not be loaded.')
 
 name  = meta['Model']['Names']
 param = meta['Model']['Parameters']
