@@ -41,20 +41,32 @@ def write_res():
     if nframes>10:
         ind += list(range(5,nframes-1,5))
     with open(path_r+f_name,'a') as f:
+        c_nan = []
         for i in ind:
             s  = frameRepository[i].fieldOutputs['S'].getSubset(CENTROID).values[0].data # stress
+            mises = frameRepository[i].fieldOutputs['S'].getSubset(CENTROID).values[0].mises  # equiv. stress
             le = frameRepository[i].fieldOutputs['LE'].getSubset(CENTROID).values[0].data # log strain
             ep = np.zeros(6) # plastic strain
             for j, sel in enumerate(sdv_names):
                 ep[j] = frameRepository[i].fieldOutputs[sel].getSubset(CENTROID).values[0].data
+                if np.isnan(ep[j]):
+                    ep[j] = 0.
+                    c_nan.append(j)
+            peeq = np.sqrt(2.*(np.sum(ep[0:3]*ep[0:3]) + 
+                           0.5*np.sum(ep[3:6]*ep[3:6])) / 3.)
             ubc[0] = xload
             ubc[1] = yload
             ubc[2] = zload
             a = np.append(s, le)
             a = np.append(a, ep)
+            a = np.append(a, peeq)
+            a = np.append(a, mises)
             a = np.append(a, ubc)
             a.tofile(f, sep=';', format='%12.5e')
             f.write('\n')
+        print('Counted nan:', len(c_nan))
+        hist = np.histogram(c_nan, bins=[0,1,2,3,4,5,6])
+        print(hist)
     return None
 
 # Initialization
@@ -64,7 +76,7 @@ print('Processing material data defined for ',ml_name)
 # set paths and check for existence
 path_m = 'models/'
 path_r = 'results/'
-file_m = path_m + 'abq_-' + ml_name + '-svm.csv'
+file_m = path_m + 'abq_' + ml_name + '-svm.csv'
 if not os.path.isdir(path_m):
     raise NotADirectoryError('Path '+path_m+' is not a directory.')
 if not os.path.exists(file_m):
@@ -99,9 +111,9 @@ param = meta['Model']['Parameters']
 i = name.index('Ndata')
 Ndata = param[i]
                 
-# Abaqus paramaters
+# Abaqus parameters
 ncpu=1
-fac = 0.01*0.04 # scaling factor for boundary conditions
+fac = 0.01*0.04 # scaling factor for boundary conditions (strain * side length)
 ang = np.radians(np.linspace(0,90,num=3))  # list of angles for load cases
 abq_job = 'femBlock'  # Abaqus .inp file
 abq_umat = 'ml_umat' # umat
@@ -112,7 +124,8 @@ meta_fname = 'abq_'+ml_name+'-res_meta.json'  # metadata file
 # paramaters for metadata
 sep = ';' # CSV separator
 names = sep.join(sig_names) + sep + sep.join(eps_names) + sep + \
-        sep.join(epl_names) + sep + sep.join(ubc_names) # string for header line
+        sep.join(epl_names) + sep + 'PEEQ' + sep + 'MISES' + sep +\
+        sep.join(ubc_names) # string for header line
 today = str(date.today())  # date
 try:
     owner = os.environ.get('USER', os.environ.get('USERNAME'))  # username
