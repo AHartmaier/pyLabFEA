@@ -1764,8 +1764,10 @@ class Material(object):
         else:
             raise ValueError('elasticity: Inconsistent definition of material parameters')
 
-    def plasticity(self, sy=None, hill=None, drucker=0., khard=0., tresca=False, barlat=None,
-                   barlat_exp=None, hill_3p=None, hill_6p=None, sdim=6):
+    def plasticity(self, sy=None, sdim=6, drucker=0., khard=0.,
+                   tresca=False,
+                   barlat=None, barlat_exp=None,
+                   hill=None, hill_3p=None, hill_6p=None, rv=None):
         """Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
 
@@ -1773,7 +1775,7 @@ class Material(object):
         ----------
         sy   : float
             Yield strength
-        hill : (3,) array
+        hill : (3,) or (6,) array
             Parameters for Hill-like orthotropic anisotropy (optional, default: isotropy)
         drucker : float
             Parameter for Drucker-like tension-compression asymmetry (optional, default: 0)
@@ -1791,6 +1793,9 @@ class Material(object):
         hill_6p : Boolean
             Indicate if 6-parameter Hill model shall be applied (optional, default: None)
             Will be set True automatically if 6 Hill parameters are provided
+        rv  : (6,) array
+            Parameters for anisotropic flow aspect ratios that can be given alternatively to Hill
+            parameters (optional)
         sdim : int
             Dimensionality of stress tensor to be used for plasticity, must be either 3 
             (only principal stresses are considered) or 6 (full stress tensor is considered),
@@ -1806,8 +1811,22 @@ class Material(object):
             if self.sdim is not None and self.sdim != sdim:
                 print('plasticity: Parameter sdim is changed. New value:', sdim)
             self.sdim = sdim
-        if hill is None:
+        if hill is None and rv is None:
             hill = np.ones(self.sdim)
+        elif hill is None:
+            hill = np.ones(self.sdim)
+            if len(rv) != self.sdim:
+                raise ValueError(f'plasticity: wrong dimension of yield stress ratios, must be {sdim}')
+            rinv = 1./np.array(rv)
+            hill[0] = rinv[0]**2 + rinv[1]**2 - rinv[2]**2
+            hill[1] = rinv[1]**2 + rinv[2]**2 - rinv[0]**2
+            hill[2] = rinv[2]**2 + rinv[0]**2 - rinv[1]**2
+            if self.sdim == 6:
+                hill[3] = rinv[3]**2
+                hill[4] = rinv[4]**2
+                hill[5] = rinv[5]**2
+        elif hill is not None and rv is not None:
+            warnings.warn('plasticity: Both, hill and rv, have been provided. Using Hill parameters.')
         lh = len(hill)
         if hill_6p is None and hill_3p is None:
             # determine if 3 or 6 Hill parameters are provided

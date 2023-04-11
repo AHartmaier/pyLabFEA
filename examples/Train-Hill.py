@@ -24,9 +24,10 @@ E = 200.e3  # Young's modulus in MPa
 nu = 0.3  # Poisson ratio
 sy = 50.  # yield strength in MPa
 hill = [1.4, 1.0, 0.7, 1.3, 0.8, 1.0]  # parameters for Hill-type anisotropy
+rv = [1.2, 1.0, 0.8, 1.0, 1.0, 1.0]  # parameters for yield stress ratios
 mat_h = FE.Material(name='Hill-reference', num=1)
 mat_h.elasticity(E=E, nu=nu)
-mat_h.plasticity(sy=sy, hill=hill, sdim=6)
+mat_h.plasticity(sy=sy, rv=rv, sdim=6)
 mat_h.calc_properties(eps=0.01, sigeps=True)
 
 # define material as basis for ML flow rule
