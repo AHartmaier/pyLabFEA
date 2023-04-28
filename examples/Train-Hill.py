@@ -48,7 +48,7 @@ print("ML material with {} support vectors, C={}, gamma={}, stress dimensions={}
       .format(Nsv, mat_mlh.C_yf, mat_mlh.gam_yf, mat_mlh.sdim))
 mat_mlh.polar_plot_yl(data=sc, dname='support vectors', cmat=[mat_h], arrow=True)
 # export parameters of trained ML flow rule in UMAT format
-# mat_mlh.export_MLparam(__file__, path='../models/')
+mat_mlh.export_MLparam(__file__, path='../models/')
 
 # create plot of trained yield function in cylindrical stress space
 print('Plot of trained SVM classification with test data in 2D cylindrical stress space')

@@ -73,7 +73,7 @@ mat_mlGB.train_SVC(C=C, gamma=gamma)
 sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_yld'][0])
 mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True)
 # export ML parameters for use in UMAT
-# mat_mlGB.export_MLparam(__file__, path='../models/')
+mat_mlGB.export_MLparam(__file__, path='../models/')
 
 # analyze support vectors to plot them in stress space
 sv = mat_mlGB.svm_yf.support_vectors_ * mat_mlGB.scale_seq
