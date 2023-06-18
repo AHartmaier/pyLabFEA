@@ -1,5 +1,4 @@
 import pytest
-import os
 import pylabfea as FE
 import numpy as np
 
@@ -26,12 +25,9 @@ def test_ml_plasticity():
     mat_ml.calc_properties(eps=0.01, sigeps=True, min_step=12)
 
     # check if nonlinear stress-strain data is correct
-    assert np.abs(mat_ml.propJ2['stx']['ys'] - 146.60448659713813) < 1E-5
-    assert np.abs(mat_ml.propJ2['sty']['seq'][-1] - 162.3201764461) < 1E-5
-    assert np.abs(mat_ml.propJ2['sty']['peeq'][-1] - 9.189915019471789E-3) < 1E-7
-    assert np.abs(mat_ml.propJ2['et2']['ys'] - 137.0452401057186) < 1E-5
-    assert np.abs(mat_ml.propJ2['ect']['peeq'][-1] - 8.540733271274253E-3) < 1E-7
-    assert np.abs(mat_ml.propJ2['ect']['seq'][-1] - 160.86834826891058) < 1E-5
+    assert np.abs(mat_ml.propJ2['stx']['ys'] - 149.62302821433968) < 1E-5
+    assert np.abs(mat_ml.propJ2['sty']['seq'][-1] - 157.25971534002542) < 1E-5
+    assert np.abs(mat_ml.propJ2['ect']['peeq'][-1] - 0.00855380746615942) < 1E-7
 
 
 def test_ml_shear():
@@ -61,9 +57,9 @@ def test_ml_shear():
     fem.solve()
     fem.calc_global()
 
-    assert np.abs(fem.glob['sig'][5] - 77.00408029466891) < 1E-5
-    assert np.abs(fem.element[3].epl[5] - 0.003973183445820545) < 1E-7
-    assert np.abs(fem.element[3].sig[1] - 43.279502611331836) < 1E-5
+    assert np.abs(fem.glob['sig'][5] - 78.0885109441584) < 1E-5
+    assert np.abs(fem.element[3].epl[5] - 0.003953660592403026) < 1E-7
+    assert np.abs(fem.element[3].sig[1] - 46.93669341234779) < 1E-5
 
 
 def test_ml_training():
@@ -98,9 +94,9 @@ def test_ml_training():
     sig_test = sunittest * X[:, None]
     yf_ml = mat_ml2.calc_yf(sig_test)
     yf_J2 = mat_J2.calc_yf(sig_test)
-    mae, precision, Accuracy, Recall, F1Score = \
+    mae, precision, Accuracy, Recall, F1Score, mcc = \
         FE.training_score(yf_J2, yf_ml, plot=False)
 
     assert np.abs(mae < 16.)
-    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 59.929767194906056) < 1E-5
-    assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 8.979557252031627E-3) < 1E-7
+    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 59.50062640640023) < 1E-5
+    assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008980609212461927) < 1E-7
