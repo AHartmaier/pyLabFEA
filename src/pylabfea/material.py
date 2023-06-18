@@ -36,7 +36,8 @@ import getpass
 
 class Material(object):
     """Define class for Materials including material parameters (attributes), constitutive relations (methods)
-    and derived properties und various loading conditions (dictionary)
+    and derived properties und various loading conditions (dictionary).
+
 
     Parameters
     ----------
@@ -207,7 +208,7 @@ class Material(object):
         # initialize quantities needed
         sig = np.array(sig)  # produce copy of sig to avoid changes to original
         depl = np.zeros(6)  # initialize plastic strain increment
-        toler = yf_tolerance * self.get_sflow(epl)
+        toler = yf_tolerance * self.get_sflow(eps_eq(epl))
         dsig = CV @ deps  # predictor of stress increment
         st_scal = 1.
         niter = 0
@@ -320,7 +321,7 @@ class Material(object):
         sig  : (sdim,) or (N, sdim) array
             Stresses (arrays of Voigt or principal stresses)
         epl : (sdim, ) array
-            Equivalent plastic strain tensor (optional, default: None)
+            Equivalent plastic strain tensor (optional, default: 0)
         ana  : Boolean
             Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)
         pred : Boolean
@@ -370,7 +371,7 @@ class Material(object):
             if N == 1:
                 f = f[0]
         else:
-            f = self.calc_seq(sig) - self.get_sflow(epl)
+            f = self.calc_seq(sig) - self.get_sflow(eps_eq(epl))
             self.msg['yield_fct'] = 'analytical'
         return f
 
@@ -401,7 +402,7 @@ class Material(object):
             raise ValueError(
                 'Only individual stress tensors supported in material.ML_full_yf. Shape of argument is {}'.format(sh))
         seq = self.calc_seq(sig)
-        sflow = self.get_sflow(epl)
+        sflow = self.get_sflow(eps_eq(epl))
         if seq < 0.01 and ld is None:
             # return conservative estimate of yield function for small stresses
             # and unknown loading direction
@@ -470,8 +471,8 @@ class Material(object):
             Multiplyer for stress
         su : (N,sdim) array
             Unit stress
-        epl : float
-            Equivalent plastic strain (optional, default: 0)
+        epl : (sdim,) array)
+            Plastic strain tensor (optional, default: None)
         
         Returns
         -------
@@ -492,8 +493,8 @@ class Material(object):
             Multiplier for stress
         su : (sdim,) array
             Unit stress
-        epl : float
-            Equivalent plastic strain (optional, default: 0)
+        epl : (sdim,) array)
+            Plastic strain tensor (optional, default: None)
         
         Returns
         -------
@@ -640,7 +641,7 @@ class Material(object):
         sig : (sdim,) or (N,sdim) array
             Stress value (Pricipal stress or full stress tensor)
         epl : (sdim,) array
-            Plastic strain tensor (optional, default = 0)
+            Plastic strain tensor (optional, default = None)
         seq : float or (N,) array
             Equivalent stresses (optional)
         ana : Boolean
@@ -822,7 +823,6 @@ class Material(object):
         pdot : Voigt tensor
             Plastic strain increment
         """
-        # peeq = eps_eq(epl)  # equiv. plastic strain
         yfun = self.calc_yf(sig + Cel @ deps, epl=epl)
         # for DEBUGGING
         '''yf0  = self.calc_yf(sig, peeq=peeq)
@@ -897,7 +897,7 @@ class Material(object):
                                                      gridsearch=gridsearch, cvals=cvals, gvals=gvals)
         return train_sc, test_sc
 
-    def setup_yf_SVM_6D(self, x, y_train, x_test=None, y_test=None, C=15., gamma=2.5, plot=False,
+    def setup_yf_SVM_6D(self, x, y_train, x_test=None, y_test=None, C=10., gamma=1., plot=False,
                         gridsearch=False, cvals=None, gvals=None):
         """Initialize and train Support Vector Classifier (SVC) as machine learning (ML) yield function. Training and 
         test data (features) are accepted as either 3D principal stresses or cylindrical stresses, but principal 
@@ -958,8 +958,8 @@ class Material(object):
         X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
         if self.whdat:
             X_train[:, self.ind_wh:self.ind_wh + 6] = x[:, self.ind_wh:self.ind_wh + 6] / self.scale_wh
-            print('Using work hardening data "%s" for training: %i data sets up to PEEQ=%6.3f'
-                  % (self.msparam[0]['ms_type'], self.msparam[0]['Npl'], self.msparam[0]['peeq_max']))
+            print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
+                  % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
         if self.txdat:
             ih = self.ind_tx
             for i in range(self.Nset):
@@ -985,19 +985,19 @@ class Material(object):
             print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
             # define search grid and add user parameters if not present in grid
             if cvals is None:
-                cvals = [4, 6, 8, 10, 15, 20]
+                cvals = [1, 2, 4, 6, 8, 10, 15]
                 if C not in cvals:
                     cvals.append(C)
             if gvals is None:
-                gvals = [1, 1.5, 2, 2.5, 3]
+                gvals = [0.5, 1, 1.5, 2, 2.5, 3]
                 if gamma not in gvals:
                     gvals.append(gamma)
             param_grid = {'C': cvals, 'gamma': gvals}
-            grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
-            grid.fit(X_train, y_train)
-            print('The best hyperparameters are:', grid.best_params_)
-            self.gam_yf = grid.best_params_["gamma"]
-            self.C_yf = grid.best_params_["C"]
+            self.grid = GridSearchCV(svm.SVC(), param_grid, refit=True, verbose=3, n_jobs=-1)
+            self.grid.fit(X_train, y_train)
+            print('The best hyperparameters are:', self.grid.best_params_)
+            self.gam_yf = self.grid.best_params_["gamma"]
+            self.C_yf = self.grid.best_params_["C"]
             self.svm_yf = svm.SVC(kernel='rbf', C=self.C_yf, gamma=self.gam_yf)
             self.svm_yf.fit(X_train, y_train)
             print('Original values: C={}, gamma={}'.format(C, gamma))
@@ -1032,7 +1032,7 @@ class Material(object):
         return train_sc, test_sc
 
     def setup_yf_SVM_3D(self, x, y_train, x_test=None, y_test=None, C=10.,
-                        gamma=2., fs=0.1, plot=False, cyl=False,
+                        gamma=1., fs=0.1, plot=False, cyl=False,
                         gridsearch=False, cvals=None, gvals=None):
         """Initialize and train Support Vector Classifier (SVC) as machine
         learning (ML) yield function. Training and test data (features) are
@@ -1153,7 +1153,7 @@ class Material(object):
             print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
             # define search grid and add user parameters if not present in grid
             if cvals is None:
-                cvals = [4, 6, 8, 10, 15, 20]
+                cvals = [2, 4, 6, 8, 10, 15]
                 if not C in cvals:
                     cvals.append(C)
             if gvals is None:
@@ -1179,7 +1179,7 @@ class Material(object):
         if x_test is None:
             test_sc = None
         else:
-            test_sc = 100 * self.svm_yf.score(X_test, y_test)
+            test_sc = 100 * self.svm_yf.score(x_test, y_test)
         # create plot if requested
         if plot:
             print('Plot of extended training data for SVM classification in 2D cylindrical stress space')
@@ -1200,9 +1200,9 @@ class Material(object):
             plt.show()
         return train_sc, test_sc
 
-    def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=True,
+    def train_SVC(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=False,
                   mat_ref=None, sdata=None, plot=False, fontsize=16,
-                  gridsearch=False, cvals=None, gvals=None):
+                  gridsearch=False, cvals=None, gvals=None, Fe=0.1, Ce=0.99):
         """Train SVC for all yield functions of the microstructures provided
         in msparam and for flow stresses to capture work hardening. In first
         step, the training data for each set is generated by creating stresses
@@ -1283,56 +1283,33 @@ class Material(object):
                       .format(self.sdim, Nlc))
             self.Ndof = 2 if self.sdim == 3 else 6
         else:
-            '''WARNING: There are no more hardening levels, Npl, epc in undefined !!!'''
+            '''WARNING: There are no more hardening levels, epc is undefined !!!'''
             Nlc = self.msparam[0]['Nlc']
-            Npl = self.msparam[0]['Npl']
-            Ntext = self.msparam[0]['Ntext']
-            if extend:
-                Ne = 4
-            else:
-                Ne = 0
-            N0 = Nlc * (2 * Nseq + Ne)  # total number of training data points per level of PEEQ for each microstructure
+            Ndinp = len(self.msparam[0]['flow_stress'])
+            Nsdata = 2*Nseq + 4 if extend else 2*Nseq
+            N0 = Nlc * Nsdata  # total number of training data points per Ppl for each microstructure
+            Nt = Ndinp * Nsdata
+            dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
+            if self.whdat:
+                iwh = self.ind_wh
             if self.txdat:
-                Nt = self.Nset * Ntext * Npl * N0  # total number of training data points
-            else:
-                Nt = Ntext * Npl * N0
-            if self.sdim == 3:
-                dtrain = 3  # dimension of training data (Ndof+1 for sdim==3)
-                if self.whdat:
-                    iwh = dtrain
-                    dtrain += 1
-                if self.txdat:
-                    itx = dtrain
-                    dtrain += self.Nset
-            else:
-                dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
-                if self.whdat:
-                    iwh = self.ind_wh
-                if self.txdat:
-                    itx = self.ind_tx
+                itx = self.ind_tx
             xt = np.zeros((Nt, dtrain))
-            yt = np.zeros(Nt)
-            for m, ms in enumerate(self.msparam):
-                for k in range(Ntext):  # loop over all textures
-                    for j in range(Npl):  # loop over work hardening levels for each texture
-                        # create training data in entire deviatoric stress plane from raw data
+
+            # create training data in entire stress space from raw data
                         # training data generated here is unscaled
-                        # work hardening parameters are corrected for offset
-                        sig_train, yf_train = self.create_sig_data(sdata=ms['flow_stress'][k, j, :, :],
-                                                                   sflow=ms['flow_seq_av'][k, j], Nseq=Nseq,
-                                                                   extend=True)
-                        i0 = (j + k * Npl + m * Ntext) * N0
-                        i1 = i0 + N0
-                        xt[i0:i1, 0:self.sdim] = sig_train
-                        if self.whdat:
-                            # Add DOF for work hardening parameter, corrected for offset
-                            xt[i0:i1, iwh] = ms['work_hard'][j] - self.epc
-                        if self.txdat:
-                            # Add DOF for textures
-                            xt[i0:i1, itx + m] = ms['texture'][k]
-                        yt[i0:i1] = yf_train
+            sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['flow_stress'],
+                                                       Nseq=Nseq,
+                                                       extend=extend, Fe=Fe, Ce=Ce)
+            xt[:, 0:self.sdim] = sig_train
+            if self.whdat:
+                # Add DOF for work Plastic Strain NOTE!! hardening parameter Check the offset control (epc)
+                for i in range(Ndinp):
+                    xt[i*Nsdata:(i+1)*Nsdata, 6:2*iwh] = \
+                        np.ones(Nsdata)*self.msparam[0]['plastic_strain'][i, :] #- self.epc
+
             print(
-                '%i training data sets created from %i microstructures, with %i load cases each' % (Nt, self.Nset, Nlc))
+                '%i training data sets created, with %i load cases' % (Nt, Nlc))
 
         if np.any(np.abs(yt) <= 0.99):
             warnings.warn(
@@ -1411,8 +1388,8 @@ class Material(object):
                     plt.tick_params(axis="y", labelsize=fontsize - 4)
             plt.show()
 
-    def create_sig_data(self, N=None, mat_ref=None, sdata=None, Nseq=12, sflow=None,
-                        offs=0.01, extend=False, rand=False):
+    def create_sig_data(self, N=None, mat_ref=None, sdata=None, Nseq=2, sflow=None,
+                        offs=0.01, extend=False, rand=False, Fe=0.1, Ce=0.99):
         """Function to create consistent data sets on the deviatoric stress plane
         for training or testing of ML yield function. Either the number "N" of raw data points, i.e. load angles, to be 
         generated and a reference material "mat_ref" has to be provided, or a list of raw data points "sdata" with 
@@ -1486,9 +1463,8 @@ class Material(object):
             if mat_ref is not None:
                 warnings.warn('create_sig_data: using sdata for training, ignoring mat_ref')
             N = i
-            sdata = sig_dev(sdata)  # make sure training stresses are purely deviatoric
-        seq = np.linspace(offs, 0.95, Nseq)
-        seq = np.append(seq, np.linspace(1.05, 2., Nseq))
+        seq = np.linspace(Fe, Ce, Nseq)
+        seq = np.append(seq, np.linspace((2.-Ce), (2.-Fe), Nseq))
         if extend:
             # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
             seq = np.append(seq, np.array([2.4, 3., 4., 5.]))
@@ -1922,7 +1898,7 @@ class Material(object):
         self.Ndof = 2 if self.sdim == 3 else 6
         if self.whdat:
             self.ind_wh = self.Ndof  # starting index for dof associated with work hardening
-            self.Ndof += 6  # add dof's for work hardening parameter if data exists
+            self.Ndof += self.sdim  # add dof's for work hardening parameter if data exists
         if self.txdat:
             self.ind_tx = self.Ndof  # starting index for dof associated with textures
             self.Ndof += self.Nset  # add dof's for textures
@@ -2073,7 +2049,7 @@ class Material(object):
             axs.imshow(Z, interpolation='nearest',
                        extent=(xx.min(), xx.max(), yy.min(), yy.max()), aspect='auto',
                        origin='lower', cmap=plt.cm.PuOr_r)
-        contour = axs.contour(xx, yy, Z, levels=[0], linewidths=2,
+        contour = axs.contour(xx, yy, Z, levels=[0], linewidths=1.5,
                               linestyles='solid', colors=c)
         line = contour.collections
         return line
