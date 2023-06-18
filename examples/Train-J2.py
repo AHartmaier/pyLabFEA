@@ -29,7 +29,7 @@ nbase = 'ML-J2'
 name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
 mat_ml = FE.Material(name)  # define material
 mat_ml.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150)
-mat_ml.export_MLparam(__file__, path='../models/')
+mat_ml.export_MLparam(__file__, path='./')
 
 # analyze support vectors to plot them in stress space
 sv = mat_ml.svm_yf.support_vectors_ * mat_ml.scale_seq
@@ -82,7 +82,7 @@ print('Calculating stress-strain data ...')
 mat_ml.calc_properties(verb=False, eps=0.01, sigeps=True)
 mat_ml.plot_stress_strain()
 mat_J2.plot_stress_strain()
-mat_ml.pckl(path='../materials/')
+mat_ml.pckl(path='./')
 
 # plot yield locus with stress states
 s = 80
