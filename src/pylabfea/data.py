@@ -46,7 +46,7 @@ class Data(object):
     def key_parser(self, key):
         parameters = key.split('_')
         Keys_Parsed = {"Stress_Type": parameters[0], "Load_Type": parameters[1], "Hash_Load": parameters[2],
-                       "Hash_Orientation": parameters[3], "Texture_Type": parameters[5]}
+                       "Hash_Orientation": parameters[3], "Texture_Type": parameters[4]}
         return Keys_Parsed
 
     def read_data(self, Data_File):

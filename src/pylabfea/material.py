@@ -1302,11 +1302,13 @@ class Material(object):
                                                        Nseq=Nseq,
                                                        extend=extend, Fe=Fe, Ce=Ce)
             xt[:, 0:self.sdim] = sig_train
+            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
             if self.whdat:
                 # Add DOF for work Plastic Strain NOTE!! hardening parameter Check the offset control (epc)
                 for i in range(Ndinp):
-                    xt[i*Nsdata:(i+1)*Nsdata, 6:2*iwh] = \
-                        np.ones(Nsdata)*self.msparam[0]['plastic_strain'][i, :] #- self.epc
+                    for j in range(Nsdata):
+                        xt[i*Nsdata + j, self.sdim:self.sdim + iwh] = \
+                            self.msparam[0]['plastic_strain'][i, :] #- self.epc
 
             print(
                 '%i training data sets created, with %i load cases' % (Nt, Nlc))
