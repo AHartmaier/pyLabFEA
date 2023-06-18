@@ -1307,7 +1307,7 @@ class Material(object):
                 # Add DOF for work Plastic Strain NOTE!! hardening parameter Check the offset control (epc)
                 for i in range(Ndinp):
                     for j in range(Nsdata):
-                        xt[i*Nsdata + j, self.sdim:self.sdim + iwh] = \
+                        xt[i + j*Ndinp, self.sdim:self.sdim + iwh] = \
                             self.msparam[0]['plastic_strain'][i, :] #- self.epc
 
             print(

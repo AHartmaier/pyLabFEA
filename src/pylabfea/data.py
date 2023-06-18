@@ -27,7 +27,7 @@ class Data(object):
     microstructures. Data is used to train machine learning flow rules in pyLabFEA.
     """
 #I changed epl_crit from 2.e-3 to 1.e-3
-    def __init__(self, fname, mat_name="Simulanium", epl_crit=2.e-3, d_ep=5.e-4, epl_max=0.03, plot=False):
+    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.03, plot=False):
         self.mat_data = dict()
         self.mat_data['epc'] = epl_crit
         self.mat_data['sdim'] = 6
