@@ -25,6 +25,7 @@ from scipy.optimize import root_scalar
 from sklearn.metrics import mean_absolute_error, confusion_matrix, \
      ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
+from sklearn.metrics import matthews_corrcoef
 
 def int_sin_m(x, m):
     '''Computes the integral of sin^m(t) dt from 0 to x recursively
@@ -164,6 +165,8 @@ def training_score(yf_ref, yf_ml, plot=True):
         Ratio of true positives w.r.t. true positives and false negatives
     F1Score : float
         F1 score
+    MCC : float
+        Matthews Correlation Coefficient
     '''
     res_yf_ref = np.sign(yf_ref)
     ind = np.nonzero(np.abs(res_yf_ref)<0.9)[0]
@@ -192,6 +195,7 @@ def training_score(yf_ref, yf_ml, plot=True):
         if (res_yf_ref[i] == -1) & (res_yf_ml[i] == -1):
             TN+=1
     mae = mean_absolute_error(yf_ref, yf_ml)
+    MCC = matthews_corrcoef(np.sign(yf_ref), np.sign(yf_ml), sample_weight=None)
     print("Mean Absolut Error is",mae)
     print('True Positives:',TP)
     print('True Negatives:',TN)
@@ -205,4 +209,4 @@ def training_score(yf_ref, yf_ml, plot=True):
     print('Recall:',Recall)
     F1Score = 2*(Recall * precision) / (Recall + precision)
     print('F1score:',F1Score)
-    return mae, precision, Accuracy, Recall, F1Score
+    return mae, precision, Accuracy, Recall, F1Score, MCC
