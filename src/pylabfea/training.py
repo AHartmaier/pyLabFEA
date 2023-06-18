@@ -209,4 +209,5 @@ def training_score(yf_ref, yf_ml, plot=True):
     print('Recall:',Recall)
     F1Score = 2*(Recall * precision) / (Recall + precision)
     print('F1score:',F1Score)
+    print('MCC score:', MCC)
     return mae, precision, Accuracy, Recall, F1Score, MCC
