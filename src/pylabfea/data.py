@@ -26,89 +26,77 @@ class Data(object):
     simulations and data from physical mechanical tests on materials with various
     microstructures. Data is used to train machine learning flow rules in pyLabFEA.
     """
-#I changed epl_crit from 2.e-3 to 1.e-3
-    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.03, plot=False):
-        self.mat_data = dict()
-        self.mat_data['epc'] = epl_crit
-        self.mat_data['sdim'] = 6
-        self.mat_data['Name'] = mat_name
-        # CHANGES: This was True
-        self.mat_data['wh_data'] = True
-        self.mat_data['Ntext'] = 1
-        self.mat_data['tx_name'] = 'Random'
-        self.mat_data['texture'] = np.zeros(1)
 
-        raw_data = self.read_data(fname)
-        self.parse_data(raw_data, epl_crit=epl_crit, epl_max=epl_max, d_ep=d_ep)  # add data to mat_data
+    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.03, plot=True):
+        self.mat_data=dict()
+        self.mat_data['epc']=epl_crit
+        self.mat_data['sdim']=6
+        self.mat_data['Name']=mat_name
+        self.mat_data['wh_data']=True
+        self.mat_data['Ntext']=1
+        self.mat_data['tx_name']='Random'
+        self.mat_data['texture']=np.zeros(1)
+
+        raw_data=self.read_data(fname)
+        self.parse_data(raw_data, epl_crit = epl_crit, epl_max = epl_max, d_ep = d_ep)  # add data to mat_data
         if plot:
-            self.plot_set()
+            self.plot_training_data()
 
     def key_parser(self, key):
-        parameters = key.split('_')
-        Keys_Parsed = {"Stress_Type": parameters[0], "Load_Type": parameters[1], "Hash_Load": parameters[2],
-                       "Hash_Orientation": parameters[3], "Texture_Type": parameters[4]}
+        parameters=key.split('_')
+        Keys_Parsed={"Stress_Type": parameters[0], "Load_Type": parameters[1], "Hash_Load": parameters[2],
+                     "Hash_Orientation": parameters[3], "Texture_Type": parameters[4]}
         return Keys_Parsed
 
     def read_data(self, Data_File):
-        data = json.load(open(Data_File))
-        Final_Data = dict()
+        data=json.load(open(Data_File))
+        Final_Data=dict()
 
         for key, val in data.items():
-            res = val['Results']
-            Sigma = [res["S11"], res["S22"], res["S33"], res["S12"], res["S13"], res["S23"]]
-            E_Total = [res["E11"], res["E22"], res["E33"], res["E12"], res["E13"], res["E23"]]
-            E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep12"], res["Ep13"], res["Ep23"]]
-
-            Load = val["Initial_Load"]
-
-            Len_Sigma = len(Sigma[0])
-            seq_full = np.zeros(Len_Sigma)
-            peeq_full = np.zeros(Len_Sigma)
-            peeq_plastic = np.zeros(Len_Sigma)
-            Original_Stresses = np.zeros((Len_Sigma, 6))
-            Original_Plastic_Strains = np.zeros((Len_Sigma, 6))
-            Original_Total_Strains = np.zeros((Len_Sigma, 6))
+            res=val['Results']
+            Sigma=[res["S11"], res["S22"], res["S33"], res["S12"], res["S13"], res["S23"]]
+            E_Total=[res["E11"], res["E22"], res["E33"], res["E12"], res["E13"], res["E23"]]
+            E_Plastic=[res["Ep11"], res["Ep22"], res["Ep33"], res["Ep12"], res["Ep13"], res["Ep23"]]
+            Load=val["Initial_Load"]
+            Len_Sigma=len(Sigma[0])
+            seq_full=np.zeros(Len_Sigma)
+            peeq_full=np.zeros(Len_Sigma)
+            peeq_plastic=np.zeros(Len_Sigma)
+            Original_Stresses=np.zeros((Len_Sigma, 6))
+            Original_Plastic_Strains=np.zeros((Len_Sigma, 6))
+            Original_Total_Strains=np.zeros((Len_Sigma, 6))
             for i in range(Len_Sigma):
-                Stress_6D = np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i], Sigma[3][i], Sigma[4][i], Sigma[5][i]])
-                Original_Stresses[i, :] = Stress_6D
-                seq_full[i] = FE.sig_eq_j2(Stress_6D)
+                Stress_6D=np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i], Sigma[3][i], Sigma[4][i], Sigma[5][i]])
+                Original_Stresses[i, :]=Stress_6D
+                seq_full[i]=FE.sig_eq_j2(Stress_6D)
 
-                E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
-                                         E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
+                E_Plastic_6D=np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
+                                       E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
 
                 peeq_plastic[i]=FE.eps_eq(E_Plastic_6D)
-                Original_Plastic_Strains[i, :] = E_Plastic_6D
+                Original_Plastic_Strains[i, :]=E_Plastic_6D
 
-
-                E_Total_6D = np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
-                                       E_Total[3][i], E_Total[4][i], E_Total[5][i]])
+                E_Total_6D=np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
+                                     E_Total[3][i], E_Total[4][i], E_Total[5][i]])
 
                 peeq_full[i]=FE.eps_eq(E_Total_6D)
-                Original_Total_Strains[i] = E_Total_6D
-            
-            Final_Data[key] = {"SEQ": seq_full, "PEEQ": peeq_plastic, "TEEQ": peeq_full, "Load": Load,
-                               "Stress": Original_Stresses,
-                               "Plastic_Strain": Original_Plastic_Strains, "Total_Strain": Original_Total_Strains}
-        SE_data={}
+                Original_Total_Strains[i]=E_Total_6D
+
+            Final_Data[key]={"SEQ": seq_full, "PEEQ": peeq_plastic, "TEEQ": peeq_full, "Load": Load,
+                             "Stress": Original_Stresses,
+                             "Plastic_Strain": Original_Plastic_Strains, "Total_Strain": Original_Total_Strains}
+
+        self.SE_data={}
         for key in Final_Data:
             Stress=[Final_Data[key]["SEQ"]]
             Strain_Total=[Final_Data[key]["TEEQ"]]
-            SE_data[key]={"Stress": Stress, "Strain": Strain_Total}
-            plt.scatter(SE_data[key]["Strain"], SE_data[key]["Stress"], s = 1)
-            plt.tick_params(axis = 'both', which = 'major', labelsize = 12)
-            plt.xlabel("Total Strain", fontsize = 14)
-            plt.ylabel("Stress", fontsize = 14)
-        plt.show()
-        SPE_data={}
+            self.SE_data[key]={"Stress": Stress, "Strain": Strain_Total}
+
+        self.SPE_data={}
         for key in Final_Data:
             Stress=[Final_Data[key]["SEQ"]]
             Strain_Plastic=[Final_Data[key]["PEEQ"]]
-            SPE_data[key]={"Stress": Stress, "Strain": Strain_Plastic}
-            plt.scatter(SPE_data[key]["Strain"], SPE_data[key]["Stress"], s = 1)
-            plt.tick_params(axis = 'both', which = 'major', labelsize = 12)
-            plt.xlabel("Plastic Strain", fontsize = 14)
-            plt.ylabel("Stress", fontsize = 14)
-        plt.show()
+            self.SPE_data[key]={"Stress": Stress, "Strain": Strain_Plastic}
         return Final_Data
 
     def parse_data(self, db, epl_crit, epl_max, d_ep):
@@ -129,103 +117,110 @@ class Data(object):
         -------
 
         """
-        Nlc = len(db.keys())
-        E_av = 0.
-        nu_av = 0.
-        sy_av = 0.
-        peeq_max = 0.
+        Nlc=len(db.keys())
+        E_av=0.
+        nu_av=0.
+        sy_av=0.
+        peeq_max=0.
         sy_list=[]
-        sig = []
-        epl = []
-        ept = []
-        ct = 0
+        sig=[]
+        epl=[]
+        ept=[]
+        ct=0
         for key, val in db.items():
             # estimate yield point for load case
-            iel = np.nonzero(val['PEEQ'] < epl_crit)[0]
-            ipl = np.nonzero(np.logical_and(val['PEEQ'] >= epl_crit, val['PEEQ'] <= epl_max))[0]
+            iel=np.nonzero(val['PEEQ'] < epl_crit)[0]
+            ipl=np.nonzero(np.logical_and(val['PEEQ'] >= epl_crit, val['PEEQ'] <= epl_max))[0]
             if len(iel) < 2:
                 print(f'Skipping data set {key} (No {ct}): No elastic range: IEL: {iel}, vals: {len(val["PEEQ"])}')
-                Nlc -= 1
+                Nlc-=1
                 continue
             if len(ipl) < 2:
-                print(f'Skipping data set {key} (No {ct}): No plastic range: IPL: {ipl}, vals: {len(val["PEEQ"])}; {epl_crit}, {epl_max}')
-                Nlc -= 1
+                print(
+                    f'Skipping data set {key} (No {ct}): No plastic range: IPL: {ipl}, vals: {len(val["PEEQ"])}; {epl_crit}, {epl_max}')
+                Nlc-=1
                 continue
-            s0 = val['SEQ'][iel[-1]]
-            s1 = val['SEQ'][ipl[0]]
-            e0 = val['PEEQ'][iel[-1]]
-            e1 = val['PEEQ'][ipl[0]]
-            sy = s0 + (epl_crit - e0) * (s1 - s0) / (e1 - e0)
+            s0=val['SEQ'][iel[-1]]
+            s1=val['SEQ'][ipl[0]]
+            e0=val['PEEQ'][iel[-1]]
+            e1=val['PEEQ'][ipl[0]]
+            sy=s0 + (epl_crit - e0) * (s1 - s0) / (e1 - e0)
             sy_list.append(sy)
-            sy_av += sy / Nlc
-            eps = val['PEEQ'][ipl[-1]]
+            sy_av+=sy / Nlc
+            eps=val['PEEQ'][ipl[-1]]
             if eps > peeq_max:
-                peeq_max = eps
+                peeq_max=eps
 
             # for i in ipl[::]:
             for i in ipl:
-               '''WARNING: select only values in intervals of d_epl for storing in data set !!!'''
-               # CHANGES: I satrted making these changes for shifting the data and make the plastic strain at 0.002 equal to zero
-               sig.append(val['Stress'][i])
-               temp_epl_1 = val['Plastic_Strain'][i]
-               temp_epl = (val['Plastic_Strain'][i])*(1 - (0.002 / (FE.eps_eq(val['Total_Strain'][i]))))
-               temp_eq_1 = FE.eps_eq(temp_epl_1)
-               temp_eq_2 = FE.eps_eq(temp_epl)
-               epl.append(temp_epl)
-               # epl.append(val['Plastic_Strain'][i])
-            # sig.append((val['Stress'][ipl[0]]))
-            # epl.append((val['Plastic_Strain'][ipl[0]]))
-            # estimate  elastic constants from stresses in range [0.1,0.4]sy
+                '''WARNING: select only values in intervals of d_epl for storing in data set !!!'''
+                # CHANGES: A Shift in the data in order to have 0 equivalant plastic strain at start of yielding.
+                sig.append(val['Stress'][i])
+                temp_epl=(val['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(val['Total_Strain'][i]))))
+                epl.append(temp_epl)
             ''' WARNING: This needs to be improved !!!'''
-            ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
-            seq = val['SEQ'][ind]
-            eeq = FE.eps_eq(val['Total_Strain'][ind])
-            E = np.average(seq / eeq)
-            nu = 0.3
-            E_av += E / Nlc
-            nu_av += nu / Nlc
+            ind=np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
+            seq=val['SEQ'][ind]
+            eeq=FE.eps_eq(val['Total_Strain'][ind])
+            E=np.average(seq / eeq)
+            nu=0.3
+            E_av+=E / Nlc
+            nu_av+=nu / Nlc
 
             # get texture name
             ''' Warning: This should be read only once from metadata !!!'''
-            Key_Translated = self.key_parser(key)
-            self.mat_data['ms_type'] = Key_Translated["Texture_Type"],  # unimodal texture type
-            ct += 1
+            Key_Translated=self.key_parser(key)
+            self.mat_data['ms_type']=Key_Translated["Texture_Type"],  # unimodal texture type
+            ct+=1
 
-        self.mat_data['flow_stress'] = np.array(sig)
-        self.mat_data['plastic_strain'] = np.array(epl)
-        self.mat_data['peeq_max'] = peeq_max
-        self.mat_data['E_av'] = E_av
-        self.mat_data['nu_av'] = nu_av
-        self.mat_data['sy_av'] = sy_av
-        self.mat_data['Nlc'] = Nlc
+        self.mat_data['flow_stress']=np.array(sig)
+        self.mat_data['plastic_strain']=np.array(epl)
+        self.mat_data['peeq_max']=peeq_max
+        self.mat_data['E_av']=E_av
+        self.mat_data['nu_av']=nu_av
+        self.mat_data['sy_av']=sy_av
+        self.mat_data['Nlc']=Nlc
         self.mat_data['sy_list']=sy_list
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print('Estimated elastic constants: E=%5.2f GPa, nu=%4.2f' % (E_av / 1000, nu_av))
         print('Estimated yield strength: %5.2f MPa at PEEQ = %5.3f' % (sy_av, epl_crit))
 
+    def plot_training_data(self):
+        # Function for plotting stress strain curves from the database using total strain and plastic strain values.
+        for data, xlabel, ylabel in [(self.SE_data, "Total Strain", "Stress"),
+                                     (self.SPE_data, "Plastic Strain", "Stress")]:
+            self.plot_data(data, xlabel, ylabel)
+
+    def plot_data(self, data, xlabel, ylabel):
+        for key in data:
+            plt.scatter(data[key]["Strain"], data[key]["Stress"], s = 1)
+            plt.tick_params(axis = 'both', which = 'major', labelsize = 12)
+            plt.xlabel(xlabel, fontsize = 14)
+            plt.ylabel(ylabel, fontsize = 14)
+        plt.show()
 
     def plot_set(self, db, mat_param):
-        fontsize = 18
-        cmap = plt.cm.get_cmap('viridis', 10)
-        plt.figure(figsize=(18, 7))
-        plt.subplots_adjust(wspace=0.2)
+        fontsize=18
+        cmap=plt.cm.get_cmap('viridis', 10)
+        plt.figure(figsize = (18, 7))
+        plt.subplots_adjust(wspace = 0.2)
         plt.subplot(1, 2, 1)
         for i, key in enumerate(db.keys()):
-            col = FE.polar_ang(np.array(db[key]['Load'])) / np.pi
+            col=FE.polar_ang(np.array(db[key]['Load'])) / np.pi
             plt.plot(FE.eps_eq(np.array(db[key]['Main_Strains'])) * 100,
-                     FE.seq_J2(np.array(db[key]['Main_Stresses'])), color=cmap(col))
-        plt.xlabel(r'$\epsilon_{eq}^\mathrm{tot}$ (%)', fontsize=fontsize)
-        plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize)
-        plt.title('Equiv. total strain vs. equiv. J2 stress', fontsize=fontsize)
-        plt.tick_params(axis="x", labelsize=fontsize - 4)
-        plt.tick_params(axis="y", labelsize=fontsize - 4)
+                     FE.seq_J2(np.array(db[key]['Main_Stresses'])), color = cmap(col))
+        plt.xlabel(r'$\epsilon_{eq}^\mathrm{tot}$ (%)', fontsize = fontsize)
+        plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize = fontsize)
+        plt.title('Equiv. total strain vs. equiv. J2 stress', fontsize = fontsize)
+        plt.tick_params(axis = "x", labelsize = fontsize - 4)
+        plt.tick_params(axis = "y", labelsize = fontsize - 4)
 
-        syc_0 = []
-        syc_1 = []
+        syc_0=[]
+        syc_1=[]
         for i, key in enumerate(db.keys()):
             plt.subplot(1, 2, 2)  # , projection='polar')
-            syc = FE.s_cyl(np.array(db[key]["Parsered_Data"]["S_yld"]))
+            syc=FE.s_cyl(np.array(db[key]["Parsered_Data"]["S_yld"]))
             plt.plot(np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Plastic_data"], 1],
                      np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Plastic_data"], 0], 'or')
             plt.plot(np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Elastic_data"], 1],
@@ -233,34 +228,34 @@ class Data(object):
             syc_0.append(syc[0][0])
             syc_1.append(syc[0][1])
 
-        syc_1, syc_0 = zip(*sorted(zip(syc_1, syc_0)))
+        syc_1, syc_0=zip(*sorted(zip(syc_1, syc_0)))
         plt.plot(syc_1, syc_0, '-k')
         plt.plot([-np.pi, np.pi], [mat_param['sy_av'], mat_param['sy_av']], '--k')
         plt.legend(['raw data above yield point', 'raw data below yield point',
-                    'interpolated yield strength', 'average yield strength'], loc=(1.04, 0.8),
-                   fontsize=fontsize - 2)
-        plt.title('Raw data ', fontsize=fontsize)
-        plt.xlabel(r'$\theta$ (rad)', fontsize=fontsize)
-        plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize)
-        plt.tick_params(axis="x", labelsize=fontsize - 4)
-        plt.tick_params(axis="y", labelsize=fontsize - 4)
+                    'interpolated yield strength', 'average yield strength'], loc = (1.04, 0.8),
+                   fontsize = fontsize - 2)
+        plt.title('Raw data ', fontsize = fontsize)
+        plt.xlabel(r'$\theta$ (rad)', fontsize = fontsize)
+        plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize = fontsize)
+        plt.tick_params(axis = "x", labelsize = fontsize - 4)
+        plt.tick_params(axis = "y", labelsize = fontsize - 4)
         plt.show()
 
     def plot_yield_locus(self, db, mat_data, active, scatter=False, data=None,
                          data_label=None, arrow=False, file=None, title=None,
                          fontsize=18):
-        fig, ax = plt.subplots(subplot_kw={'projection': 'polar'},
-                               figsize=(15, 8))
-        cmap = plt.cm.get_cmap('viridis', 10)
+        fig, ax=plt.subplots(subplot_kw = {'projection': 'polar'},
+                             figsize = (15, 8))
+        cmap=plt.cm.get_cmap('viridis', 10)
         # ms_max = np.amax(self.mat_param[active])
-        Ndat = len(mat_data[active])
-        v0 = mat_data[active][0]
-        scale = mat_data[active][-1] - v0
+        Ndat=len(mat_data[active])
+        v0=mat_data[active][0]
+        scale=mat_data[active][-1] - v0
         if np.any(np.abs(scale) < 1.e-3):
-            scale = 1.
-        sc = []
-        ppe = []
-        scy = []
+            scale=1.
+        sc=[]
+        ppe=[]
+        scy=[]
         for i in range(Ndat):
             if active == 'flow_stress':
                 sc.append(FE.s_cyl(mat_data['flow_stress'][i]))
@@ -275,56 +270,3 @@ class Data(object):
         scy=np.array(scy)
         ax.scatter(scy[:, 1], scy[:, 0], marker = ".")
         plt.show()
-
-
-
-            # for set_ind, key in enumerate(db.keys()):
-            #     val = mat_param[active][i] 0.0020155
-            #     hc = (val - v0) * 10
-            #     if active == 'work_hard':
-            #         sc.append(FE.s_cyl(mat_data['flow_stress'][set_ind, i, 0, :]))
-            #         label = 'PEEQ: ' + str(val.round(decimals=4))
-            #         color = cmap(hc)
-            #     elif active == 'texture':
-            #         sc = FE.s_cyl(mat_data['flow_stress'][i, 0, :, :])
-            #         ind = np.argsort(sc[:, 1])  # sort dta points w.r.t. polar angle
-            #         sc = sc[ind]
-            #         label = mat_data['ms_type']
-            #         color = (hc, 0, 1 - hc)
-            #     elif active == 'flow_stress':
-            #         sc = mat_data['flow_stress'][0, 0, :, :]
-            #         ax.plot(sc[:, 1], sc[:, 0], '.r', label='shear')
-            #         sc = mat_data['flow_stress'][0, 0, :, :]
-            #         label = 'Flow Stress'
-            #         color = 'b'
-            # #     else:
-            #         raise ValueError('Undefined value for active field in "plot_yield_locus"')
-
-
-    #     Degree = []
-    #     Radius = []
-    #     for data in sc:
-    #         Degree.append(data[0])
-    #         Radius.append(data[1])
-    #     Radius, Degree = zip(*sorted(zip(Radius, Degree)))
-    #     if scatter:
-    #         ax.plot(Radius, Degree, '.m', label=label)
-    #     if data is not None:
-    #         ax.plot(Radius, Degree, '.r', label=data_label)
-    #     ax.plot(Radius, Degree, label=label, color=color)
-    #     if arrow:
-    #         plt.legend(loc=(1.04, 0.7), fontsize= 18 - 2)
-    #         plt.tick_params(axis="x", labelsize= 18 - 4)
-    #         plt.tick_params(axis="y", labelsize= 18 - 4)
-    #         dr = mat_data["sv_av"]
-    #         drh = 0.08 * dr
-    #         plt.arrow(0, 0, 0, dr, head_width=0.05, width=0.004,
-    #                   head_length=drh, color='r', length_includes_head=True)
-    #         plt.text(-0.12, dr * 0.87, r'$\sigma_1$', color='r', fontsize=22)
-    #         plt.arrow(2.0944, 0, 0, dr, head_width=0.05,
-    #                   width=0.004, head_length=drh, color='r', length_includes_head=True)
-    #         plt.text(2.26, dr * 0.92, r'$\sigma_2$', color='r', fontsize=22)
-    #         plt.arrow(-2.0944, 0, 0, dr, head_width=0.05,
-    #                   width=0.004, head_length=drh, color='r', length_includes_head=True)
-    #         plt.text(-2.04, dr * 0.95, r'$\sigma_3$', color='r', fontsize=22)
-    # plt.show()
