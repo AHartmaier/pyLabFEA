@@ -26,6 +26,7 @@ from sklearn.metrics import mean_absolute_error, confusion_matrix, \
      ConfusionMatrixDisplay
 import matplotlib.pyplot as plt
 from sklearn.metrics import matthews_corrcoef
+import collections
 
 def int_sin_m(x, m):
     '''Computes the integral of sin^m(t) dt from 0 to x recursively
@@ -141,6 +142,7 @@ def load_cases(number_3d, number_6d, method='brentq'):
     allsig /= seq[:, None]
     return allsig
 
+
 def training_score(yf_ref, yf_ml, plot=True):
     '''Calculate the accuracy of the training result in form of different measures
     as compared to given reference values.
@@ -211,3 +213,64 @@ def training_score(yf_ref, yf_ml, plot=True):
     print('F1score:',F1Score)
     print('MCC score:', MCC)
     return mae, precision, Accuracy, Recall, F1Score, MCC
+
+
+
+def Create_Test_Sig(Json, Number_sig_per_strain = 4):
+
+    ''' A function to generate test data for micromechanical simulations based on a given material's stress-strain data.
+    Parameters
+    ----------
+    Json : str
+        Path to the JSON file containing the stress-strain data of the material.
+
+    Number_sig_per_strain : int, optional
+        The number of test cases to generate for each strain level in the elastic or in the plastic range.
+        The total number of load cases per strain level will be 2 * Number_sig_per_strain. Default is 4.
+
+    Returns
+    -------
+    ts_sig : np.ndarray
+        A numpy array of stress values for the generated test cases.
+
+    epl_tot : np.ndarray
+        A numpy array of strain values for the generated test cases.
+
+    yf_ref : np.ndarray
+        A numpy array with the same length as ts_sig and epl_tot, filled with +1 for the first half of the elements
+        and -1 for the second half. This represents the known sign of the yield function: +1 for upscaling and -1 for downscaling.
+        This array will be used as reference in the training_score function.
+    '''
+
+    db2 = FE.Data(Json)
+    mat_ts = FE.Material(name="Test")  # define material
+    mat_ts.elasticity(E=db2.mat_data['E_av'], nu=db2.mat_data['nu_av'])
+    mat_ts.plasticity(sy=db2.mat_data['sy_av'], khard=4.5e3)
+    mat_ts.calc_properties(verb=False, eps=0.03, sigeps=True)
+    mat_ts.from_data(db2.mat_data)
+    pl_sig = []
+    el_sig = []
+    epl_ts = []
+
+    for j in range(len(mat_ts.msparam[0]['plastic_strain'])):
+        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.5)
+        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.2)
+        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.1)
+        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.01)
+        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.99)
+        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.9)
+        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.8)
+        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.5)
+        for nsps in range(int(Number_sig_per_strain)):
+            epl_ts.append(mat_ts.msparam[0]['plastic_strain'][j].tolist())
+
+    sig_tot = pl_sig + el_sig
+    epl_tot = epl_ts + epl_ts
+    ts_sig = np.array(sig_tot)
+    epl_tot = np.array(epl_tot)
+    half_len = len(ts_sig) // 2
+    pos = np.ones(half_len)
+    neg = np.ones(len(ts_sig) - half_len) * -1
+    yf_ref = np.concatenate((pos, neg), axis = None)
+
+    return(sig_tot, epl_tot, yf_ref)
