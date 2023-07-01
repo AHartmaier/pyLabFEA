@@ -19,6 +19,11 @@ import matplotlib.pyplot as plt
 from sklearn.svm import NuSVC
 from pandas.plotting import parallel_coordinates
 import plotly.express as px
+import seaborn as sns
+import matplotlib.lines as mlines
+
+def rgb_to_hex(rgb):
+    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
 
 db = FE.Data("Data_Base_Updated_Final_Rotated.json", Work_Hardening=True)
 mat_ref = FE.Material(name="reference") # define reference material, J2 plasticity, linear w.h.
@@ -53,10 +58,34 @@ Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
 grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
 norm_6d = np.linalg.norm(grad_hh)
 normalized_grad_hh = grad_hh / norm_6d
-normalized_grad_hh_mult = normalized_grad_hh * 0.002
-Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh_mult, pred=False) # value of yield function for every grid point
+normalized_grad_hh_mult = normalized_grad_hh * 1
+Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=True) # value of yield function for every grid point
+Z2 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.5, pred=True) # value of yield function for every grid point
+Z3 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 1, pred=True) # value of yield function for every grid point
+Z4 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 1.5, pred=True) # value of yield function for every grid point
+Z5 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 2, pred=True) # value of yield function for every grid point
+
 # Z2 = mat_ref.calc_yf(sig=Cart_hh_6D,epl=normalized_grad_hh_mult,  pred=False)
-fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
-line = mat_ml.plot_data(Z, ax, xx, yy, c='black')
+colors = sns.color_palette("husl", 6)  # Create a color palette with 6 colors
+colors_hex = [rgb_to_hex(color) for color in colors]
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='polar')
+ax.grid(True)  # Turn the grid on
+
+line = mat_ml.plot_data(Z, ax, xx, yy, c=colors_hex[0])
+line2 = mat_ml.plot_data(Z2, ax, xx, yy, c=colors_hex[1])
+line3 = mat_ml.plot_data(Z3, ax, xx, yy, c=colors_hex[2])
+line4 = mat_ml.plot_data(Z4, ax, xx, yy, c=colors_hex[3])
+line5 = mat_ml.plot_data(Z5, ax, xx, yy, c=colors_hex[4])
+
+# Create custom legend handles
+handle1 = mlines.Line2D([], [], color=colors_hex[0], label='0.00 Eq. Plastic Strain')
+handle2 = mlines.Line2D([], [], color=colors_hex[1], label='0.005 Eq. Plastic Strain')
+handle3 = mlines.Line2D([], [], color=colors_hex[2], label='0.01 Eq. Plastic Strain')
+handle4 = mlines.Line2D([], [], color=colors_hex[3], label='0.015 Eq. Plastic Strain')
+handle5 = mlines.Line2D([], [], color=colors_hex[4], label='0.02 Eq. Plastic Strain')
+ax.legend(handles=[handle1, handle2, handle3, handle4, handle5])
+
 plt.show()
 
