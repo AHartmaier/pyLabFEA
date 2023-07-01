@@ -27,12 +27,12 @@ class Data(object):
     microstructures. Data is used to train machine learning flow rules in pyLabFEA.
     """
 
-    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.03, plot=True):
+    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.03, plot=True, Work_Hardening= True):
         self.mat_data=dict()
         self.mat_data['epc']=epl_crit
         self.mat_data['sdim']=6
         self.mat_data['Name']=mat_name
-        self.mat_data['wh_data']=True
+        self.mat_data['wh_data']=Work_Hardening
         self.mat_data['Ntext']=1
         self.mat_data['tx_name']='Random'
         self.mat_data['texture']=np.zeros(1)
@@ -127,7 +127,17 @@ class Data(object):
         epl=[]
         ept=[]
         ct=0
+        sig_ideal = []
         for key, val in db.items():
+            # estimate yield point for ideal plasticity consideration
+            i_ideal = np.nonzero(val['PEEQ'] > 2.e-3)[0]
+            if len(i_ideal) < 2:
+                print(
+                    f'Skipping data set {key} (No {ct}): No plastic range for ideal plasticity')
+                Nlc-=1
+                continue
+            sig_ideal.append(val['Stress'][i_ideal[0]])
+
             # estimate yield point for load case
             iel=np.nonzero(val['PEEQ'] < epl_crit)[0]
             ipl=np.nonzero(np.logical_and(val['PEEQ'] >= epl_crit, val['PEEQ'] <= epl_max))[0]
@@ -181,6 +191,7 @@ class Data(object):
         self.mat_data['sy_av']=sy_av
         self.mat_data['Nlc']=Nlc
         self.mat_data['sy_list']=sy_list
+        self.mat_data['sig_ideal'] = np.array(sig_ideal)
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print('Estimated elastic constants: E=%5.2f GPa, nu=%4.2f' % (E_av / 1000, nu_av))

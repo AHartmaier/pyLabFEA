@@ -1285,7 +1285,10 @@ class Material(object):
         else:
             '''WARNING: There are no more hardening levels, epc is undefined !!!'''
             Nlc = self.msparam[0]['Nlc']
-            Ndinp = len(self.msparam[0]['flow_stress'])
+            if self.whdat:
+                Ndinp = len(self.msparam[0]['flow_stress'])
+            else:
+                Ndinp=len(self.msparam[0]['sig_ideal'])
             Nsdata = 2*Nseq + 4 if extend else 2*Nseq
             N0 = Nlc * Nsdata  # total number of training data points per Ppl for each microstructure
             Nt = Ndinp * Nsdata
@@ -1296,13 +1299,19 @@ class Material(object):
                 itx = self.ind_tx
             xt = np.zeros((Nt, dtrain))
 
-            # create training data in entire stress space from raw data
-                        # training data generated here is unscaled
-            sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['flow_stress'],
-                                                       Nseq=Nseq,
-                                                       extend=extend, Fe=Fe, Ce=Ce)
+            if self.whdat:
+                # create training data in entire stress space from raw data
+                            # training data generated here is unscaled
+                sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['flow_stress'],
+                                                           Nseq=Nseq,
+                                                           extend=extend, Fe=Fe, Ce=Ce)
+            else:
+                sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['sig_ideal'],
+                                                           Nseq=Nseq,
+                                                           extend=extend, Fe=Fe, Ce=Ce)
+
             xt[:, 0:self.sdim] = sig_train
-            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
+#            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
             if self.whdat:
                 # Add DOF for work Plastic Strain NOTE!! hardening parameter Check the offset control (epc)
                 for i in range(Ndinp):
