@@ -27,6 +27,7 @@ from sklearn.metrics import mean_absolute_error, confusion_matrix, \
 import matplotlib.pyplot as plt
 from sklearn.metrics import matthews_corrcoef
 import collections
+import pylabfea as FE
 
 def int_sin_m(x, m):
     '''Computes the integral of sin^m(t) dt from 0 to x recursively
