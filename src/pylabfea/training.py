@@ -274,4 +274,4 @@ def Create_Test_Sig(Json, Number_sig_per_strain = 4):
     neg = np.ones(len(ts_sig) - half_len) * -1
     yf_ref = np.concatenate((pos, neg), axis = None)
 
-    return(sig_tot, epl_tot, yf_ref)
+    return(ts_sig, epl_tot, yf_ref)

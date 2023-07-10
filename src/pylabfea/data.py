@@ -252,6 +252,7 @@ class Data(object):
         plt.tick_params(axis = "y", labelsize = fontsize - 4)
         plt.show()
 
+    # Check
     def plot_yield_locus(self, db, mat_data, active, scatter=False, data=None,
                          data_label=None, arrow=False, file=None, title=None,
                          fontsize=18):
@@ -281,3 +282,4 @@ class Data(object):
         scy=np.array(scy)
         ax.scatter(scy[:, 1], scy[:, 0], marker = ".")
         plt.show()
+
