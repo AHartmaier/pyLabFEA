@@ -144,7 +144,7 @@ def load_cases(number_3d, number_6d, method='brentq'):
     return allsig
 
 
-def training_score(yf_ref, yf_ml, plot=True):
+def training_score(yf_ref, yf_ml, plot=False):
     '''Calculate the accuracy of the training result in form of different measures
     as compared to given reference values.
 

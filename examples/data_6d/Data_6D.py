@@ -20,14 +20,13 @@ from pandas.plotting import parallel_coordinates
 import plotly.express as px
 import seaborn as sns
 import matplotlib.lines as mlines
-import src.models.Create_Test_Data as CTD
-import src.verify.Training_Score as TS
+import src.pylabfea.training as CTD
 
 def rgb_to_hex(rgb):
     return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
 
 #Training
-db = FE.Data("Data_Base_Updated_Final_Rotated.json", Work_Hardening=True)
+db = FE.Data("Data_Base_Updated_Final_Rotated_Train.json", Work_Hardening=True)
 mat_ref = FE.Material(name="reference") # define reference material, J2 plasticity, linear w.h.
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])             # identic elastic properties as mat1
 mat_ref.plasticity(sy=db.mat_data['sy_av'], khard= 4.5e3)        # same yield strength as mat1 and mat2, high w.h. coefficient 4.5e3)
@@ -42,9 +41,9 @@ mat_ml.from_data(db.mat_data)  # data-based definition of material
 mat_ml.train_SVC(C = 30, gamma = 0.1, Fe=0.75, Ce=0.9, Nseq= 1, gridsearch= False, plot = False)
 
 #Testing
-sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json = "TEST.json")
-yf_ml = mat_ml.calc_yf(sig_tests, epl_test, pred = False)
-Results = TS.Training_score(yf_r, yf_ml)
+sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json = "Data_Base_Updated_Final_Rotated_Test.json")
+yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred = False)
+Results = CTD.training_score(yf_ref, yf_ml)
 
 # create plot of trained yield function in cylindrical stress space
 print('Plot of trained SVM classification with test data in 2D cylindrical stress space')

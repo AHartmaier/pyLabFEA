@@ -985,7 +985,7 @@ class Material(object):
             print('The hyperparameter optimization with Gridsearch to find best C and gamma...')
             # define search grid and add user parameters if not present in grid
             if cvals is None:
-                cvals = [1, 2, 4, 6, 8, 10, 15]
+                cvals = [1, 2, 4, 6, 8, 10, 12]
                 if C not in cvals:
                     cvals.append(C)
             if gvals is None:
@@ -1464,7 +1464,8 @@ class Material(object):
                 n6 = N - n3
                 su = sig_dev(load_cases(n3, n6))
             x1 = fsolve(mat_ref.find_yloc, np.ones(N) * mat_ref.sy, args=(su), xtol=1.e-5)
-            sdata = sig_dev(su * x1[:, None])  # yield stress tensors representing ground truth
+            sdata = sig_dev(su * x1[:, None])  # yield s
+            # tress tensors representing ground truth
         else:
             # read stress data as seeding points for generation of further training stresses in entire 
             # sdim-dimensional stress space
