@@ -21,7 +21,7 @@ import plotly.express as px
 import seaborn as sns
 import matplotlib.lines as mlines
 import src.pylabfea.training as CTD
-
+import random
 def rgb_to_hex(rgb):
     return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
 
@@ -38,7 +38,7 @@ mat_ml=FE.Material(db.mat_data['Name'], num = 1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
 
 #train SVC with data from all microstructures
-mat_ml.train_SVC(C = 30, gamma = 0.1, Fe=0.75, Ce=0.9, Nseq= 1, gridsearch= False, plot = False)
+mat_ml.train_SVC(C = 12, gamma = 0.5, Fe=0.7, Ce=0.9, Nseq= 2, gridsearch= False, plot = False)
 
 #Testing
 sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json = "Data_Base_Updated_Final_Rotated_Test.json")
@@ -90,3 +90,29 @@ ax.legend(handles=[handle1, handle2, handle3, handle4, handle5])
 
 plt.show()
 
+# Plot Stress-Strain Curve
+#Select Data from database randomly
+Keys = list(db.Data_Visualization.keys())
+Key = random.choice(Keys) #"Us_A2B1C2D2E1F1_c597f_5e411_Tx_Rnd" #"Us_A1B1C2D0E0F0_d4eaf_5e411_Tx_Rnd"
+print ("Selected Key is: {}".format(Key))
+Stresses = db.Data_Visualization[Key]["Stress"]
+Eq_Stresses = db.Data_Visualization[Key]["Eq_Stress"]
+Strains = db.Data_Visualization[Key]["Strain"]
+Eq_Strains = list(db.Data_Visualization[Key]["Eq_Strain"])
+Response = []
+
+for counter, Eq_Strain in enumerate(Eq_Strains):
+    if counter < 5:
+        Response.append(0)
+        continue
+    else:
+        Z=mat_ml.calc_yf(sig = Stresses, epl = Strains[counter],
+                         pred = False)  # value of yield function for every grid point
+        for counter2, val in enumerate (Z):
+            if val > 0:
+                Response.append(Eq_Stresses[counter2])
+                break
+
+plt.scatter (Eq_Strains, Eq_Stresses)
+plt.scatter (Eq_Strains, Response)
+plt.show()

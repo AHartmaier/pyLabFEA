@@ -27,7 +27,7 @@ class Data(object):
     microstructures. Data is used to train machine learning flow rules in pyLabFEA.
     """
 
-    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.005, plot=False, Work_Hardening= True):
+    def __init__(self, fname, mat_name="Simulanium", epl_crit=1.e-3, d_ep=5.e-4, epl_max=0.03, plot=False, Work_Hardening= True):
         self.mat_data=dict()
         self.mat_data['epc']=epl_crit
         self.mat_data['sdim']=6
@@ -97,6 +97,22 @@ class Data(object):
             Stress=[Final_Data[key]["SEQ"]]
             Strain_Plastic=[Final_Data[key]["PEEQ"]]
             self.SPE_data[key]={"Stress": Stress, "Strain": Strain_Plastic}
+
+        self.Data_Visualization = {}
+        for key in Final_Data:
+            Stress=Final_Data[key]["Stress"]
+            EQ_Stress=Final_Data[key]["SEQ"]
+            EQ_Strain_Plastic=Final_Data[key]["PEEQ"]
+            epl = []
+            for i in range(len(EQ_Strain_Plastic)):
+                # CHANGES: A Shift in the data in order to have 0 equivalant plastic strain at start of yielding
+                temp_epl=(Final_Data[key]['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(Final_Data[key]['Total_Strain'][i]))))
+                epl.append(temp_epl)
+            Strain_Plastic= np.array(epl)
+            #Strain_Plastic = [Final_Data[key]["Plastic_Strain"]]
+
+            self.Data_Visualization[key]={"Stress": Stress, "Eq_Stress": EQ_Stress, "Eq_Strain": EQ_Strain_Plastic, "Strain": Strain_Plastic}
+
         return Final_Data
 
     def parse_data(self, db, epl_crit, epl_max, d_ep):

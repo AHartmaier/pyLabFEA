@@ -37,18 +37,18 @@ print(f'Successfully imported data for {db.mat_data["Nlc"]} load cases')
 mat_ml=FE.Material(db.mat_data['Name'], num = 1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
 
-Result = {}
+Result_4 = {}
 FeS = [0.65, 0.7, 0.75, 0.8]
 CeS = [0.85, 0.9, 0.95, 0.99]
-CS = [10]
-GammaS = [4]
+CS = [4]
+GammaS = [0.5]
 Test_Counter = 0
 
 for Fe in FeS:
     for Ce in CeS:
         for C in CS:
             for gamma in GammaS:
-                Result_File = open('Results.json')
+                Result_File = open('Results_gridSearchoff.json')
                 Result = json.load(Result_File)
                 Result_File.close()
                 path = os.path.dirname(__file__)
@@ -65,7 +65,7 @@ for Fe in FeS:
                 else:
                     print (Test_Counter)
                     #train SVC with data from all microstructures
-                    mat_ml.train_SVC(C = C, gamma = gamma, Fe=Fe, Ce=Ce, Nseq= Ns, gridsearch= True, plot = False)
+                    mat_ml.train_SVC(C = C, gamma = gamma, Fe=Fe, Ce=Ce, Nseq= Ns, gridsearch= False, plot = False)
                     mat_ml.export_MLparam(__file__, file = ntrunk, path = path)
                     with open("{}\\{}".format(path, m_name), 'wb') as output:
                         pickle.dump(mat_ml, output, pickle.HIGHEST_PROTOCOL)
@@ -87,6 +87,6 @@ for Fe in FeS:
                     Result[Name]['Recall'] = Results[3]
                     Result[Name]['F1score'] = Results[4]
                     Result[Name]['mcc'] = Results[5]
-                    with open('Results.json', 'w') as result_file:
+                    with open('Results_gridSearchoff.json', 'w') as result_file:
                         json.dump(Result, result_file)
                         result_file.close()

@@ -179,11 +179,20 @@ def training_score(yf_ref, yf_ml, plot=False):
     res_yf_ml[ind] = 1. # change points with yf=0 to +1
 
     if plot:
-        cm = confusion_matrix(res_yf_ref, res_yf_ml)
-        cmd = ConfusionMatrixDisplay(cm, display_labels=['Elastic','Plastic'])
-        cmd.plot()
+        cm=confusion_matrix(res_yf_ref, res_yf_ml)
+        plt.figure(figsize = (2, 2))  # Set the figure size to 4x4 inches
+        cmd=ConfusionMatrixDisplay(cm, display_labels = ['Elastic', 'Plastic'])
+        cmd.plot(cmap = 'viridis',colorbar = False)
+        ax=plt.gca()
+        ax.set_xlabel('Predicted label', fontsize = 16)
+        ax.set_ylabel('True label', fontsize = 16)
+        ax.set_xticklabels(['Elastic', 'Plastic'], fontsize = 14)
+        ax.set_yticklabels(['Elastic', 'Plastic'], fontsize = 14)
+        for text in ax.texts:
+            text.set_size(14)
+        plt.colorbar(cmd.im_, ax = ax).set_label(label = "Number of samples", size = 14)
+        plt.savefig('confusion_matrix.png', dpi = 300)
         plt.show()
-
     TP = 0
     FN = 0
     FP = 0
