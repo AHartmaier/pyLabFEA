@@ -106,12 +106,13 @@ class Data(object):
             epl = []
             for i in range(len(EQ_Strain_Plastic)):
                 # CHANGES: A Shift in the data in order to have 0 equivalant plastic strain at start of yielding
-                temp_epl=(Final_Data[key]['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(Final_Data[key]['Total_Strain'][i]))))
+                temp_epl=(Final_Data[key]['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(Final_Data[key]['Plastic_Strain'][i]))))
                 epl.append(temp_epl)
             Strain_Plastic= np.array(epl)
+            Eq_Shifted_Strain = FE.eps_eq(Strain_Plastic)
             #Strain_Plastic = [Final_Data[key]["Plastic_Strain"]]
 
-            self.Data_Visualization[key]={"Stress": Stress, "Eq_Stress": EQ_Stress, "Eq_Strain": EQ_Strain_Plastic, "Strain": Strain_Plastic}
+            self.Data_Visualization[key]={"Stress": Stress, "Eq_Stress": EQ_Stress, "Eq_Strain": EQ_Strain_Plastic, "Strain": Strain_Plastic, "Eq_Shifted_Strain": Eq_Shifted_Strain}
 
         return Final_Data
 
@@ -182,7 +183,7 @@ class Data(object):
                 '''WARNING: select only values in intervals of d_epl for storing in data set !!!'''
                 # CHANGES: A Shift in the data in order to have 0 equivalant plastic strain at start of yielding.
                 sig.append(val['Stress'][i])
-                temp_epl=(val['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(val['Total_Strain'][i]))))
+                temp_epl=(val['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(val['Plastic_Strain'][i]))))
                 epl.append(temp_epl)
             ''' WARNING: This needs to be improved !!!'''
             ind=np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
