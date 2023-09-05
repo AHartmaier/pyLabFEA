@@ -41,7 +41,9 @@ def test_ml_shear():
     mat_h.plasticity(sy=sy, hill=hill, sdim=6)
 
     mat_mlh = FE.Material('Hill-ML')  # define ML material
-    mat_mlh.train_SVC(C=15, gamma=2.5, mat_ref=mat_h, Nlc=300)  # train ML flowrule from reference material
+    # train ML flowrule from reference material
+    mat_mlh.train_SVC(C=2, gamma=0.5, mat_ref=mat_h, Nseq=4, Nlc=300, Fe=0.7, Ce=0.95)
+    mat_mlh.dev_only = False
 
     # do FEA
     fem = FE.Model(dim=2, planestress=True)
@@ -57,9 +59,9 @@ def test_ml_shear():
     fem.solve()
     fem.calc_global()
 
-    assert np.abs(fem.glob['sig'][5] - 78.0885109441584) < 1E-5
-    assert np.abs(fem.element[3].epl[5] - 0.003953660592403026) < 1E-7
-    assert np.abs(fem.element[3].sig[1] - 46.93669341234779) < 1E-5
+    assert np.abs(fem.glob['sig'][5] - 79.6435732946163) < 1E-5
+    assert np.abs(fem.element[3].epl[5] - 0.003800884140613953) < 1E-7
+    assert np.abs(fem.element[3].sig[1] - 43.846140704269885) < 1E-5
 
 
 def test_ml_training():
@@ -78,6 +80,7 @@ def test_ml_training():
     nbase = 'ML-J2'
     name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
     mat_ml2 = FE.Material(name)  # define material
+    mat_ml2.dev_only = False
     mat_ml2.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150)
     mat_ml2.calc_properties(verb=False, eps=0.01, sigeps=True)
 
@@ -98,5 +101,5 @@ def test_ml_training():
         FE.training_score(yf_J2, yf_ml, plot=False)
 
     assert np.abs(mae < 16.)
-    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 59.50062640640023) < 1E-5
-    assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008980609212461927) < 1E-7
+    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 60.57834343495059) < 1E-5
+    assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008987491147924685) < 1E-7
