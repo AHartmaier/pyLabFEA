@@ -13,14 +13,14 @@ import matplotlib.pyplot as plt
 import src.pylabfea.training as CTD
 import math
 from matplotlib.lines import Line2D
-
+import matplotlib.lines as mlines
 
 def rgb_to_hex(rgb):
     return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
 
 
 # Import Data
-db = FE.Data("Data_Base_Final_New.json", wh_data=True)
+db = FE.Data("Data_Base_Updated_Final_Rotated_Train.JSON", wh_data=True)
 #db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
 mat_ref = FE.Material(name="reference")  # define reference material, J2 plasticity, linear w.h.
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])
@@ -36,11 +36,11 @@ mat_ml.from_data(db.mat_data)  # data-based definition of material
 mat_ml.train_SVC(C=1, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
-'''# Testing
-sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Final_New.json")
+# Testing
+sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Test.json")
 yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
 Results = CTD.training_score(yf_ref, yf_ml)
-'''
+
 # Plot Hardening levels over a meshed space
 ngrid = 100
 xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
@@ -107,7 +107,7 @@ plt.show()
 
 # Reconstruct Stress-Strain Curve
 Keys = list(db.Data_Visualization.keys())
-Key = "Us_A2B2C1D0E0F0_592bb_5e411_Tx_Rnd"  # random.choice(Keys) # Select Data from database randomly
+Key = "Us_A1B2C2D1E1F2_4092b_5e411_Tx_Rnd"  # random.choice(Keys) # Select Data from database randomly
 #Key = "Us_A1B2C2D0E0F0_2f329_Tx_Rnd"
 print("Selected Key is: {}".format(Key))
 Stresses = db.Data_Visualization[Key]["Stress"]
@@ -161,4 +161,60 @@ legend.legendHandles[0]._sizes = [50]
 legend.legendHandles[1]._sizes = [50]
 plt.tight_layout()
 fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
+plt.show()
+# Plot initial Hardening level with scatter data points
+Stress_Set = []
+Strain_Set = []
+for Key in list(db.Data_Visualization.keys()):
+    Response_Stress = []
+    Response_Strain = []
+    Eq_Strains=list(db.Data_Visualization[Key]["Eq_Strain"])
+    Stresses = db.Data_Visualization[Key]["Stress"]
+    for counter, Eq_Strain in enumerate(Eq_Strains):
+        if Eq_Strains[counter] < 0.0019 or Eq_Strains[counter] > 0.0021:
+            continue
+        else:
+            Response_Strain.append(Eq_Strains[counter])
+            Response_Stress.append(Stresses[counter])
+    if len(Response_Strain) == 0:
+        continue
+    else:
+        Stress_Set.append(Response_Stress[0])
+        Strain_Set.append(Response_Strain[0])
+
+Stress_Set = np.array(Stress_Set)
+Stress_Set_Princ, Stress_Set_EV = FE.sprinc(Stress_Set)
+Stress_Set_Cyl = FE.s_cyl(Stress_Set_Princ)
+Seq_Cyl = []
+theta_Cyl = []
+for set in Stress_Set_Cyl:
+    Seq_Cyl.append(set[0])
+    theta_Cyl.append(set[1])
+
+Seq_Cyl = np.array(Seq_Cyl)
+theta_Cyl = np.array(theta_Cyl)
+
+
+ngrid = 100
+xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
+yy *= mat_ml.scale_seq
+xx *= np.pi
+hh = np.c_[yy.ravel(), xx.ravel()]
+Cart_hh = FE.sp_cart(hh)
+zeros_array = np.zeros((10000, 3))
+Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
+grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
+norm_6d = np.linalg.norm(grad_hh)
+normalized_grad_hh = grad_hh / norm_6d
+Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False) # value of yield function for every grid point
+fig = plt.figure(figsize=(4.2, 4.2))
+ax = fig.add_subplot(111, projection='polar')
+ax.grid(True)
+line = mat_ml.plot_data(Z, ax, xx, yy, c="blue")
+plt.scatter(theta_Cyl, Seq_Cyl)
+handle1 = mlines.Line2D([], [], color="blue", label='Equivalent Plastic Strain : 0 ')
+fig_leg = plt.figure(figsize=(4, 4))
+ax_leg = fig_leg.add_subplot(111)
+ax_leg.axis('off')
+ax_leg.legend(handles=[handle1], loc="center")
 plt.show()

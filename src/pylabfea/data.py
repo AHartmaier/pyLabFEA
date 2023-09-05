@@ -64,7 +64,7 @@ class Data(object):
     def __init__(self, source, path_data='./',
                  name='Dataset', mat_name="Simulanium",
                  sdim=6,
-                 epl_crit=2.e-3, epl_max=0.05,
+                 epl_crit=1.e-3, epl_max=0.03,
                  plot=False,
                  wh_data=True):
         if sdim!=3 and sdim!=6:
