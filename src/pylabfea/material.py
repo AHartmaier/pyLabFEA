@@ -58,6 +58,8 @@ class Material(object):
         Existence of trained machine learning (ML) yield function (default: False)
     ML_grad : Boolean
         Existence of trained ML gradient (default: False)
+    dev_only : Boolean
+        Consider only deviatoric stress tensor (default: False)
     tresca  : Boolean
         Indicate if Tresca equivalent stress should be used (default: False)
     hill_3p  : Boolean
@@ -135,6 +137,7 @@ class Material(object):
         self.sy = None  # Elasticity will be considered unless sy is set
         self.ML_yf = False  # use conventional plasticity unless trained ML functions exists
         self.ML_grad = False  # use conventional gradient unless ML function exists
+        self.dev_only = False  # use only deviatoric stresses in ML feature vector
         self.tresca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.barlat = False  # Use Barlat equiv. stress if parameters are given
         self.msparam = None  # parameters for primary microstructure
@@ -349,7 +352,8 @@ class Material(object):
                 x[:, 0] = sig_eq_j2(sig) / self.scale_seq - 1.
                 x[:, 1] = sig_polar_ang(sig) / np.pi
             else:
-                sig = sig_dev(sig)
+                if self.dev_only:
+                    sig = sig_dev(sig)
                 if sh == (N, 6) or sh == (6,):
                     x[:, 0:6] = sig[:, 0:6] / self.scale_seq
                 else:
@@ -706,7 +710,10 @@ class Material(object):
                 x[:, 0] = sig_eq_j2(sig) / self.scale_seq - 1.
                 x[:, 1] = sig_polar_ang(sig) / np.pi
             else:
-                x[:, 0:6] = sig_dev(sig)[:, 0:6] / self.scale_seq
+                if self.dev_only:
+                    x[:, 0:6] = sig_dev(sig)[:, 0:6] / self.scale_seq  # use only deviatoric part
+                else:
+                    x[:, 0:6] = sig[:, 0:6] / self.scale_seq
             if self.whdat:
                 x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
             if self.txdat:
@@ -742,17 +749,17 @@ class Material(object):
             d3 = self.drucker / 3.
             if seq is None:
                 seq = self.calc_seq(sig)
-            sig = sig_dev(sig)
-            fgrad[:, 0] = ((h0 + h2) * sig[:, 0] - h0 * sig[:, 1] - h2 * sig[:, 2]) / (2. * seq) + d3
-            fgrad[:, 1] = ((h1 + h0) * sig[:, 1] - h0 * sig[:, 0] - h1 * sig[:, 2]) / (2. * seq) + d3
-            fgrad[:, 2] = ((h2 + h1) * sig[:, 2] - h2 * sig[:, 0] - h1 * sig[:, 1]) / (2. * seq) + d3
+            sdev = sig_dev(sig)
+            fgrad[:, 0] = ((h0 + h2) * sdev[:, 0] - h0 * sdev[:, 1] - h2 * sdev[:, 2]) / (2. * seq) + d3
+            fgrad[:, 1] = ((h1 + h0) * sdev[:, 1] - h0 * sdev[:, 0] - h1 * sdev[:, 2]) / (2. * seq) + d3
+            fgrad[:, 2] = ((h2 + h1) * sdev[:, 2] - h2 * sdev[:, 0] - h1 * sdev[:, 1]) / (2. * seq) + d3
             if self.sdim == 6:
                 h3 = self.hill[3]
                 h4 = self.hill[4]
                 h5 = self.hill[5]
-                fgrad[:, 3] = 3. * h3 * sig[:, 3] / seq
-                fgrad[:, 4] = 3. * h4 * sig[:, 4] / seq
-                fgrad[:, 5] = 3. * h5 * sig[:, 5] / seq
+                fgrad[:, 3] = 3. * h3 * sdev[:, 3] / seq
+                fgrad[:, 4] = 3. * h4 * sdev[:, 4] / seq
+                fgrad[:, 5] = 3. * h5 * sdev[:, 5] / seq
                 if h0 == h1 == h2 == h3 == h4 == h5 == 1.:
                     label = 'analytical, J2 isotropic, full stress'
                 else:
@@ -939,6 +946,8 @@ class Material(object):
         """
         # calculate proper scaling factor and scale data in input vector into range [-1,+1] for all columns
         print('Using {} full Voigt yield stresses for training.'.format(x.shape))
+        if self.dev_only:
+            print('Only deviatoric part of stress tensors is considered.')
         assert self.sdim == 6
         self.gam_yf = gamma
         self.C_yf = C
@@ -953,6 +962,8 @@ class Material(object):
                 self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
                 self.scale_wh += (self.msparam[i]['peeq_max'] - self.epc) / self.Nset
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
+            if not self.whdat:
+                self.scale_wh = 1.
         N = len(x)
         X_train = np.zeros((N, self.Ndof))
         X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
@@ -1110,7 +1121,7 @@ class Material(object):
             X_train[:, 1] = x[:, 1] / np.pi
             print('Using cylindrical stresses for training')
         if self.whdat:
-            X_train[:, self.ind_wh] = x[:, self.ind_wh + 1] / self.scale_wh - 1.
+            X_train[:, self.ind_wh] = x[:, self.ind_wh + 1] / self.scale_wh
             print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
                   % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
         if self.txdat:
@@ -1143,7 +1154,7 @@ class Material(object):
                 X_test[:, 0] = x_test[:, 0] / self.scale_seq - 1.
                 X_test[:, 1] = x_test[:, 1] / np.pi
             if self.whdat:
-                X_test[:, self.ind_wh] = x_test[:, self.ind_wh + 1] / self.scale_wh - 1.
+                X_test[:, self.ind_wh] = x_test[:, self.ind_wh + 1] / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx + 1
                 for i in range(self.Nset):
@@ -1250,6 +1261,10 @@ class Material(object):
         gridsearch : Boolean
             Perform grid search to optimize hyperparameters of ML flow rule
             (optional, default: False)
+        Fe    : float
+            Relative value of lowest stress in elastic regime (optional, default: 0.1)
+        Ce    : float
+            Relative value of largest stress in elastic regime (optional, default: 0.99)
         """
         print('\n---------------------------\n')
         print('SVM classification training')
@@ -1430,6 +1445,10 @@ class Material(object):
             Create additional data in plastic regime (optional, default: False)
         rand   : Boolean
             Chose random load cases (polar angles) (optional, default: False)
+        Fe    : float
+            Relative value of lowest stress in elastic regime
+        Ce    : float
+            Relative value of largest stress in elastic regime
 
         Returns
         -------
@@ -1462,19 +1481,23 @@ class Material(object):
                     N = 300
                 n3 = int(N / 3)
                 n6 = N - n3
-                su = sig_dev(load_cases(n3, n6))
+                su = load_cases(n3, n6)
+                if self.dev_only:
+                    su = sig_dev(su)
             x1 = fsolve(mat_ref.find_yloc, np.ones(N) * mat_ref.sy, args=(su), xtol=1.e-5)
-            sdata = sig_dev(su * x1[:, None])  # yield s
-            # tress tensors representing ground truth
+            sdata = su * x1[:, None]  # yield stress tensors representing ground truth
         else:
             # read stress data as seeding points for generation of further training stresses in entire 
             # sdim-dimensional stress space
+
             i = len(sdata)
             if (N is not None) and (N != i):
                 warnings.warn(f'create_sig_data: N and dimension of sdata do not agree. Continuing with N ={i}')
             if mat_ref is not None:
                 warnings.warn('create_sig_data: using sdata for training, ignoring mat_ref')
             N = i
+        if self.dev_only:
+            sdata = sig_dev(sdata)
         seq = np.linspace(Fe, Ce, Nseq)
         seq = np.append(seq, np.linspace((2.-Ce), (2.-Fe), Nseq))
         if extend:
@@ -1600,8 +1623,9 @@ class Material(object):
             props[13] = self.CV[1, 2]
             props[14] = self.CV[4, 4]
             props[15] = self.CV[5, 5]
-        props[16] = self.Nset
-        props[16:16 + self.Nset] = self.scale_text
+        props[16] = -1. if self.dev_only else 0.
+        props[17] = self.Nset
+        props[18:18 + self.Nset] = self.scale_text
         props[29:29 + nsv] = dc
         nl = (self.Ndof + 1) * nsv + 29  # last entry of support vectors
         props[29 + nsv:nl] = self.svm_yf.support_vectors_.flatten()
