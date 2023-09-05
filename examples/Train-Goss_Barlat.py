@@ -59,9 +59,9 @@ C = 15.
 gamma = 2.5
 nbase = 'ML-Goss-Barlat'
 name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
-data_GS = FE.Data(sig, name="Goss-Barlat", sdim=6, mirror=False)
+data_GS = FE.Data(sig, mat_name="Goss-Barlat", wh_data=False)
 mat_mlGB = FE.Material(name, num=1)  # define material
-mat_mlGB.from_data(data_GS.mat_param)  # data-based definition of material
+mat_mlGB.from_data(data_GS.mat_data)  # data-based definition of material
 
 print('\nComparison of basic material parameters:')
 print('Youngs modulus: Ref={}MPa, ML={}MPa'.format(mat_GB.E, mat_mlGB.E))
@@ -70,10 +70,10 @@ print('Yield strength: Ref={}MPa, ML={}MPa'.format(mat_GB.sy, mat_mlGB.sy))
 
 # train SVC with data generated from Barlat model for material with Goss texture
 mat_mlGB.train_SVC(C=C, gamma=gamma)
-sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_yld'][0])
+sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_ideal'])
 mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True)
 # export ML parameters for use in UMAT
-mat_mlGB.export_MLparam(__file__, path='../models/')
+mat_mlGB.export_MLparam(__file__, path='./')
 
 # analyze support vectors to plot them in stress space
 sv = mat_mlGB.svm_yf.support_vectors_ * mat_mlGB.scale_seq
@@ -138,6 +138,7 @@ plt.show()
 
 # setup material definition for soft elastic square-shaped inclusion embedded
 # in elastic-plastic material with trained ML flow rule
+print('Calculating FE model with elastic inclusion')
 mat_el = FE.Material(num=2)  # define soft elastic material for inclusion
 mat_el.elasticity(E=1.e3, nu=0.27)
 # define array for geometrical arrangement

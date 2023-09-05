@@ -28,6 +28,7 @@ gamma = 2.5
 nbase = 'ML-J2'
 name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
 mat_ml = FE.Material(name)  # define material
+mat_ml.dev_only = True
 mat_ml.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150)
 mat_ml.export_MLparam(__file__, path='./')
 

@@ -23,7 +23,7 @@ plt.rc('font', **font)
 E = 200.e3  # Young's modulus in MPa
 nu = 0.3  # Poisson ratio
 sy = 50.  # yield strength in MPa
-hill = [1.4, 1.0, 0.7, 1.3, 0.8, 1.0]  # parameters for Hill-type anisotropy
+#hill = [1.4, 1.0, 0.7, 1.3, 0.8, 1.0]  # parameters for Hill-type anisotropy
 rv = [1.2, 1.0, 0.8, 1.0, 1.0, 1.0]  # parameters for yield stress ratios
 mat_h = FE.Material(name='Hill-reference', num=1)
 mat_h.elasticity(E=E, nu=nu)
@@ -31,13 +31,13 @@ mat_h.plasticity(sy=sy, rv=rv, sdim=6)
 mat_h.calc_properties(eps=0.01, sigeps=True)
 
 # define material as basis for ML flow rule
-C = 15.
-gamma = 2.5
+C = 2.0
+gamma = 0.5
 nbase = 'ML-Hill-p1'
 name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
 mat_mlh = FE.Material(name, num=2)  # define ML material
 # train ML flow rule from reference material
-mat_mlh.train_SVC(C=C, gamma=gamma, mat_ref=mat_h, Nlc=300)
+mat_mlh.train_SVC(C=C, gamma=gamma, mat_ref=mat_h, Nseq=4, Nlc=300, Fe=0.7, Ce=0.95)
 
 # analyze support vectors to plot them in stress space
 sv = mat_mlh.svm_yf.support_vectors_ * mat_mlh.scale_seq
@@ -74,8 +74,8 @@ loc = 40
 scale = 10
 size = 200
 offset = 5
-X1 = np.random.normal(loc=loc, scale=scale, size=int(size / 4))
-X2 = np.random.normal(loc=(loc - offset), scale=scale, size=int(size / 2))
+X1 = np.random.normal(loc=loc, scale=scale, size=int(size / 2))
+X2 = np.random.normal(loc=(loc - offset), scale=scale, size=int(size / 4))
 X3 = np.random.normal(loc=(loc + offset), scale=scale, size=int(size / 4))
 X = np.concatenate((X1, X2, X3))
 sunittest = FE.load_cases(number_3d=0, number_6d=len(X))
