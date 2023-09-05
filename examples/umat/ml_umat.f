@@ -1,12 +1,12 @@
 c=========================================================================
 c User material definition based of ML flow rule
 c
-c Version 1.0.0 (2021-11-27)
+c Version 1.0.1 (2021-11-27)
 c
 c Authors: Alexander Hartmaier, Anderson Wallace Paiva do Nascimento
 c Email: alexander.hartmaier@rub.de
 c ICAMS / Ruhr University Bochum, Germany
-c November 2021
+c September 2022
 c
 c distributed under GNU General Public License (GPLv3)
 c==========================================================================
@@ -122,6 +122,7 @@ c ! 7  : equivalent plastic strain (PEEQ)
       real(8), dimension(ntens, ntens) :: Ct                                      !Consistent tanget stiffness matrix
       real(8), dimension(ntens) :: deps                                           !strain increment outside yield locus, if load step is splitted
       real(8) :: threshold, h1, h2, eeq, peeq, sc_elstep
+      logical :: dev_only
 
       nsv = int(props(1))
       nsd = int(props(2))
@@ -139,7 +140,12 @@ c ! 7  : equivalent plastic strain (PEEQ)
       C23 = props(14)
       C55 = props(15)
       C66 = props(16)
-      Nset = int(props(17))
+      if props(17) .lt. 0. then
+        dev_only = .true.
+      else
+        dev_only = .false.
+      end if
+      Nset = int(props(18))
       ind_dc0 = 30
       ind_sv0 = 30+nsv
 
@@ -381,13 +387,19 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
         real(8), dimension(nsd) :: hs
         real(8) :: fsvc, kernelFunc
 
-        fsvc = 0.
-        do i=1, nsv
+        ! Calculate feature vector from current stress and plastic strain
+        if dev_only then
             call calcDevStress(sigma, sig_dev)
             hs(1:6) = sig_dev(1:6)/scale_seq
-            if (nsd>6) then
-                hs(7) = peeq/scale_wh - 1.
-            end if
+        else
+            hs(1:6) = sigma(1:6)/scale_seq
+        end if
+        if (nsd>6) then
+            hs(7:12) = eplas(1:6)/scale_wh
+        end if
+        ! evaluate ML yield function, loop over all support vectors
+        fsvc = 0.
+        do i=1, nsv
             call calcKernelFunction(hs, i, kernelFunc)
             fsvc = fsvc + props(ind_dc0+i-1)*kernelFunc
         end do
@@ -414,23 +426,32 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
         !strain hardening rate khard is also updated based on gradient ov SVC w.r.t peeq
         implicit none
         integer :: i
-        real(8), dimension(ntens) :: sigma, sig_dev, dfds, gj2
+        real(8), dimension(ntens) :: sigma, sig_dev, dfds, gj2, hk
         real(8), dimension(nsd) :: hs, dk_dx, hg
         real(8) :: h0,h1,h2,h3,h4,h5,seq
 
-        call calcDevStress(sigma, sig_dev)
-        hs(1:6) = sig_dev(1:6)/scale_seq
-        if (nsd>6) then
-            hs(7) = peeq/scale_wh - 1.
+        ! calculate feature vector from current stress and plastic strain
+        if dev_only then
+            call calcDevStress(sigma, sig_dev)
+            hs(1:6) = sig_dev(1:6)/scale_seq
+        else
+            hs(1:6) = sigma(1:6)/scale_seq
         end if
+        if (nsd>6) then
+            hs(7:12) = eplas(1:6)/scale_wh
+        end if
+        ! evaluate gradient to ML yield function
         hg = 0.
         do i=1, nsv
             call calcDK_DX(hs, i, dk_dx)
             hg = hg + props(ind_dc0+i-1)*dk_dx
         end do
         dfds(1:6) = hg(1:6) / scale_seq
+        khard = 0.
         if (nsd>6) then
-            khard = -hg(7)*scale_seq/scale_wh
+          do i=1, 6
+            khard = khard - hg(6+i)*scale_seq/scale_wh
+          end do
         end if
       end subroutine calcGradFSVC
 
