@@ -375,7 +375,7 @@ class Material(object):
             if N == 1:
                 f = f[0]
         else:
-            f = self.calc_seq(sig) - self.get_sflow(eps_eq(epl))
+            f = self.calc_seq(sig) - self.get_sflow(epl)
             self.msg['yield_fct'] = 'analytical'
         return f
 
@@ -960,7 +960,7 @@ class Material(object):
             self.scale_text = np.zeros(self.Nset)
             for i in range(self.Nset):
                 self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
-                self.scale_wh += (self.msparam[i]['peeq_max'] - self.epc) / self.Nset
+                self.scale_wh += self.msparam[i]['peeq_max'] / self.Nset
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
             if not self.whdat:
                 self.scale_wh = 1.
@@ -1106,7 +1106,7 @@ class Material(object):
             self.scale_text = np.zeros(self.Nset)
             for i in range(self.Nset):
                 self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
-                self.scale_wh += (self.msparam[i]['peeq_max'] - self.epc) / self.Nset
+                self.scale_wh += self.msparam[i]['peeq_max'] / self.Nset
                 self.scale_text[i] = np.average(self.msparam[i]['texture'])
         N = len(x)
         X_train = np.zeros((N, self.Ndof))
@@ -1298,7 +1298,7 @@ class Material(object):
                       .format(self.sdim, Nlc))
             self.Ndof = 2 if self.sdim == 3 else 6
         else:
-            '''WARNING: There are no more hardening levels, epc is undefined !!!'''
+            '''WARNING: There are no more hardening levels !!!'''
             Nlc = self.msparam[0]['Nlc']
             if self.whdat:
                 Ndinp = len(self.msparam[0]['flow_stress'])
@@ -1328,11 +1328,11 @@ class Material(object):
             xt[:, 0:self.sdim] = sig_train
 #            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
             if self.whdat:
-                # Add DOF for work Plastic Strain NOTE!! hardening parameter Check the offset control (epc)
+                # Add DOF for work Plastic Strain
                 for i in range(Ndinp):
                     for j in range(Nsdata):
                         xt[i + j*Ndinp, self.sdim:self.sdim + iwh] = \
-                            self.msparam[0]['plastic_strain'][i, :] #- self.epc
+                            self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
 
             print(
                 '%i training data sets created, with %i load cases' % (Nt, Nlc))
@@ -1372,7 +1372,7 @@ class Material(object):
             plt.figure(figsize=(20, 8 * nrow))
             plt.subplots_adjust(hspace=0.3)
             theta = np.linspace(-np.pi, np.pi, 36)
-            work_hard = np.linspace(self.epc, self.msparam[0]['peeq_max'], Npl)
+            work_hard = np.linspace(0., self.msparam[0]['peeq_max'], Npl)
             for k in range(Ntext):
                 self.set_texture(self.msparam[0]['texture'][k], verb=False)
                 for j in range(0, Npl, np.maximum(1, int(Npl / 4))):
@@ -1383,7 +1383,7 @@ class Material(object):
                     ind = np.argsort(x_test[:, 1])  # sort dta points w.r.t. polar angle
                     x_test = x_test[ind, :]
                     y_test = y_test[ind]
-                    peeq = work_hard[j] - self.epc
+                    peeq = work_hard[j]
                     sflow = self.get_sflow(peeq)
                     iel = np.nonzero(y_test < 0.)[0]
                     ipl = np.nonzero(np.logical_and(y_test >= 0., x_test[:, 0] < sflow * 1.5))[0]
@@ -1404,9 +1404,8 @@ class Material(object):
                     if self.msparam is None:
                         plt.title = self.name
                     else:
-                        plt.title(
-                            'Flow stress, PEEQ=' + str(work_hard[j].round(decimals=4)) + ', TP='
-                            + str(self.msparam[0]['texture'][k].round(decimals=2)), fontsize=fontsize)
+                        plt.title = 'Flow stress, PEEQ=' + str(work_hard[j].round(decimals=4)) + ', TP='\
+                            + str(self.msparam[0]['texture'][k].round(decimals=2))
                     # plt.xlabel(r'$\theta$ (rad)', fontsize=fontsize-2)
                     # plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize-2)
                     plt.legend(loc=(.95, 0.85), fontsize=fontsize - 2)

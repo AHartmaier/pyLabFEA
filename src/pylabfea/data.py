@@ -41,6 +41,8 @@ class Data(object):
         Dimensionality of stresses; if sdim = 3 only principal stresses are considered (optional, default: 6)
     epl_crit : float
         Critical plastic strain at which yield strength is defined(optional, default: 2.e-3)
+    epl_start : float
+        Start value of equiv. plastic strain at which data will be sampled(optional, default: 1.e-3)
     epl_max : float
         Maximum equiv. plastic strain up to which data is considered (optional, default: 0.05)
     plot : Boolean
@@ -59,18 +61,42 @@ class Data(object):
     nu_av: float
         Average Poisson ratio
     mat_param: dictionary
-        Contains available data for ML yield function and for microstructural parameters
+        | Contains available data for ML yield function and for microstructural parameters
+        | Items
+        |    epc : critical value of equiv. plastic strain that defines the onset of plastic yielding
+        |    ep_start : start value of equiv. plastic strain at which data is acquired
+        |    ep_max : maximum value of equiv. plastic strain up to which data is considered
+        |    lc_indices : array with start index for each load case
+        |    peeq_max : maximum of equiv. plastic strain that occurred in data set, corrected for onset of plasticity at epc
+        |    sdim : dimension of stress vector (must be 3 or 6)
+        |    Name : material name
+        |    Dataset : Name of dataset
+        |    wh_data : indicate if strain hardening data exists
+        |    Ntext : number of textures
+        |    tx_name : name of texture
+        |    texture : texture parameters
+        |    flow_stress : array of flow stresses correlated to plastic strains
+        |    plastic_strain : array of plastic strains corrected for onset of plasticity at epc
+        |    E_av : avereage Young's modulus derived from data
+        |    nu_av : average Poisson's ratio derived from data
+        |    sy_av : average yield strength, i.e. flow stress at epc, obtained from data
+        |    Nlc : number of load cases in data
+        |    sy_list : ???
+        |    sig_ideal : interpolated stress tensors at onset of plastic yielding (epc) for each load case
+
     """
     def __init__(self, source, path_data='./',
                  name='Dataset', mat_name="Simulanium",
                  sdim=6,
-                 epl_crit=1.e-3, epl_max=0.03,
+                 epl_crit=2.e-3,
+                 epl_start=1.e-3, epl_max=0.03,
                  plot=False,
                  wh_data=True):
         if sdim!=3 and sdim!=6:
             raise ValueError('Value of sdim must be either 3 or 6')
         self.mat_data = dict()
         self.mat_data['epc'] = epl_crit
+        self.mat_data['ep_start'] = epl_start
         self.mat_data['ep_max'] = epl_max
         self.mat_data['sdim'] = sdim
         self.mat_data['Name'] = mat_name
@@ -82,7 +108,7 @@ class Data(object):
 
         if type(source) is str:
             raw_data = self.read_data(path_data+source)
-            self.parse_data(raw_data, epl_crit=epl_crit, epl_max=epl_max)  # add data to mat_data
+            self.parse_data(raw_data, epl_crit, epl_start, epl_max)  # add data to mat_data
         else:
             raw_data = np.array(source)
             self.convert_data(raw_data)
@@ -145,27 +171,27 @@ class Data(object):
             Strain_Plastic = [Final_Data[key]["PEEQ"]]
             self.SPE_data[key] = {"Stress": Stress, "Strain": Strain_Plastic}
 
+        # This code block produced divide by zero error and Data_Visualization doesn't seem to be used
         self.Data_Visualization = {}
-        for key in Final_Data:
-            Stress = Final_Data[key]["Stress"]
-            EQ_Stress = Final_Data[key]["SEQ"]
-            EQ_Strain_Plastic = Final_Data[key]["PEEQ"]
+        for key, dat in Final_Data.items():
+            Stress = dat["Stress"]
+            EQ_Stress = dat["SEQ"]
+            EQ_Strain_Plastic = dat["PEEQ"]
             epl = []
             for i in range(len(EQ_Strain_Plastic)):
-                # CHANGES: A Shift in the data in order to have 0 equivalant plastic strain at start of yielding
-                temp_epl = (Final_Data[key]['Plastic_Strain'][i]) * (
-                            1 - (0.002 / (FE.eps_eq(Final_Data[key]['Plastic_Strain'][i]))))
+                # CHANGES: A Shift in the data in order to have 0 equivalent plastic strain at start of yielding
+                scale = np.maximum(EQ_Strain_Plastic[i], 1.e-10)
+                temp_epl = dat['Plastic_Strain'][i] * (1. - self.mat_data['epc'] / scale)
                 epl.append(temp_epl)
             Strain_Plastic = np.array(epl)
             Eq_Shifted_Strain = FE.eps_eq(Strain_Plastic)
-            # Strain_Plastic = [Final_Data[key]["Plastic_Strain"]]
 
             self.Data_Visualization[key] = {"Stress": Stress, "Eq_Stress": EQ_Stress, "Eq_Strain": EQ_Strain_Plastic,
                                             "Strain": Strain_Plastic, "Eq_Shifted_Strain": Eq_Shifted_Strain}
 
         return Final_Data
 
-    def parse_data(self, db, epl_crit, epl_max):
+    def parse_data(self, db, epl_crit, epl_start, epl_max):
         """
         Read data and store in attribute 'mat_data'
         Estimate elastic properties and initial yield strength from data for each load case and form averages.
@@ -177,6 +203,8 @@ class Data(object):
             Database
         epl_crit : float
             Critical value for onset of yielding
+        epl_start : float
+            Start value of equic. plastic strain at which data acquisition will start
         epl_max : float
             Maximum equiv. strain up to which data is considered
         """
@@ -190,9 +218,10 @@ class Data(object):
         epl = []
         ct = 0
         sig_ideal = []
+        lc_ind_list = np.zeros(Nlc, dtype=int)
         for key, val in db.items():
             # estimate yield point for ideal plasticity consideration
-            i_ideal = np.nonzero(val['PEEQ'] > 2.e-3)[0]
+            i_ideal = np.nonzero(val['PEEQ'] > epl_crit)[0]
             if len(i_ideal) < 2:
                 print(
                     f'Skipping data set {key} (No {ct}): No plastic range for ideal plasticity')
@@ -201,24 +230,24 @@ class Data(object):
             sig_ideal.append(val['Stress'][i_ideal[0]])
 
             # estimate yield point for load case
-            iel = np.nonzero(val['PEEQ'] < epl_crit)[0]
-            ipl = np.nonzero(np.logical_and(val['PEEQ'] >= epl_crit, val['PEEQ'] <= epl_max))[0]
+            iel = np.nonzero(val['PEEQ'] < epl_start)[0]
+            ipl = np.nonzero(np.logical_and(val['PEEQ'] >= epl_start, val['PEEQ'] <= epl_max))[0]
             if len(iel) < 2:
                 print(f'Skipping data set {key} (No {ct}): No elastic range: IEL: {iel}, vals: {len(val["PEEQ"])}')
                 Nlc -= 1
                 continue
             if len(ipl) < 2:
                 print(
-                    f'Skipping data set {key} (No {ct}): No plastic range: IPL: {ipl}, vals: {len(val["PEEQ"])}; {epl_crit}, {epl_max}')
+                    f'Skipping data set {key} (No {ct}): No plastic range: IPL: {ipl}, vals: {len(val["PEEQ"])}; {epl_start}, {epl_max}')
                 Nlc -= 1
                 continue
             s0 = val['SEQ'][iel[-1]]
             s1 = val['SEQ'][ipl[0]]
             e0 = val['PEEQ'][iel[-1]]
             e1 = val['PEEQ'][ipl[0]]
-            sy = s0 + (epl_crit - e0) * (s1 - s0) / (e1 - e0)
-            sy_list.append(sy)
-            sy_av += sy / Nlc
+            s_start = s0 + (epl_start - e0) * (s1 - s0) / (e1 - e0)
+            sy_list.append(s_start)
+            sy_av += FE.seq_J2(val['Stress'][i_ideal[0]])
             eps = val['PEEQ'][ipl[-1]]
             if eps > peeq_max:
                 peeq_max = eps
@@ -228,16 +257,18 @@ class Data(object):
                 '''WARNING: select only values in intervals of d_epl for storing in data set !!!'''
                 # CHANGES: A Shift in the data in order to have 0 equivalent plastic strain at start of yielding.
                 sig.append(val['Stress'][i])
-                temp_epl=(val['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(val['Plastic_Strain'][i]))))
+                temp_epl = val['Plastic_Strain'][i] * (1. - epl_crit / FE.eps_eq(val['Plastic_Strain'][i]))
                 epl.append(temp_epl)
+            lc_ind_list[ct] = len(ipl) + lc_ind_list[ct-1]
+
             ''' WARNING: This needs to be improved !!!'''
-            ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
+            ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * s_start, val['SEQ'] < 0.4 * s_start))[0]
             seq = val['SEQ'][ind]
             eeq = FE.eps_eq(val['Total_Strain'][ind])
             E = np.average(seq / eeq)
             nu = 0.3
-            E_av += E / Nlc
-            nu_av += nu / Nlc
+            E_av += E
+            nu_av += nu
 
             # get texture name
             ''' Warning: This should be read only once from metadata !!!'''
@@ -245,9 +276,13 @@ class Data(object):
             self.mat_data['ms_type'] = Key_Translated["Texture_Type"]  # unimodal texture type
             ct += 1
 
+        E_av /= Nlc
+        nu_av /= Nlc
+        sy_av /= Nlc
         self.mat_data['flow_stress'] = np.array(sig)
         self.mat_data['plastic_strain'] = np.array(epl)
-        self.mat_data['peeq_max'] = peeq_max
+        self.mat_data['lc_indices'] = lc_ind_list
+        self.mat_data['peeq_max'] = peeq_max - epl_crit
         self.mat_data['E_av'] = E_av
         self.mat_data['nu_av'] = nu_av
         self.mat_data['sy_av'] = sy_av
@@ -257,7 +292,7 @@ class Data(object):
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print('Estimated elastic constants: E=%5.2f GPa, nu=%4.2f' % (E_av / 1000, nu_av))
-        print('Estimated yield strength: %5.2f MPa at PEEQ = %5.3f' % (sy_av, epl_crit))
+        print('Estimated yield strength: %5.2f MPa at PEEQ = %5.3f' % (sy_av, epl_start))
 
     def convert_data(self, sig):
         print("inside where it shoulld not be")
@@ -276,6 +311,7 @@ class Data(object):
                 'Warning: dimension of stress in data does not agree with parameter sdim. Use value from data.')
         self.mat_data['sig_ideal'] = sig
         self.mat_data['wh_data'] = False
+        self.mat_data['lc_indices'] = np.linspace(0, Nlc)
         self.mat_data['E_av'] = 151220.  # WARNING: only valid for example
         self.mat_data['nu_av'] = 0.3  # WARNING: only valid for example
         self.mat_data['sy_av'] = np.mean(FE.sig_eq_j2(sig))
