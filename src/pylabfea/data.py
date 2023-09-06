@@ -192,7 +192,7 @@ class Data(object):
         sig_ideal = []
         for key, val in db.items():
             # estimate yield point for ideal plasticity consideration
-            i_ideal = np.nonzero(val['PEEQ'] >= epl_crit)[0]
+            i_ideal = np.nonzero(val['PEEQ'] > 2.e-3)[0]
             if len(i_ideal) < 2:
                 print(
                     f'Skipping data set {key} (No {ct}): No plastic range for ideal plasticity')
@@ -218,7 +218,7 @@ class Data(object):
             e1 = val['PEEQ'][ipl[0]]
             sy = s0 + (epl_crit - e0) * (s1 - s0) / (e1 - e0)
             sy_list.append(sy)
-            sy_av += sy
+            sy_av += sy / Nlc
             eps = val['PEEQ'][ipl[-1]]
             if eps > peeq_max:
                 peeq_max = eps
@@ -228,7 +228,7 @@ class Data(object):
                 '''WARNING: select only values in intervals of d_epl for storing in data set !!!'''
                 # CHANGES: A Shift in the data in order to have 0 equivalent plastic strain at start of yielding.
                 sig.append(val['Stress'][i])
-                temp_epl = val['Plastic_Strain'][i] * (1 - epl_crit / FE.eps_eq(val['Plastic_Strain'][i]))
+                temp_epl=(val['Plastic_Strain'][i]) * (1 - (0.002 / (FE.eps_eq(val['Plastic_Strain'][i]))))
                 epl.append(temp_epl)
             ''' WARNING: This needs to be improved !!!'''
             ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * sy, val['SEQ'] < 0.4 * sy))[0]
@@ -236,8 +236,8 @@ class Data(object):
             eeq = FE.eps_eq(val['Total_Strain'][ind])
             E = np.average(seq / eeq)
             nu = 0.3
-            E_av += E
-            nu_av += nu
+            E_av += E / Nlc
+            nu_av += nu / Nlc
 
             # get texture name
             ''' Warning: This should be read only once from metadata !!!'''
@@ -248,9 +248,9 @@ class Data(object):
         self.mat_data['flow_stress'] = np.array(sig)
         self.mat_data['plastic_strain'] = np.array(epl)
         self.mat_data['peeq_max'] = peeq_max
-        self.mat_data['E_av'] = E_av / Nlc
-        self.mat_data['nu_av'] = nu_av / Nlc
-        self.mat_data['sy_av'] = sy_av / Nlc
+        self.mat_data['E_av'] = E_av
+        self.mat_data['nu_av'] = nu_av
+        self.mat_data['sy_av'] = sy_av
         self.mat_data['Nlc'] = Nlc
         self.mat_data['sy_list'] = sy_list
         self.mat_data['sig_ideal'] = np.array(sig_ideal)
@@ -260,6 +260,7 @@ class Data(object):
         print('Estimated yield strength: %5.2f MPa at PEEQ = %5.3f' % (sy_av, epl_crit))
 
     def convert_data(self, sig):
+        print("inside where it shoulld not be")
         """
         Convert data provided only for stress tensor at yield point into mat_param dictionary
 

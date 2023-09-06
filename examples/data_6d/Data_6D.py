@@ -86,13 +86,13 @@ fig_leg.savefig('Legend.png', dpi=300)
 plt.show()
 
 # Plot initial yield locus in pi-plane with the average yield strength from data,
-# now the average was taken manually, but it can be achieved using
+# now the average was taken manually, but it can be done using
 # Z = mat_ref.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)
 Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # value of yield fct for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.6, 4.5))
 linet, = mat_ml.plot_data(Z, ax, xx, yy, c='black')
 linet.set_linewidth(2.2)
-lineu = ax.axhline(db.mat_data['sy_av'], color='#d60404', lw=2)
+lineu = ax.axhline(db.mat_data['sy_av'], color='#d60404', lw=2) # Now there is a problem with db.mat_data['sy_av'] as this is related to 0.001 but it should be 48.81 equal to 0.002 (I will solve it)
 legend_elements = [
     Line2D([0], [0], color='black', lw=2, label='ML'),
     Line2D([0], [0], color='#d60404', lw=2, label='Data')
@@ -108,7 +108,6 @@ plt.show()
 # Reconstruct Stress-Strain Curve
 Keys = list(db.Data_Visualization.keys())
 Key = "Us_A1B2C2D1E1F2_4092b_5e411_Tx_Rnd"  # random.choice(Keys) # Select Data from database randomly
-#Key = "Us_A1B2C2D0E0F0_2f329_Tx_Rnd"
 print("Selected Key is: {}".format(Key))
 Stresses = db.Data_Visualization[Key]["Stress"]
 Eq_Stresses = db.Data_Visualization[Key]["Eq_Stress"]
@@ -162,6 +161,7 @@ legend.legendHandles[1]._sizes = [50]
 plt.tight_layout()
 fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
 plt.show()
+
 # Plot initial Hardening level with scatter data points
 Stress_Set = []
 Strain_Set = []
@@ -181,7 +181,6 @@ for Key in list(db.Data_Visualization.keys()):
     else:
         Stress_Set.append(Response_Stress[0])
         Strain_Set.append(Response_Strain[0])
-
 Stress_Set = np.array(Stress_Set)
 Stress_Set_Princ, Stress_Set_EV = FE.sprinc(Stress_Set)
 Stress_Set_Cyl = FE.s_cyl(Stress_Set_Princ)
@@ -190,11 +189,8 @@ theta_Cyl = []
 for set in Stress_Set_Cyl:
     Seq_Cyl.append(set[0])
     theta_Cyl.append(set[1])
-
 Seq_Cyl = np.array(Seq_Cyl)
 theta_Cyl = np.array(theta_Cyl)
-
-
 ngrid = 100
 xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
 yy *= mat_ml.scale_seq
@@ -210,9 +206,10 @@ Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False) # val
 fig = plt.figure(figsize=(4.2, 4.2))
 ax = fig.add_subplot(111, projection='polar')
 ax.grid(True)
-line = mat_ml.plot_data(Z, ax, xx, yy, c="blue")
-plt.scatter(theta_Cyl, Seq_Cyl)
-handle1 = mlines.Line2D([], [], color="blue", label='Equivalent Plastic Strain : 0 ')
+line = mat_ml.plot_data(Z, ax, xx, yy, c = "blue")
+plt.scatter(theta_Cyl, Seq_Cyl, s= 6, c = "black")
+fig.savefig('ML+ScatterData.png', dpi=300)
+handle1 = mlines.Line2D([], [], color = "blue", label='Equivalent Plastic Strain : 0 ')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')
