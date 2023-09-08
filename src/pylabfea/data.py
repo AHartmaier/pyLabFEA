@@ -218,7 +218,7 @@ class Data(object):
         epl = []
         ct = 0
         sig_ideal = []
-        lc_ind_list = np.zeros(Nlc, dtype=int)
+        lc_ind_list = np.zeros(Nlc + 1, dtype=int)
         for key, val in db.items():
             # estimate yield point for ideal plasticity consideration
             i_ideal = np.nonzero(val['PEEQ'] > epl_crit)[0]
@@ -259,7 +259,7 @@ class Data(object):
                 sig.append(val['Stress'][i])
                 temp_epl = val['Plastic_Strain'][i] * (1. - epl_crit / FE.eps_eq(val['Plastic_Strain'][i]))
                 epl.append(temp_epl)
-            lc_ind_list[ct] = len(ipl) + lc_ind_list[ct-1]
+            lc_ind_list[ct] = len(ipl) + lc_ind_list[ct - 1]
 
             ''' WARNING: This needs to be improved !!!'''
             ind = np.nonzero(np.logical_and(val['SEQ'] > 0.2 * s_start, val['SEQ'] < 0.4 * s_start))[0]
@@ -311,7 +311,8 @@ class Data(object):
                 'Warning: dimension of stress in data does not agree with parameter sdim. Use value from data.')
         self.mat_data['sig_ideal'] = sig
         self.mat_data['wh_data'] = False
-        self.mat_data['lc_indices'] = np.linspace(0, Nlc)
+        lc_ind_list = np.linspace(0, Nlc)
+        self.mat_data['lc_indices'] = np.append(lc_ind_list, 0.)
         self.mat_data['E_av'] = 151220.  # WARNING: only valid for example
         self.mat_data['nu_av'] = 0.3  # WARNING: only valid for example
         self.mat_data['sy_av'] = np.mean(FE.sig_eq_j2(sig))
