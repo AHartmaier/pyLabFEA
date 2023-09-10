@@ -96,7 +96,7 @@ ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')
 ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5, handle6], loc="center")
 # fig_leg.savefig('Legend.png', dpi=300)
-plt.show()
+
 
 # Plot initial yield locus in pi-plane with the average yield strength from data,
 # now the average was taken manually, but it can be done using
