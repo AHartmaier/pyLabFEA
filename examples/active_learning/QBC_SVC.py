@@ -6,7 +6,9 @@ in training Machine Learning yield functions. Using the Query-By-Committee algor
 we prioritize data points where model predictions show high disagreement,
 leading to reduced variance in predictions.
 
-Authers: Ronak Shoghi, Lukas Morand, Alexandere Hartmaier
+Authers: Ronak Shoghi1, Lukas Morand2, Alexandere Hartmaier1
+1: [ICAMS/Ruhr University Bochum, Germany]
+2: [Fraunhofer Institute for Mechanics of Materials (IWM)]
 July 2023
 """
 
