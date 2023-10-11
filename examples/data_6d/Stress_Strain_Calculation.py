@@ -1,6 +1,5 @@
 """
-Use trained ML yield function tos calculate the elastic-plastic behavior of  the material
-This example is for a simple monotonic loading in x-direction
+Use trained ML yield function tos calculate the elastic-plastic behavior of the material in a strain-controlled loading.
 Authors:  Ronak Shoghi, Alexander Hartmaier
 ICAMS/Ruhr University Bochum, Germany
 October 2023
@@ -9,10 +8,6 @@ October 2023
 import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
-import src.pylabfea.training as CTD
-import math
-from matplotlib.lines import Line2D
-import matplotlib.lines as mlines
 
 def construct_CV(C11, C12, C44):
     """
@@ -46,31 +41,33 @@ mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
 
 # Train SVC with data from all microstructures
-mat_ml.train_SVC(C=1, gamma=0.4, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
-print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
+mat_ml.train_SVC(C=1, gamma=0.4, Fe=0.7, Ce=0.9, Nseq=1, gridsearch=False, plot=False)
 
 # Define elastic stiffness tensor
-CV = construct_CV(170, 124, 75)
+CV = construct_CV(170000, 124000, 75000)
 sig = np.zeros(6)
 epl = np.zeros(6)
+stresses = []
 strains = [0]
-stresses = [0]
+seqq = [0]
 
 # Strain increments to reach 3% strain in x-direction
-total_strain = 0.03
-n_increments = 100
+total_strain = 0.01
+n_increments = 50
 deps_increment = np.array([total_strain/n_increments, 0, 0, 0, 0, 0])
 
 for i in range(n_increments):
-    # Use the response function to calculate the material response for the given strain increment
+    # calculate the material response for the given strain increment
     fy1, sig, depl, grad_stiff = mat_ml.response(sig, epl, deps_increment, CV)
     epl += depl
+    stresses.append(np.array(sig))
+    strains.append(np.array(strains[-1]) + np.array(deps_increment[0]))
 
-    stresses.append(sig[0])
-    strains.append(strains[-1] + deps_increment[0])
+for item in stresses:
+    seq = FE.sig_eq_j2(np.array(item))
+    seqq.append(seq)
 
-# Plot stress-strain curve
-plt.scatter(strains, stresses)
+plt.scatter(strains, seqq)
 plt.xlabel("Strain")
 plt.ylabel("Stress")
 plt.show()
