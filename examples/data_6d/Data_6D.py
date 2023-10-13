@@ -33,7 +33,7 @@ mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
 
 # Train SVC with data from all microstructures
-# mat_ml.train_SVC(C=1, gamma=0.4, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
+mat_ml.train_SVC(C=10, gamma=0.4, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
 # Testing
@@ -41,8 +41,8 @@ sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rot
 yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
 Results = CTD.training_score(yf_ref, yf_ml)
 print(Results)
-# Plot Hardening levels over a meshed space
-# Plot initial and final hardening level of trained ML yield function together with data points
+#Plot Hardening levels over a meshed space
+#Plot initial and final hardening level of trained ML yield function together with data points
 ngrid = 100
 xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
 yy *= mat_ml.scale_seq
@@ -84,7 +84,7 @@ ax_leg.axis('off')
 ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5, handle6], loc="center")
 fig_leg.savefig('Legend.png', dpi=300)
 plt.show()
-
+#
 # Plot initial yield locus in pi-plane with the average yield strength from data
 Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # value of yield fct for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.6, 4.5))
@@ -256,4 +256,162 @@ ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')
 ax_leg.legend(handles=[handle1], loc="center")
 plt.show()
+
+ngrid = 100
+xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
+yy *= mat_ml.scale_seq
+xx *= np.pi
+hh = np.c_[yy.ravel(), xx.ravel()]
+Cart_hh = FE.sp_cart(hh)
+zeros_array = np.zeros((ngrid*ngrid, 3))
+Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
+grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
+# 1. Compute gradient magnitudes for each grid point
+grad_magnitudes = np.linalg.norm(grad_hh, axis=1)
+
+# 2. Compute mean and standard deviation of gradient magnitudes
+mean_grad_magnitude = np.mean(grad_magnitudes)
+std_grad_magnitude = np.std(grad_magnitudes)
+print(f"Mean Gradient Magnitude: {mean_grad_magnitude}")
+print(f"Standard Deviation of Gradient Magnitudes: {std_grad_magnitude}")
+
+# 3. Compute the change in gradient magnitudes between neighboring points
+# For simplicity, let's calculate the change in magnitude between consecutive grid points
+diff_grad_magnitudes = np.diff(grad_magnitudes)
+
+# 4. Plotting
+fig, ax = plt.subplots(2, 1, figsize=(10, 10))
+
+# Plot of gradient magnitudes
+ax[0].plot(grad_magnitudes, color='blue', label='Gradient Magnitude')
+ax[0].axhline(mean_grad_magnitude, color='red', linestyle='--', label='Mean Magnitude')
+ax[0].set_title("Gradient Magnitudes across Grid Points")
+ax[0].legend()
+
+# Plot of changes in gradient magnitudes
+ax[1].plot(diff_grad_magnitudes, color='green', label='Change in Gradient Magnitude')
+ax[1].axhline(0, color='red', linestyle='--')
+ax[1].set_title("Change in Gradient Magnitudes between Neighboring Grid Points")
+ax[1].legend()
+
+plt.tight_layout()
+plt.show()
+fixed_yy = mat_ml.scale_seq  # or any other constant value you want to use
+ngrid = 1000
+xx = np.linspace(-np.pi, np.pi, ngrid)
+yy = np.full_like(xx, fixed_yy).reshape(-1, 1)
+hh = np.c_[yy, xx]
+Cart_hh = FE.sp_cart(hh)
+zeros_array = np.zeros((ngrid, 3))
+Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
+grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
+# 1. Compute gradient magnitudes for each grid point
+grad_magnitudes = np.linalg.norm(grad_hh, axis=1)
+
+# 2. Compute mean and standard deviation of gradient magnitudes
+mean_grad_magnitude = np.mean(grad_magnitudes)
+std_grad_magnitude = np.std(grad_magnitudes)
+print(f"Mean Gradient Magnitude: {mean_grad_magnitude}")
+print(f"Standard Deviation of Gradient Magnitudes: {std_grad_magnitude}")
+
+# 3. Compute the change in gradient magnitudes between neighboring points
+# For simplicity, let's calculate the change in magnitude between consecutive grid points
+diff_grad_magnitudes = np.diff(grad_magnitudes)
+
+# 4. Plotting
+fig, ax = plt.subplots(2, 1, figsize=(10, 10))
+
+# Plot of gradient magnitudes
+ax[0].plot(grad_magnitudes, color='blue', label='Gradient Magnitude')
+ax[0].axhline(mean_grad_magnitude, color='red', linestyle='--', label='Mean Magnitude')
+ax[0].set_title("Gradient Magnitudes across Grid Points")
+ax[0].legend()
+
+# Plot of changes in gradient magnitudes
+ax[1].plot(diff_grad_magnitudes, color='green', label='Change in Gradient Magnitude')
+ax[1].axhline(0, color='red', linestyle='--')
+ax[1].set_title("Change in Gradient Magnitudes between Neighboring Grid Points")
+ax[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+#Analysis of level of smoothness of the ML yield function using the gradient of the yield function
+colors = ['blue', 'green', 'red', 'purple']
+labels = ['High gamma', 'Low gamma', 'Low C', 'High C']
+
+hyperparameters_sets = [
+    {'C': 4, 'gamma': 10},  # Very high gamma
+    {'C': 4, 'gamma': 0.1},  # Very low gamma
+    {'C': 1, 'gamma': 0.5},  # Very low C
+    {'C': 100, 'gamma': 0.5},  # Very high C
+]
+
+support_vectors_counts = []
+grad_magnitudes_list = []
+diff_grad_magnitudes_list = []
+
+# Train and evaluate for each hyperparameter set, calculate gradient magnitudes and changes in gradient magnitudes for the inital yield locus
+for hyperparameters in hyperparameters_sets:
+    mat_ml.train_SVC(C=hyperparameters['C'], gamma=hyperparameters['gamma'], Fe=0.7, Ce=0.9, Nseq=1, gridsearch=False, plot=False)
+    num_support_vectors = len(mat_ml.svm_yf.support_vectors_)
+    support_vectors_counts.append(num_support_vectors)
+    fixed_yy=mat_ml.scale_seq
+    ngrid = 1000
+    xx = np.linspace(-np.pi, np.pi, ngrid)
+    yy = np.full_like(xx, fixed_yy).reshape(-1, 1)
+    hh = np.c_[yy, xx]
+    Cart_hh = FE.sp_cart(hh)
+    zeros_array = np.zeros((ngrid, 3))
+    Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
+    grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
+    grad_magnitudes = np.linalg.norm(grad_hh, axis=1)
+    diff_grad_magnitudes = np.diff(grad_magnitudes)
+    grad_magnitudes_list.append(grad_magnitudes)
+    diff_grad_magnitudes_list.append(diff_grad_magnitudes)
+
+for i, hyperparameters in enumerate(hyperparameters_sets):
+    print(f"For {labels[i]} (C={hyperparameters['C']}, gamma={hyperparameters['gamma']}): {support_vectors_counts[i]} support vectors")
+overall_mean = np.mean(np.concatenate(grad_magnitudes_list))
+std_devs = [np.std(gm) for gm in grad_magnitudes_list]
+
+
+for i, s in enumerate(std_devs):
+    print(f"Standard Deviation for {labels[i]}: {s:.4f}")
+
+fig1, ax1 = plt.subplots(figsize=(8, 6))
+y_min = np.min([np.min(gm) for gm in grad_magnitudes_list])
+y_max = np.max([np.max(gm) for gm in grad_magnitudes_list])
+
+for i, grad_magnitudes in enumerate(grad_magnitudes_list):
+    mean_val = np.mean(grad_magnitudes)
+    std_dev = np.std(grad_magnitudes)
+    label_text = f"Support Vectors: {support_vectors_counts[i]}"
+    ax1.plot(grad_magnitudes, color=colors[i], label=label_text, linewidth=2.0)
+    ax1.axhline(mean_val, color=colors[i], linestyle='--', linewidth=1.5)
+
+ax1.set_xlim(0, 1000)
+ax1.set_ylim(y_min, y_max)
+ax1.set_xlabel("Grid Points", fontsize=14)
+ax1.set_ylabel("Gradient Magnitude", fontsize=14)
+ax1.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, 1.15))  # Move legend to the top
+ax1.tick_params(labelsize=14)
+plt.tight_layout()
+plt.show()
+
+# Second figure for Changes in Gradient Magnitudes
+fig2, ax2 = plt.subplots(figsize=(10, 8))
+for i, diff_grad_magnitudes in enumerate(diff_grad_magnitudes_list):
+    label_text = f"Support Vectors: {support_vectors_counts[i]}"
+    ax2.plot(diff_grad_magnitudes, color=colors[i], label=label_text, linewidth=2.0)
+
+ax2.axhline(0, color='black', linestyle='--', linewidth=2.0)
+ax2.set_xlim(0, 1000)
+ax2.set_xlabel("Grid Points", fontsize=16)
+ax2.set_ylabel("Change in Gradient Magnitude", fontsize=16)
+ax2.legend(fontsize=14)
+ax2.tick_params(labelsize=14)
+plt.tight_layout()
+plt.show()
+
 
