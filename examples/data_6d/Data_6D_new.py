@@ -16,7 +16,8 @@ from scipy.optimize import fsolve
 
 
 def rgb_to_hex(rgb):
-    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0] * 255), int(rgb[1] * 255), int(rgb[2] * 255))
+    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0] * 255), int(rgb[1] * 255), 
+                                        int(rgb[2] * 255))
 
 def find_yloc(x, sunit, epl, mat):
     # Expand unit stresses 'sig' by factor 'x' and calculate yield function
@@ -26,7 +27,8 @@ def find_yloc(x, sunit, epl, mat):
 # Import Data
 db = FE.Data("Data_Base_Updated_Final_Rotated_Train.JSON", wh_data=True)
 # db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
-mat_ref = FE.Material(name="reference")  # define reference material, J2 plasticity, linear w.h.
+# define reference material, J2 plasticity, linear w.h.
+mat_ref = FE.Material(name="reference")
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])
 mat_ref.plasticity(sy=db.mat_data['sy_av'], khard=4.5e3)
 mat_ref.calc_properties(verb=False, eps=0.03, sigeps=True)
@@ -35,19 +37,22 @@ mat_ref.calc_properties(verb=False, eps=0.03, sigeps=True)
 print(f'Successfully imported data for {db.mat_data["Nlc"]} load cases')
 mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
-
+"""
 # Train SVC with data from all microstructures
-mat_ml.train_SVC(C=1, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
-print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
+mat_ml.train_SVC(C=1, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, 
+                 gridsearch=False, plot=False)
+print('Training successful.\n' +
+      f'Number of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
 # Testing
-sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Test.json")
+sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(
+    Json="Data_Base_Updated_Final_Rotated_Test.json")
 yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
 Results = CTD.training_score(yf_ref, yf_ml)
 
 # Plot Hardening levels over a meshed space
-# Plot initial and final hardening level of trained ML yield function together with data points
-# get stress data
+# Plot initial and final hardening level of trained ML yield function together
+# with data points, get stress data
 peeq_dat = FE.eps_eq(db.mat_data['plastic_strain'])
 ind0 = np.nonzero(peeq_dat < 0.0002)[0]
 sig_d0 = FE.s_cyl(db.mat_data['flow_stress'][ind0, :], mat_ml)
@@ -63,8 +68,10 @@ Cart_hh = FE.sp_cart(hh)
 zeros_array = np.zeros((ngrid * ngrid, 3))
 Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
 grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
-normalized_grad_hh = grad_hh / FE.eps_eq(grad_hh)[:, None]  # unit plastic strain tensors for each stress
-Z1 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # value of yield fct for every grid point
+# unit plastic strain tensors for each stress
+normalized_grad_hh = grad_hh / FE.eps_eq(grad_hh)[:, None]
+# value of yield fct for every grid point
+Z1 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)
 Z2 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.005, pred=False)
 Z3 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.01, pred=False)
 Z4 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.015, pred=False)
@@ -85,23 +92,31 @@ plt.scatter(sig_d0[:, 1], sig_d0[:, 0], s=6, c="black")
 plt.scatter(sig_d1[:, 1], sig_d1[:, 0], s=6, c="black")
 # fig.savefig('Hardening_Levels.png', dpi=300)
 plt.show()
-handle1 = Line2D([], [], color=colors_hex[1], label='Equivalent Plastic Strain : 0 ')
-handle2 = Line2D([], [], color=colors_hex[2], label='Equivalent Plastic Strain : 0.5% ')
-handle3 = Line2D([], [], color=colors_hex[3], label='Equivalent Plastic Strain : 1% ')
-handle4 = Line2D([], [], color=colors_hex[4], label='Equivalent Plastic Strain : 1.5% ')
-handle5 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
-handle6 = plt.scatter([], [], s=6, c="black", label='Data')
+handle1 = Line2D([], [], color=colors_hex[1],
+                 label='Equivalent Plastic Strain : 0 ')
+handle2 = Line2D([], [], color=colors_hex[2],
+                 label='Equivalent Plastic Strain : 0.5% ')
+handle3 = Line2D([], [], color=colors_hex[3],
+                 label='Equivalent Plastic Strain : 1% ')
+handle4 = Line2D([], [], color=colors_hex[4],
+                 label='Equivalent Plastic Strain : 1.5% ')
+handle5 = Line2D([], [], color=colors_hex[5],
+                 label='Equivalent Plastic Strain : 2.5% ')
+handle6 = plt.scatter([], [], s=6, c="black",
+                      label='Data')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')
-ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5, handle6], loc="center")
+ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5, handle6],
+              loc="center")
 # fig_leg.savefig('Legend.png', dpi=300)
 
 
-# Plot initial yield locus in pi-plane with the average yield strength from data,
-# now the average was taken manually, but it can be done using
+# Plot initial yield locus in pi-plane with the average yield strength from 
+# data,now the average was taken manually, but it can be done using
 # Z = mat_ref.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)
-Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # value of yield fct for every grid point
+# value of yield fct for every grid point
+Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.6, 4.5))
 linet, = mat_ml.plot_data(Z, ax, xx, yy, c='black')
 linet.set_linewidth(2.2)
@@ -130,11 +145,13 @@ istop = db.mat_data['lc_indices'][ilc]
 sig_dat = db.mat_data['flow_stress'][istart:istop, :]
 epl_dat = db.mat_data['plastic_strain'][istart:istop, :]
 epl_plt = FE.eps_eq(epl_dat)
-sig0 = sig_dat[-1, :] / FE.sig_eq_j2(sig_dat[-1, :])  # define unit stress in loading direction
+# define unit stress in loading direction
+sig0 = sig_dat[-1, :] / FE.sig_eq_j2(sig_dat[-1, :])
 Nlc = len(epl_dat)
 sig_ml = []
 for i in range(Nlc):
-    x1 = fsolve(find_yloc, mat_ml.sy, args=(sig0, epl_dat[i, :], mat_ml), xtol=1.e-5)
+    x1 = fsolve(find_yloc, mat_ml.sy, args=(sig0, epl_dat[i, :], mat_ml),
+                xtol=1.e-5)
     sig_ml.append(sig0 * x1)
 sig_ml = np.array(sig_ml)
 
@@ -143,7 +160,7 @@ plt.scatter(epl_plt, FE.sig_eq_j2(sig_dat), label="Data", s=9, color='black')
 plt.scatter(epl_plt, FE.sig_eq_j2(sig_ml), label="ML", s=10, color='#d60404')
 text_size = 12
 plt.tick_params(axis='both', which='major', labelsize=12)
-plt.xlabel(xlabel="Equivalent Plastic Strain", fontsize=14)
+plt.xlabel(xlabel="Equivalent Plastic Strain (.)", fontsize=14)
 plt.ylabel(ylabel="Equivalent Stress (MPa)", fontsize=14)
 legend_font_size = 12
 legend = plt.legend(fontsize=legend_font_size)
@@ -151,4 +168,92 @@ legend.legendHandles[0]._sizes = [50]
 legend.legendHandles[1]._sizes = [50]
 plt.tight_layout()
 fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
+plt.show()"""
+
+# Analysis of level of smoothness of the ML yield function using the gradient
+# of the yield function
+print('Repeating training for 4 combinations of hyperparameters.')
+colors = ['blue', 'green', 'red', 'purple']
+labels = ['High gamma', 'Low gamma', 'Low C', 'High C']
+
+hyperparameters_sets = [
+    {'C': 4, 'gamma': 10},  # Very high gamma
+    {'C': 4, 'gamma': 0.1},  # Very low gamma
+    {'C': 1, 'gamma': 0.5},  # Very low C
+    {'C': 100, 'gamma': 0.5},  # Very high C
+]
+
+support_vectors_counts = []
+grad_magnitudes_list = []
+diff_grad_magnitudes_list = []
+
+# Train and evaluate for each hyperparameter set, calculate gradient
+# magnitudes and changes in gradient magnitudes for the inital yield locus
+for hyperparameters in hyperparameters_sets:
+    print(f'Analyzing hyperparameters {hyperparameters} ...')
+    mat_ml.train_SVC(C=hyperparameters['C'], gamma=hyperparameters['gamma'], 
+                     Fe=0.7, Ce=0.95, Nseq=2, 
+                     gridsearch=False, plot=False)
+    num_support_vectors = len(mat_ml.svm_yf.support_vectors_)
+    support_vectors_counts.append(num_support_vectors)
+    fixed_yy=mat_ml.scale_seq
+    ngrid = 1000
+    xx = np.linspace(-np.pi, np.pi, ngrid)
+    yy = np.full_like(xx, fixed_yy).reshape(-1, 1)
+    hh = np.c_[yy, xx]
+    Cart_hh = FE.sp_cart(hh)
+    zeros_array = np.zeros((ngrid, 3))
+    Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
+    grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
+    grad_magnitudes = np.linalg.norm(grad_hh, axis=1)
+    diff_grad_magnitudes = np.diff(grad_magnitudes)
+    grad_magnitudes_list.append(grad_magnitudes)
+    diff_grad_magnitudes_list.append(diff_grad_magnitudes)
+
+for i, hyperparameters in enumerate(hyperparameters_sets):
+    print(f"For {labels[i]} (C={hyperparameters['C']}, " +
+          f"gamma={hyperparameters['gamma']}): {support_vectors_counts[i]}" +
+          " support vectors")
+overall_mean = np.mean(np.concatenate(grad_magnitudes_list))
+std_devs = [np.std(gm) for gm in grad_magnitudes_list]
+
+
+for i, s in enumerate(std_devs):
+    print(f"Standard Deviation for {labels[i]}: {s:.4f}")
+
+fig1, ax1 = plt.subplots(figsize=(8, 6))
+y_min = np.min([np.min(gm) for gm in grad_magnitudes_list])
+y_max = np.max([np.max(gm) for gm in grad_magnitudes_list])
+
+for i, grad_magnitudes in enumerate(grad_magnitudes_list):
+    mean_val = np.mean(grad_magnitudes)
+    std_dev = np.std(grad_magnitudes)
+    label_text = f"Support Vectors: {support_vectors_counts[i]}"
+    ax1.plot(grad_magnitudes, color=colors[i], label=label_text, linewidth=2.0)
+    ax1.axhline(mean_val, color=colors[i], linestyle='--', linewidth=1.5)
+
+ax1.set_xlim(0, 1000)
+ax1.set_ylim(y_min, y_max)
+ax1.set_xlabel("Grid Points", fontsize=14)
+ax1.set_ylabel("Gradient Magnitude", fontsize=14)
+# Move legend to the top
+ax1.legend(fontsize=14, loc='upper center', bbox_to_anchor=(0.5, 1.15))
+ax1.tick_params(labelsize=14)
+plt.tight_layout()
+plt.show()
+
+# Second figure for Changes in Gradient Magnitudes
+fig2, ax2 = plt.subplots(figsize=(10, 8))
+for i, diff_grad_magnitudes in enumerate(diff_grad_magnitudes_list):
+    label_text = f"Support Vectors: {support_vectors_counts[i]}"
+    ax2.plot(diff_grad_magnitudes, color=colors[i], label=label_text,
+             linewidth=2.0)
+
+ax2.axhline(0, color='black', linestyle='--', linewidth=2.0)
+ax2.set_xlim(0, 1000)
+ax2.set_xlabel("Grid Points", fontsize=16)
+ax2.set_ylabel("Change in Gradient Magnitude", fontsize=16)
+ax2.legend(fontsize=14)
+ax2.tick_params(labelsize=14)
+plt.tight_layout()
 plt.show()

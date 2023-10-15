@@ -10,8 +10,7 @@ September 2022
 import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
-import src.pylabfea.training as CTD
-import math
+import pylabfea.training as CTD
 from matplotlib.lines import Line2D
 import matplotlib.lines as mlines
 
@@ -118,7 +117,7 @@ Eq_Stress_Drawing = []
 Eq_Strains_Drawing = []
 
 for counter, Eq_Strain in enumerate(Eq_Strains):
-    if math.isnan(Eq_Shifted_Strains[counter]):
+    if np.isnan(Eq_Shifted_Strains[counter]):
         continue
     else:
         if Eq_Strains[counter] < 0.002 or Eq_Strains[counter] > 0.028:
