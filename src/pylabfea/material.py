@@ -211,7 +211,7 @@ class Material(object):
         # initialize quantities needed
         sig = np.array(sig)  # produce copy of sig to avoid changes to original
         depl = np.zeros(6)  # initialize plastic strain increment
-        toler = yf_tolerance * self.get_sflow(eps_eq(epl))
+        toler = yf_tolerance * self.get_sflow(epl)
         dsig = CV @ deps  # predictor of stress increment
         st_scal = 1.
         niter = 0
@@ -406,7 +406,7 @@ class Material(object):
             raise ValueError(
                 'Only individual stress tensors supported in material.ML_full_yf. Shape of argument is {}'.format(sh))
         seq = self.calc_seq(sig)
-        sflow = self.get_sflow(eps_eq(epl))
+        sflow = self.get_sflow(epl)
         if seq < 0.01 and ld is None:
             # return conservative estimate of yield function for small stresses
             # and unknown loading direction
@@ -417,7 +417,7 @@ class Material(object):
                 su = sig / seq
             else:
                 # convert ld to unit stress
-                hh = np.linalg.norm(ld)
+                hh = np.linalg.norm(ld[0:self.sdim])
                 if hh < 1.e-3:
                     warnings.warn('ML_full_yf called with inconsistent ld={}'.format(ld))
                     print('calling routine: ', sys._getframe().f_back.f_code.co_name)
@@ -426,7 +426,8 @@ class Material(object):
                     ld[0] = 1.
                 su = ld[0:self.sdim] * np.sqrt(1.5) / hh
             if np.any(np.isnan(sig)) or np.any(np.isnan(su)):
-                print('NaN detected (MP_full_yf): sig={}, su={}'.format(sig, su))
+                print('NaN detected (MP_full_yf): sig={}, su={}'
+                      .format(sig, su))
                 print('SEQ={}, ld={}, peeq={}'.format(seq, ld, eps_eq(epl)))
             x0 = sflow  # starting value of yield point search
             if su[0] * su[1] < -1.e-5:
@@ -436,20 +437,22 @@ class Material(object):
                 else:
                     x0 *= 0.5
             x1 = x0
-            while self.find_yloc_scalar(x0, su, epl) >= 0. and x0 > 0.01:
+            while self.calc_yf(x0*su, epl=epl) >= 0. and x0 > 0.01:
                 # find x0 with negative yield fct
-                x0 *= 0.95
-            while self.find_yloc_scalar(x1, su, epl) < 0. and x1 < 4. * sflow:
+                x0 *= 0.98
+            while self.calc_yf(x1*su, epl=epl) < 0. and x1 < 5. * sflow:
                 # find x1 with positive yield fct
-                x1 *= 1.05
-            f0 = self.find_yloc_scalar(x0, su, epl)
-            f1 = self.find_yloc_scalar(x1, su, epl)
+                x1 *= 1.02
+            f0 = self.calc_yf(x0*su, epl=epl)
+            f1 = self.calc_yf(x1*su, epl=epl)
             if f0 * f1 > 0.:
-                warnings.warn('ML_full_yf: Could not bracket yield function: ' \
-                              + 'sig={}, x0={}, f0={}, x1={}, f1={}'.format(sig, x0, f0, x1, f1))
+                warnings.warn('ML_full_yf: Could not bracket yield function: '
+                              + 'sunit={}, x0={}, f0={}, x1={}, f1={}'
+                              .format(su, x0, f0, x1, f1))
                 return seq - 0.85 * sflow
 
-            res = root_scalar(self.find_yloc_scalar, method=self.root_method, bracket=[x0, x1],
+            res = root_scalar(self.find_yloc_scalar, method=self.root_method,
+                              bracket=[x0, x1],
                               args=(su, epl), xtol=1.e-5)
             xs = res.root
             if res.converged and xs < 4. * sflow:
@@ -466,8 +469,8 @@ class Material(object):
         return yf
 
     def find_yloc(self, x, su, epl=None):
-        """Function to expand unit stresses by factor and calculate yield function;
-        used by search algorithm to find zeros of yield function.
+        """Function to expand unit stresses by factor and calculate yield
+        function; used by search algorithm to find zeros of yield function.
 
         Parameters
         ----------
@@ -488,8 +491,8 @@ class Material(object):
         return f
 
     def find_yloc_scalar(self, x, su, epl=None):
-        """Function to expand unit stresses by factor and calculate yield function;
-        used by search algorithm to find zeros of yield function.
+        """Function to expand unit stresses by factor and calculate yield
+        function; used by search algorithm to find zeros of yield function.
 
         Parameters
         ----------
@@ -732,6 +735,8 @@ class Material(object):
                 if self.whdat:
                     hk -= dKdx[self.ind_wh:self.ind_wh + self.sdim] * self.scale_seq / self.scale_wh
             self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation
+            if self.khard < 0.:
+                self.khard = 0.  # strain softening not supported
             self.msg['gradient'] = 'gradient to ML_yf'
         else:
             # calculate analytical gradient based on the active material formulation 
@@ -1812,6 +1817,11 @@ class Material(object):
             (only principal stresses are considered) or 6 (full stress tensor is considered),
             (optional, default: 6)
         """
+        if sy < 0.:
+            raise ValueError('Initial yield strength cannot be negative.')
+        if khard <0.:
+            warnings.warn('Strain softening not supported. khard is set to 0.')
+            khard = 0.
         self.sy0 = sy  # store initial yield strength of material
         self.sy = sy  # current yield strength (may be modified by texture)
         self.khard = khard  # strain hardening slope (d flow stress / d plastic strain)
@@ -2316,7 +2326,8 @@ class Material(object):
 
     def calc_properties(self, size=2, Nel=2, verb=False, eps=0.005, min_step=None,
                         sigeps=False, load_cases=['stx', 'sty', 'et2', 'ect']):
-        """Use pylabfea.model to calculate material strength and stress-strain data along a given load path.
+        """Use pylabfea.model to calculate material strength and stress-strain 
+        data along a given load path.
 
         Parameters
         ----------
@@ -2331,9 +2342,11 @@ class Material(object):
         min_step : int
             Minumum number of load steps (optional)
         sigeps : Boolean
-            Decide if data for stress-strain curves in stored in dictionary Material.sigeps (optional, default: False)
+            Decide if data for stress and strain tensors is stored in 
+            dictionary Material.sigeps (optional, default: False)
         load_cases : list
-            List of load cases to be performed (optional, default: ['stx','sty','et2','ect']);
+            List of load cases to be performed (optional, default: 
+                                                ['stx','sty','et2','ect']);
             'stx': uniaxial tensile yield stress in horizontal (x-)direction;
             'sty': uniaxial tensile yield stress in vertical (y-)direction;
             'et2': plane stress, equibiaxial strain in x and y direction;
@@ -2418,12 +2431,15 @@ class Material(object):
                 warnings.warn('calc_properties: Load case not supported: {}'.format(case))
 
     def plot_stress_strain(self, Hill=False, file=None, fontsize=14):
-        """Plot stress-strain data and print values for strength.
+        """Plot stress-strain data and print values for strength. Requires 
+        'calc_properties' to be executed beforehand and plots data stored in 
+        attribute 'props'.
 
         Parameters
         ----------
         Hill : Boolean
-            Decide if data for Hill-type equivalent stress is presented (optional, default: False)
+            Decide if data for Hill-type equivalent stress is presented 
+            (optional, default: False)
         file : str
             Filename to save plot (optional)
         fontsize : int
