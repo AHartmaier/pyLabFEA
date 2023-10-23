@@ -1502,8 +1502,18 @@ class Material(object):
             N = i
         if self.dev_only:
             sdata = sig_dev(sdata)
-        seq = np.linspace(Fe, Ce, Nseq)
-        seq = np.append(seq, np.linspace((2.-Ce), (2.-Fe), Nseq))
+        # seq = np.linspace(Fe, Ce, Nseq)
+        # plastic_range_start = 2.-Fe if Nseq == 1 else 2.-Ce
+        # seq = np.append(seq, np.linspace(plastic_range_start, 2. - Fe, Nseq))
+        if Nseq == 1:
+            midpoint = (Fe + Ce) / 2
+            elastic_seq = np.linspace(midpoint, midpoint, 1)
+            plastic_seq = np.linspace(2. - midpoint, 2. - midpoint, 1)
+            seq = np.append(elastic_seq, plastic_seq)
+        else:
+            elastic_seq = np.linspace(Fe, Ce, Nseq)
+            plastic_seq = np.linspace(2. - Ce, 2. - Fe, Nseq)
+            seq = np.append(elastic_seq, plastic_seq)
         if extend:
             # add training points in plastic regime to avoid fallback of SVC decision fct. to zero
             seq = np.append(seq, np.array([2.4, 3., 4., 5.]))
