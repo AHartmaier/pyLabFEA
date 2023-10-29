@@ -25,7 +25,7 @@ def find_yloc(x, sunit, epl, mat):
 
 
 # Import Data
-db = FE.Data("Data_Base_Updated_Final_Rotated_Train.JSON", wh_data=True)
+db = FE.Data("Data_Base_Updated_Final_Rotated_Train.json", wh_data=True)
 # db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
 # define reference material, J2 plasticity, linear w.h.
 mat_ref = FE.Material(name="reference")
@@ -37,12 +37,13 @@ mat_ref.calc_properties(verb=False, eps=0.03, sigeps=True)
 print(f'Successfully imported data for {db.mat_data["Nlc"]} load cases')
 mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
-"""
+
 # Train SVC with data from all microstructures
-mat_ml.train_SVC(C=1, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, 
+mat_ml.train_SVC(C=2, gamma=0.1, Fe=0.89, Ce=0.9, Nseq=1, 
                  gridsearch=False, plot=False)
 print('Training successful.\n' +
       f'Number of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
+mat_ml.export_MLparam(__file__, file='abq_data-C2-g01-Fe89-Ce9-N1', path='./')
 
 # Testing
 sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(
@@ -168,8 +169,9 @@ legend.legendHandles[0]._sizes = [50]
 legend.legendHandles[1]._sizes = [50]
 plt.tight_layout()
 fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
-plt.show()"""
+plt.show()
 
+"""
 # Analysis of level of smoothness of the ML yield function using the gradient
 # of the yield function
 print('Repeating training for 4 combinations of hyperparameters.')
@@ -257,3 +259,5 @@ ax2.legend(fontsize=14)
 ax2.tick_params(labelsize=14)
 plt.tight_layout()
 plt.show()
+"""
+
