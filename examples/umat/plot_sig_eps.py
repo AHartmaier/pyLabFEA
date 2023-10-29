@@ -14,7 +14,7 @@ April 2023
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-#import pylabfea as FE
+import pylabfea as FE
 
 #plt.locator_params(axis='x', nbins=5)
 
@@ -25,18 +25,24 @@ ubc_names = ['ux', 'uy', 'uz']
 fbc_names = ['fx', 'fy', 'fz']
 
 #read results of Abaqus simulation with ML-UMAT
-adat = pd.read_csv('results/abq_ML-Hill-p1_C15_G25-res.csv', header=0, sep=';')
-sig = adat[sig_names].to_numpy()
-epl = np.nan_to_num(adat[epl_names].to_numpy())
-eps = adat[eps_names].to_numpy()
-peeq = np.nan_to_num(adat['PEEQ'].to_numpy())
-mises = adat['MISES'].to_numpy()
-lc  = adat[ubc_names].to_numpy()
+adat = pd.read_csv('results/abq_data-C2-g01-Fe9-Ce9-N1-res.csv', header=0, sep=';')
+#adat = pd.read_csv('results/abq_data-C2-g01-Fe7-Ce9-N2-res.csv', header=0, sep=';')
+#adat = pd.read_csv('results/abq_ML-Hill-p2_C20_G20-res.csv', header=0, sep=';')
+#adat = pd.read_csv('results/Backup/abq_ML-Hill-p2_C20_G20-res.csv', header=0, sep=';')
+adat.dropna()  # remove lines with NaN 
+sig = adat[sig_names].to_numpy(dtype=np.float64)
+epl = adat[epl_names].to_numpy(dtype=np.float64)
+eps = adat[eps_names].to_numpy(dtype=np.float64)
+peeq = adat['PEEQ'].to_numpy(dtype=np.float64)
+mises = adat['MISES'].to_numpy(dtype=np.float64)
+lc  = adat[ubc_names].to_numpy(dtype=np.float64)
+
+#peeq = FE.eps_eq(eps)
 
 toler = 0.01 * np.linalg.norm(lc[0])
-stm = 4.e-4
-stm_sqrt = 2.82843e-04
-epl_max = 0.008
+stm = 0.0006 #0.0012 # 4.e-4
+stm_sqrt = 4.24264e-04 #0.00084853 #2.82843e-04
+epl_max = 0.02
 seq_ref = np.ones(5)*300.
 seq_ref[0] *= 1.2
 seq_ref[2] *= 0.8
@@ -68,7 +74,9 @@ plt.plot(peeq[ind], mises[ind], ':r', label=('biax (y,z)'))
 plt.xlabel('equiv. plastic strain (.)')
 plt.ylabel('equiv. stress (MPa)')
 plt.legend(loc='lower right')
-#plt.xlim((-epl_max*0.2,epl_max))
+plt.xlim((-epl_max*0.2,epl_max))
+#plt.ylim((0.,200.))
+#plt.yticks(np.arange(0, 200, 50))
 plt.show()
 
 # shear loads
@@ -84,7 +92,9 @@ plt.plot(peeq[ind], mises[ind], '-g', label=('shear (-y,z)'))
 plt.legend(loc='lower right')
 plt.xlabel('equiv. plastic strain (.)')
 plt.ylabel('equiv. stress (MPa)')
-#plt.xlim((-epl_max*0.2,epl_max))
+plt.xlim((-epl_max*0.2,epl_max))
+#plt.ylim((0.,200.))
+#plt.yticks(np.arange(0, 200, 50))
 plt.show()
 
 # plot r-values (ratios of transverse plastic strain)
