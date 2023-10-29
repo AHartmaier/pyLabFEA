@@ -1,12 +1,12 @@
 c=========================================================================
 c User material definition based of ML flow rule
 c
-c Version 1.0.1 (2021-11-27)
+c Version 1.0.2 (2023-10-28)
 c
 c Authors: Alexander Hartmaier, Anderson Wallace Paiva do Nascimento
 c Email: alexander.hartmaier@rub.de
 c ICAMS / Ruhr University Bochum, Germany
-c September 2022
+c October 2023
 c
 c distributed under GNU General Public License (GPLv3)
 c==========================================================================
@@ -32,7 +32,7 @@ c ! stress, statev, ddsdde
 c !========================================================================
 c ! Material properties (props):
 c ! 1: nsv, number of support vectors
-c ! 2: nsd, dimensionality of support vetcors
+c ! 2: nsd, dimensionality of support vectors
 c ! 3: C11
 c ! 4: C12
 c ! 5: C44
@@ -47,8 +47,9 @@ c ! 13: C13
 c ! 14: C23
 c ! 15: C55
 c ! 16: C66
-c ! 17: Nset (number of sets, if multiple textures are cpntained in SVM)
-c ! 18..29: scale_text (scaling factors for texture parameters)
+c ! 17: dev_only (-1: true, else false)
+C ! 18: Nset (number of sets, if multiple textures are cpntained in SVM)
+c ! 19..29: scale_text (scaling factors for texture parameters)
 c ! 30..nsv+29: dual coefficients
 c ! nsv+30..+5*nsv+29: support vectors (5-dimensional)
 c !========================================================================
@@ -58,71 +59,71 @@ c ! 7  : equivalent plastic strain (PEEQ)
  
       implicit none
  
-      character(len=80) :: cmname                                                 !User defined material name
-      integer :: ndi                                                              !Number of direct stress components
-      integer :: nshr                                                             !Number of engineering shear stress components
-      integer :: ntens                                                            !Size of the stress/strain array (ndi + nshr)
-      integer :: nstatv                                                           !Number state variables
-      integer :: nprops                                                           !Number of user defined material constants
-      integer :: layer                                                            !Layer number
-      integer :: kspt                                                             !Section point number within the current layer
-      integer :: kstep                                                            !Step number
-      integer :: noel                                                             !Element number
-      integer :: npt                                                              !Integration point number
-      integer :: kinc                                                             !Increment number
+      character(len=80) :: cmname  ! User defined material name
+      integer :: ndi               ! Number of direct stress components
+      integer :: nshr              ! Number of engineering shear stress components
+      integer :: ntens             ! Size of the stress/strain array (ndi + nshr)
+      integer :: nstatv            ! Number state variables
+      integer :: nprops            ! Number of user defined material constants
+      integer :: layer             ! Layer number
+      integer :: kspt              ! Section point number within the current layer
+      integer :: kstep             ! Step number
+      integer :: noel              ! Element number
+      integer :: npt               ! Integration point number
+      integer :: kinc              ! Increment number
 
-      real(8) :: drpldt                                                           !Variation of rpl w.r.t. the temperature
-      real(8) :: dtime                                                            !Time increment
-      real(8) :: temp                                                             !Temperature at the start of the increment
-      real(8) :: dtemp                                                            !Increment of temperature.
-      real(8) :: celent                                                           !Characteristic element length
-      real(8) :: sse                                                              !Specific elastic strain energy
-      real(8) :: spd                                                              !Specific plastic dissipation
-      real(8) :: scd                                                              !Specific creep dissipation
-      real(8) :: rpl                                                              !volumetric heat generation per unit time
-      real(8) :: pnewdt                                                           !Ratio dtime_next/dtime_now
+      real(8) :: drpldt            ! Variation of rpl w.r.t. the temperature
+      real(8) :: dtime             ! Time increment
+      real(8) :: temp              ! Temperature at the start of the increment
+      real(8) :: dtemp             ! Increment of temperature.
+      real(8) :: celent            ! Characteristic element length
+      real(8) :: sse               ! Specific elastic strain energy
+      real(8) :: spd               ! Specific plastic dissipation
+      real(8) :: scd               ! Specific creep dissipation
+      real(8) :: rpl               ! volumetric heat generation per unit time
+      real(8) :: pnewdt            ! Ratio dtime_next/dtime_now
 
-      real(8) :: stress(ntens), dsig(ntens)                                       !Stress tensor at start of increment, stress increment
-      real(8) :: ddsdde(ntens,ntens)                                              !Jacobian matrix of the constitutive model
-      real(8) :: ddsddt(ntens)                                                    !Variation of the stress increment w.r.t. to the temperature
-      real(8) :: drplde(ntens)                                                    !Variation of rpl w.r.t. the strain increment
-      real(8) :: stran (ntens)                                                    !Total strain tensor at the beggining of the increment
-      real(8) :: dstran(ntens)                                                    !Strain increment
-      real(8) :: eplas(ntens)                                                     !plastic strain
+      real(8) :: stress(ntens), dsig(ntens)  ! Stress tensor at start of increment, stress increment
+      real(8) :: ddsdde(ntens,ntens)  ! Jacobian matrix of the constitutive model
+      real(8) :: ddsddt(ntens)     ! Variation of the stress increment w.r.t. to the temperature
+      real(8) :: drplde(ntens)     ! Variation of rpl w.r.t. the strain increment
+      real(8) :: stran (ntens)     ! Total strain tensor at the beggining of the increment
+      real(8) :: dstran(ntens)     ! Strain increment
+      real(8) :: eplas(ntens)      ! plastic strain
 
-      real(8) :: statev(nstatv)                                                   !Solution dependent state variables
-      real(8) :: props(nprops)                                                    !User specified material constants 
-      real(8) :: dfgrd0(3,3)                                                      !Deformation gradient at the beggining of the increment
-      real(8) :: dfgrd1(3,3)                                                      !Deformation gradient at the end of the increment
-      real(8) :: drot(3,3)                                                        !Rotation increment matrix
-      real(8) :: coords(3)                                                        !Coordinates of the material point
-      real(8) :: time(2)                                                          !1: Step time; 2:Total time; Both at the beggining of the inc
-      real(8) :: predef(1)                                                        !Predefined field variables at the beggining of the increment
-      real(8) :: dpred (1)                                                        !Increment of predefined field variables
+      real(8) :: statev(nstatv)    ! Solution dependent state variables
+      real(8) :: props(nprops)     ! User specified material constants 
+      real(8) :: dfgrd0(3,3)       ! Deformation gradient at the beggining of the increment
+      real(8) :: dfgrd1(3,3)       ! Deformation gradient at the end of the increment
+      real(8) :: drot(3,3)         ! Rotation increment matrix
+      real(8) :: coords(3)         ! Coordinates of the material point
+      real(8) :: time(2)           ! 1: Step time; 2:Total time; Both at the beggining of the inc
+      real(8) :: predef(1)         ! Predefined field variables at the beggining of the increment
+      real(8) :: dpred (1)         ! Increment of predefined field variables
 
-      real(8) :: C11, C22, C33, C44, C55, C66, C12, C13, C23                      !anisotropic elastic constants
-      real(8) :: epc, khard                                                       !offset in plastic strain (definition of yield point), WH parameter
-      integer :: nsv, nsd                                                         !Number and dimensionality of support vectors
+      real(8) :: C11, C22, C33, C44, C55, C66, C12, C13, C23  ! anisotropic elastic constants
+      real(8) :: epc, khard        ! offset in plastic strain (definition of yield point), WH parameter
+      integer :: nsv, nsd          ! Number and dimensionality of support vectors
       integer :: Nset 
-      real(8), dimension(:, :), allocatable :: temp_sv                            !Array of support vectors
-      real(8), dimension(:), allocatable :: temp_dc                               !Array of dual coefficients
-      real(8), dimension(ntens) :: sigma                                          !Stress tensor
-      real(8), dimension(ntens) :: stress_fl                                      !flow stress on yield locus
-      real(8) :: rho                                                              !Intercept of the decision rule function
-      real(8) :: lambda                                                           !Regularization parameter
-      real(8) :: scale_seq, scale_wh                                              !scaling factors for stress, work hardening rate
-      real(8) :: fsvc                                                             !Decision function
-      real(8) :: sq0, sq1, sq2                                                    !equiv. stresses
-      real(8), dimension(ntens) :: dfds                                           !Derivative of the decision function w.r.t. princ. stress
-      real(8), dimension(ntens) :: flow                                           !Flow vector
+      real(8), dimension(:, :), allocatable :: temp_sv  ! Array of support vectors
+      real(8), dimension(:), allocatable :: temp_dc  ! Array of dual coefficients
+      real(8), dimension(ntens) :: sigma  ! Stress tensor
+      real(8), dimension(ntens) :: stress_fl  ! flow stress on yield locus
+      real(8) :: rho               ! Intercept of the decision rule function
+      real(8) :: lambda            ! Regularization parameter
+      real(8) :: scale_seq, scale_wh  ! scaling factors for stress, work hardening rate
+      real(8) :: fsvc              ! Decision function
+      real(8) :: sq0, sq1, sq2     ! equiv. stresses
+      real(8), dimension(ntens) :: dfds  ! Derivative of the decision function w.r.t. princ. stress
+      real(8), dimension(ntens) :: flow  ! Flow vector
 
-      real(8), parameter :: tol = 1.e-2                                           !Rel. tolerance for for yield function
+      real(8), parameter :: tol = 1.e-2  ! Rel. tolerance for for yield function
       
-      integer :: i, j, k, fileUnit, niter, ind_sv0, ind_dc0                       !Auxiliar indices
-      real(8), dimension(ntens, ntens) :: Ct                                      !Consistent tanget stiffness matrix
-      real(8), dimension(ntens) :: deps                                           !strain increment outside yield locus, if load step is splitted
+      integer :: i, j, k, fileUnit, niter, ind_sv0, ind_dc0  ! Auxiliar indices
+      real(8), dimension(ntens, ntens) :: Ct  ! Consistent tanget stiffness matrix
+      real(8), dimension(ntens) :: deps  ! strain increment outside yield locus, if load step is splitted
       real(8) :: threshold, h1, h2, eeq, peeq, sc_elstep
-      logical :: dev_only
+      logical :: dev_only          ! consider only deviatoric stresses
 
       nsv = int(props(1))
       nsd = int(props(2))
@@ -140,11 +141,12 @@ c ! 7  : equivalent plastic strain (PEEQ)
       C23 = props(14)
       C55 = props(15)
       C66 = props(16)
-      if props(17) .lt. 0. then
+      if (props(17) < 0.) then
         dev_only = .true.
       else
         dev_only = .false.
       end if
+
       Nset = int(props(18))
       ind_dc0 = 30
       ind_sv0 = 30+nsv
@@ -236,7 +238,7 @@ c ! 7  : equivalent plastic strain (PEEQ)
          ! also updates khard based on current strain hardening rate
          call calcGradFSVC(stress_fl, dfds)
          ! 3. calculate plastic strain increment 'flow'
-         call calcFlow(dfds, deps, Ct, eplas, flow)
+         call calcFlow(dfds, deps, Ct, flow)
          ! 4. calculate consistent tangent stiffness tensor 'Ct'
          call calcTangstiff(ddsdde, dfds, Ct)
          ! 5. calculate consistent stress increment 'dsig'
@@ -329,37 +331,34 @@ c ! 7  : equivalent plastic strain (PEEQ)
       subroutine calcEqStress(sig, seq)
         !Calculate the equivalent J2 stress
         real(8), dimension(ntens) :: sig
-        real(8) :: seq
+        real(8) :: seq, sdi, ssh
         real(8), dimension(ntens) :: sd
   
         call calcDevStress(sig, sd)
-        seq = sqrt(0.5*((sd(1)-sd(2))**2 + (sd(2)-sd(3))**2 + 
-     &   (sd(3)-sd(1))**2 + 6.*(sd(4)**2 + sd(5)**2 + sd(6)**2)))
+        ssh = 0.d0
+        do i=1,nshr
+            ssh = ssh + sd(ndi+i)**2
+        end do
+        sdi = (sd(1)-sd(2))**2 + (sd(2)-sd(3))**2 + (sd(3)-sd(1))**2
+        seq = dsqrt(0.5*(sdi + 6.d0*ssh))
       end subroutine calcEqStress
 
       subroutine calcEqStrain(eps, eeq)
         !Calculate the equivalent strain
         real(8), dimension(ntens) :: eps
         real(8) :: eeq
-C       real(8), dimension(ntens) :: ed
-C       real(8) :: ev, hdi, hsh
-C       integer :: i
-C 
-C       ev = 0.d0
-C       do i=1,ndi
-C           ev = ev + eps(i)
-C       end do
-C       ed = eps
-C       hdi = 0.d0
-C       hsh = 0.d0
-C       do i=1,ndi
-C           hdi = hdi + (eps(i)-ev)**2
-C           hsh = hsh + eps(ndi+i)**2
-C       end do
-C       eeq = sqrt((2.d0*hdi+hsh)/3.)
-        eeq =  dsqrt(2.0*(eplas(1)**2 + eplas(2)**2 + eplas(3)**2
-     &             + 2.0*(eplas(4)**2 + eplas(5)**2 + eplas(6)**2))
-     &             / 3.0)
+        real(8) :: hdi, hsh
+        integer :: i
+
+        hdi = 0.d0
+        hsh = 0.d0
+        do i=1,ndi
+            hdi = hdi + eps(i)**2
+        end do
+        do i=1,nshr
+            hsh = hsh + eps(ndi+i)**2
+        end do
+        eeq = dsqrt(2.d0*(hdi+2.d0*hsh)/3.d0)
       end subroutine calcEqStrain
 
       subroutine calcKernelFunction(x, i_sv, kernelFunc)
@@ -387,21 +386,21 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
         real(8), dimension(nsd) :: hs
         real(8) :: fsvc, kernelFunc
 
-        ! Calculate feature vector from current stress and plastic strain
-        if dev_only then
-            call calcDevStress(sigma, sig_dev)
-            hs(1:6) = sig_dev(1:6)/scale_seq
-        else
-            hs(1:6) = sigma(1:6)/scale_seq
-        end if
-        if (nsd>6) then
-            hs(7:12) = eplas(1:6)/scale_wh
-        end if
-        ! evaluate ML yield function, loop over all support vectors
         fsvc = 0.
         do i=1, nsv
-            call calcKernelFunction(hs, i, kernelFunc)
-            fsvc = fsvc + props(ind_dc0+i-1)*kernelFunc
+          ! Calculate feature vector from current stress and plastic strain
+          if (dev_only) then
+            call calcDevStress(sigma, sig_dev)
+            hs(1:6) = sig_dev(1:6)/scale_seq
+          else
+            hs(1:6) = sigma(1:6)/scale_seq
+          end if
+          if (nsd>6) then
+            hs(7:12) = eplas(1:6)/scale_wh
+          end if
+          ! evaluate ML yield function, loop over all support vectors
+          call calcKernelFunction(hs, i, kernelFunc)
+          fsvc = fsvc + props(ind_dc0+i-1)*kernelFunc
         end do
         fsvc = fsvc + rho
       end subroutine calcFSVC
@@ -426,12 +425,12 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
         !strain hardening rate khard is also updated based on gradient ov SVC w.r.t peeq
         implicit none
         integer :: i
-        real(8), dimension(ntens) :: sigma, sig_dev, dfds, gj2, hk
+        real(8), dimension(ntens) :: sigma, sig_dev, dfds, gj2
         real(8), dimension(nsd) :: hs, dk_dx, hg
-        real(8) :: h0,h1,h2,h3,h4,h5,seq
+        real(8) :: hh
 
         ! calculate feature vector from current stress and plastic strain
-        if dev_only then
+        if (dev_only) then
             call calcDevStress(sigma, sig_dev)
             hs(1:6) = sig_dev(1:6)/scale_seq
         else
@@ -440,26 +439,31 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
         if (nsd>6) then
             hs(7:12) = eplas(1:6)/scale_wh
         end if
-        ! evaluate gradient to ML yield function
         hg = 0.
         do i=1, nsv
             call calcDK_DX(hs, i, dk_dx)
             hg = hg + props(ind_dc0+i-1)*dk_dx
         end do
         dfds(1:6) = hg(1:6) / scale_seq
-        khard = 0.
+        khard = 0.d0
+        ! if strain hardening components in support vectors
+        ! get maximum strain hardening komponent as scalar hardening rate khard
+        ! Warning: this is a simplification, better calculate (dPEEQ/deplas)^-1
         if (nsd>6) then
-          do i=1, 6
-            khard = khard - hg(6+i)*scale_seq/scale_wh
+          do i=7,12
+            khard = khard - hg(i)*scale_seq/scale_wh
           end do
+          if (khard < 0.d0) then
+            khard = 0.d0
+          end if
         end if
       end subroutine calcGradFSVC
 
-      subroutine calcFlow(dfsvc, deps, Ct, eplas, flow)
+      subroutine calcFlow(dfsvc, deps, Ct, flow)
         !Calculate the consistent plastic flow tensor
         implicit none
         real(8), dimension(ntens) :: dfsvc
-        real(8), dimension(ntens) :: deps, eplas, flow
+        real(8), dimension(ntens) :: deps, flow
         real(8), dimension(ntens, ntens) :: Ct
         real(8) :: hh, l_dot
         integer :: i,j
@@ -474,7 +478,8 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
         hh = hh + 4.*khard
         do i=1,ntens
             do j=1,ntens
-                l_dot = l_dot + dfsvc(i) * Ct(i,j) * deps(j) / hh  ! deps must not contain elastic strain components
+                ! deps must not contain elastic strain components
+                l_dot = l_dot + dfsvc(i) * Ct(i,j) * deps(j) / hh
             end do
         end do
         flow = l_dot * dfsvc 
@@ -576,14 +581,15 @@ C       eeq = sqrt((2.d0*hdi+hsh)/3.)
                     else
                         a = root
                     end if
+                    error = abs(fsvcAtroot)
                 else
                     print*, "Root not bracketed properly"
                     print*, a, fsvca
                     print*, b, fsvcb
-                    stop
+                    s_fl = sunit*scale_seq*0.8  ! return conservative estimate
+                    error = 0.d0  ! abandon root search
                 end if
                 i = i + 1
-                error = abs(fsvcAtroot)
             end do
             if (abs(fsvca).lt.error) then
                 s_fl = sunit*a
