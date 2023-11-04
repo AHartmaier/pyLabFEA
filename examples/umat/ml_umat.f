@@ -56,6 +56,7 @@ c !========================================================================
 c ! State variables
 c ! 1-6: plastic strain tensor (eplas, components 11, 22, 33, 12, 13, 23)
 c ! 7  : equivalent plastic strain (PEEQ)
+c ! 8  : numer of divisions of plastic strain increment
  
       implicit none
  
@@ -87,7 +88,7 @@ c ! 7  : equivalent plastic strain (PEEQ)
       real(8) :: ddsdde(ntens,ntens)  ! Jacobian matrix of the constitutive model
       real(8) :: ddsddt(ntens)     ! Variation of the stress increment w.r.t. to the temperature
       real(8) :: drplde(ntens)     ! Variation of rpl w.r.t. the strain increment
-      real(8) :: stran (ntens)     ! Total strain tensor at the beggining of the increment
+      real(8) :: stran (ntens)     ! Total strain tensor at beginning of increment
       real(8) :: dstran(ntens)     ! Strain increment
       real(8) :: eplas(ntens)      ! plastic strain
 
@@ -104,9 +105,7 @@ c ! 7  : equivalent plastic strain (PEEQ)
       real(8) :: C11, C22, C33, C44, C55, C66, C12, C13, C23  ! anisotropic elastic constants
       real(8) :: epc, khard        ! offset in plastic strain (definition of yield point), WH parameter
       integer :: nsv, nsd          ! Number and dimensionality of support vectors
-      integer :: Nset 
-      real(8), dimension(:, :), allocatable :: temp_sv  ! Array of support vectors
-      real(8), dimension(:), allocatable :: temp_dc  ! Array of dual coefficients
+      integer :: Nset, nsteps, counter, max_div
       real(8), dimension(ntens) :: sigma  ! Stress tensor
       real(8), dimension(ntens) :: stress_fl  ! flow stress on yield locus
       real(8) :: rho               ! Intercept of the decision rule function
@@ -114,14 +113,16 @@ c ! 7  : equivalent plastic strain (PEEQ)
       real(8) :: scale_seq, scale_wh  ! scaling factors for stress, work hardening rate
       real(8) :: fsvc              ! Decision function
       real(8) :: sq0, sq1, sq2     ! equiv. stresses
+      real(8) :: depql             ! equiv. plastic strain increment
+      real(8) :: eq_deps
       real(8), dimension(ntens) :: dfds  ! Derivative of the decision function w.r.t. princ. stress
-      real(8), dimension(ntens) :: flow  ! Flow vector
+      real(8), dimension(ntens) :: flow, etot, detot, depl  ! Flow vector
 
       real(8), parameter :: tol = 1.e-2  ! Rel. tolerance for for yield function
       
-      integer :: i, j, k, fileUnit, niter, ind_sv0, ind_dc0  ! Auxiliar indices
-      real(8), dimension(ntens, ntens) :: Ct  ! Consistent tanget stiffness matrix
-      real(8), dimension(ntens) :: deps  ! strain increment outside yield locus, if load step is splitted
+      integer :: i, j, k, niter, ind_sv0, ind_dc0  ! Auxiliar indices
+      real(8), dimension(ntens, ntens) :: Ct, grad  ! Consistent tanget stiffness matrix
+      real(8), dimension(ntens) :: deps, ddeps  ! strain increment outside yield locus, if load step is splitted
       real(8) :: threshold, h1, h2, eeq, peeq, sc_elstep
       logical :: dev_only          ! consider only deviatoric stresses
 
@@ -151,28 +152,36 @@ c ! 7  : equivalent plastic strain (PEEQ)
       ind_dc0 = 30
       ind_sv0 = 30+nsv
 
-      threshold = tol*scale_seq   ! threshold value for yield function still accepted as elastic
+      threshold = tol*scale_seq  ! threshold value for yield function still accepted as elastic
 
       ! internally the standard convention for Voigt tensors is used
       h1 = stress(6)
       stress(6) = stress(4)
       stress(4) = h1 ! convert to standard convention
-      h1 = dstran(6)
-      dstran(6) = dstran(4)
-      dstran(4) = h1
+      etot(1:ndi) = stran(1:ndi)
+      etot(4) = stran(6)
+      etot(5) = stran(5)
+      etot(6) = stran(4)
+      detot(1:ndi) = dstran(1:ndi)
+      detot(4) = dstran(6)
+      detot(5) = dstran(5)
+      detot(6) = dstran(4)
       
       ! get accumulated plastic strain
       eplas(1:ndi) = statev(1:ndi)
       eplas(4) = statev(6)
       eplas(5) = statev(5)
       eplas(6) = statev(4)   ! store in standard convention for Voigt strain
-      call calcEqStrain(eplas, peeq) ! peeq: equivalent plastic strain
-      khard = 0.  ! work hardening parameter, updated in calcGradFSVC
 
+      ! set max. number of divisions
+      if ((kstep.eq.1).and.(kinc.eq.1)) then
+         max_div = 50
+      else
+         max_div = int(statev(8))
+      end if
 
       ! Elastic stiffness matrix is defined
-      ddsdde = 0.d0
-      sc_elstep = 0.d0  
+      ddsdde = 0.d0 
       ddsdde(1,1) = C11
       ddsdde(1,2) = C12
       ddsdde(2,1) = C12
@@ -198,80 +207,100 @@ c ! 7  : equivalent plastic strain (PEEQ)
         ddsdde(2,3) = C23
         ddsdde(3,2) = C23
       end if          
-      Ct = ddsdde
 
       ! elastic predictor for stress is computed
-      deps = dstran
+      deps = detot
       dsig = 0.d0
       do i=1, ntens
         do j=1, ntens
-            dsig(i)=dsig(i)+ddsdde(i,j)*dstran(j)
+            dsig(i)=dsig(i)+ddsdde(i,j)*deps(j)
         end do
       end do
 
+      depl = 0.d0
+      sc_elstep = 1.d0
+      grad = 0.d0  ! Consistent tangent matrix, updated if plastic yielding
+      khard = 0.   ! work hardening parameter, updated in calcGradFSVC
       ! calculate yield function by evaluating support vector classification
       sigma = stress+dsig
       call calcFSVC(sigma, fsvc)
-      niter = 0
-      do while ((fsvc.ge.threshold).and.(niter<10))
-         ! stress lies outside yield locus
-         ! 1. calculate proper flow stress on yield locus
-         call findRoot(sigma, stress_fl)
-         if (niter.eq.0) then
-            ! in first iteration: test if part of load step is elastic
-            call calcFSVC(stress, h1) ! yield function at start of increment
-            if (h1.lt.-tol) then
-                !load step started in elastic regime and has to be splited
-                !for load reversals, negative values must be treated separately
-                !perform elastic substep
-                call calcEqStress(stress, sq0) ! equiv. stress at start of load step
-                call calcEqStress(sigma, sq2)  ! equiv stress at end of load step
-                call calcEqStress(stress_fl, sq1) ! eqiv. stress on yield locus
-                sc_elstep = (sq1-sq0)/(sq2-sq0) ! split load step in elastic regime
-                deps = dstran*sc_elstep ! elastic strain increment   
-                stran = stran + deps    ! add to accomplished strain
-                deps = dstran - deps    ! deduct from remaining strain
-                stress = stress_fl      ! stress at start of remaining load increment (on yield locus)
-            end if !h1<-tol
-         end if ! niter==0
-         ! 2. calculate gradient 'dfds' of yield locus for given stress tensor
-         ! also updates khard based on current strain hardening rate
-         call calcGradFSVC(stress_fl, dfds)
-         ! 3. calculate plastic strain increment 'flow'
-         call calcFlow(dfds, deps, Ct, flow)
-         ! 4. calculate consistent tangent stiffness tensor 'Ct'
-         call calcTangstiff(ddsdde, dfds, Ct)
-         ! 5. calculate consistent stress increment 'dsig'
-         dsig = 0.
-         do i=1, ntens
-             do j=1, ntens
-                 dsig(i)=dsig(i)+Ct(i,j)*deps(j)
-             end do
-         end do
-         ! update stress for next iteration and
-         ! calculate yield function
-         sigma = stress + dsig
-         call calcFSVC(sigma, fsvc)
-         niter = niter + 1 
-      end do
-      if (niter.ge.10) then
-        print*,'***Warning: plasticity algorithm did not converge after',
-     &         niter,'iterations'
-      end if
+      if (fsvc.ge.threshold) then
+        ! material is actively yielding
+        call calcFSVC(stress, h1)   ! yield function at start of increment
+        if (h1.lt.-tol) then
+            ! load step started in elastic regime and has to be splited
+            ! for load reversals, negative values must be treated separately
+            ! perform elastic substep
+            ! 1. calculate projected flow stress tensor on current yield locus
+            call findRoot(sigma, stress_fl)
+            call calcEqStress(stress, sq0) ! equiv. initial stress
+            call calcEqStress(sigma, sq2)  ! equiv stress at end of load step
+            call calcEqStress(stress_fl, sq1) ! eqiv. stress on yield locus
+            sc_elstep = (sq1-sq0)/(sq2-sq0) ! split load step in elastic regime
+            deps(1:ntens) = detot(1:ntens)*sc_elstep ! elastic strain increment   
+            etot = etot + deps    ! add to accomplished strain
+            deps = detot - deps   ! deduct from remaining strain
+            stress = stress_fl    ! stress at start of remaining load increment (on yield locus)
+        else
+            sc_elstep =0.d0
+            stress_fl = stress
+        end if !h1<-threshold
+        ! deps: remaining strain increment
+        ! stress_fl: initial stress on yield locus
+        call calcEqStrain(deps, depql)
+        if (depql.gt.1.d-6) then
+           nsteps = max_div
+        else
+           nsteps = 1
+        end if
+        ddeps = deps / nsteps
+        sigma = stress
+        counter = 0
+        do niter=1,nsteps
+            ! stress lies outside yield locus
+            ! 2. calculate gradient 'dfds' of yield locus for given stress tensor
+            ! also updates khard based on current strain hardening rate
+            call calcGradFSVC(stress_fl, dfds)
+            ! 3. calculate plastic strain increment 'flow'
+            call calcFlow(dfds, ddeps, ddsdde, flow)
+            ! 4. calculate consistent tangent stiffness tensor 'Ct'
+            call calcTangstiff(ddsdde, dfds, Ct)
+            ! 5. calculate consistent stress increment 'dsig'
+            dsig = 0.
+            do i=1, ntens
+              do j=1, ntens
+                dsig(i)=dsig(i) + Ct(i,j)*ddeps(j)
+              end do
+            end do
+            ! update stress for next iteration and
+            ! calculate yield function
+            sigma = sigma + dsig
+            call calcFSVC(sigma, fsvc)
+            if (fsvc.ge.threshold) then
+                counter = counter + 1
+            end if
+            call findRoot(sigma, stress_fl)
+            call calcEqStress(stress_fl-stress, sq1)
+            call calcEqStress(dsig, sq2)
+            depl = depl + flow
+            grad = grad + Ct/nsteps 
+        end do
+        if (counter.gt.5) then
+           print*,"***Warning: Bad convergence!", NOEL, NPT, counter
+           max_div = max_div + 10
+           if (max_div.gt.100) then
+              max_div = 100
+           end if
+        end if
+      end if ! active yielding
   
-      !update stresses and strain
-      stran = stran + deps
-      h1 = stran(6)
-      stran(6) = stran(4)
-      stran(4) = h1  ! convert to Abaqus convention
-      h1 = dstran(6)
-      dstran(6) = dstran(4)
-      dstran(4) = h1
-      stress = stress + dsig
-      h1 = stress(6)
-      stress(6) = stress(4)
-      stress(4) = h1  ! convert to Abaqus convention
-      eplas = eplas + flow 
+      !update stress
+      stress(1:ndi) = sigma(1:ndi)
+      stress(4) = sigma(6)
+      stress(5) = sigma(5)
+      stress(6) = sigma(4)
+      ! update plastic strain
+      eplas = eplas + depl
       !update internal variables
       statev(1:3) = eplas(1:3)
       statev(4) = eplas(6)   ! store in Abaqus convention
@@ -279,9 +308,16 @@ c ! 7  : equivalent plastic strain (PEEQ)
       statev(6) = eplas(4)
       call calcEqStrain(eplas, peeq)
       statev(7) = peeq
+      statev(8) = dble(max_div)
+
+      ! update plastic dissipation
+      call calcEqStress(sigma, sq2)  ! equiv stress at end of load step
+      call calcEqStress(stress_fl, sq1) ! eqiv. stress on yield locus
+      call calcEqStrain(depl, depql)  ! equiv. plastic strain increment
+      spd = 0.5*depql*(sq1+sq2)
       
       !update material Jacobian
-      ddsdde = ddsdde*sc_elstep + Ct*(1.d0-sc_elstep)
+      ddsdde(:,:) = ddsdde(:,:)*sc_elstep + grad(:,:)*(1.d0-sc_elstep)
       ! exchange column 6 and 4 and row 6 and 4 in stiffness tensor to meet Abaqus convention
       dfds = ddsdde(:,6)
       ddsdde(:,6) = ddsdde(:,4)
@@ -378,11 +414,11 @@ c ! 7  : equivalent plastic strain (PEEQ)
       end subroutine calcKernelFunction
 
       subroutine calcFSVC(sigma, fsvc)
-      !Evaluate  decision function 'fsvc' at stress sigma
-      !based on the trained Support Vector Classification (SVC)
+      ! Evaluate  decision function 'fsvc' at stress sigma
+      ! based on the trained Support Vector Classification (SVC)
         implicit none
         integer :: i
-        real(8), dimension(ntens) :: sigma, sig_dev, gj2
+        real(8), dimension(ntens) :: sigma, sig_dev
         real(8), dimension(nsd) :: hs
         real(8) :: fsvc, kernelFunc
 
@@ -406,8 +442,8 @@ c ! 7  : equivalent plastic strain (PEEQ)
       end subroutine calcFSVC
 
       subroutine calcDK_DX(x, i_sv, dk_dx)
-        !Calculate the derivative of the kernel basis function
-        !with respect to the SVM feature vector 
+        ! Calculate the derivative of the kernel basis function
+        ! with respect to the SVC feature vector 
         implicit none
         real(8), dimension(nsd) :: x, dk_dx
         real(8) :: kernelFunc
@@ -421,11 +457,12 @@ c ! 7  : equivalent plastic strain (PEEQ)
       end subroutine calcDK_DX
 
       subroutine calcGradFSVC(sigma, dfds)
-        !Calculate the gradient of the decision function w.r.t. the stress
-        !strain hardening rate khard is also updated based on gradient ov SVC w.r.t peeq
+        ! Calculate the gradient of the decision function w.r.t. the stress
+        ! strain hardening rate khard is also updated based on gradient 
+        ! of SVC w.r.t plastic strain components
         implicit none
         integer :: i
-        real(8), dimension(ntens) :: sigma, sig_dev, dfds, gj2
+        real(8), dimension(ntens) :: sigma, sig_dev, dfds
         real(8), dimension(nsd) :: hs, dk_dx, hg
         real(8) :: hh
 
@@ -442,7 +479,7 @@ c ! 7  : equivalent plastic strain (PEEQ)
         hg = 0.
         do i=1, nsv
             call calcDK_DX(hs, i, dk_dx)
-            hg = hg + props(ind_dc0+i-1)*dk_dx
+            hg(1:nsd) = hg(1:nsd) + props(ind_dc0+i-1)*dk_dx(1:nsd)
         end do
         dfds(1:6) = hg(1:6) / scale_seq
         khard = 0.d0
@@ -459,12 +496,13 @@ c ! 7  : equivalent plastic strain (PEEQ)
         end if
       end subroutine calcGradFSVC
 
-      subroutine calcFlow(dfsvc, deps, Ct, flow)
-        !Calculate the consistent plastic flow tensor
+      subroutine calcFlow(dfsvc, deps, Cel, flow)
+        ! Calculate the consistent plastic flow tensor
+        ! Att: "deps" must not contain elastic strain components!
         implicit none
         real(8), dimension(ntens) :: dfsvc
         real(8), dimension(ntens) :: deps, flow
-        real(8), dimension(ntens, ntens) :: Ct
+        real(8), dimension(ntens, ntens) :: Cel
         real(8) :: hh, l_dot
         integer :: i,j
 
@@ -472,21 +510,20 @@ c ! 7  : equivalent plastic strain (PEEQ)
         l_dot = 0.
         do i=1,ntens
             do j=1,ntens
-                hh = hh + dfsvc(i)*Ct(i,j)*dfsvc(j)
+                hh = hh + dfsvc(i)*Cel(i,j)*dfsvc(j)
             end do
         end do
-        hh = hh + 4.*khard
+        hh = hh + khard
         do i=1,ntens
             do j=1,ntens
-                ! deps must not contain elastic strain components
-                l_dot = l_dot + dfsvc(i) * Ct(i,j) * deps(j) / hh
+                l_dot = l_dot + dfsvc(i) * Cel(i,j) * deps(j) / hh
             end do
         end do
-        flow = l_dot * dfsvc 
+        flow(1:ntens) = l_dot * dfsvc(1:ntens)
       end subroutine calcFlow
 
       subroutine calcTangStiff(Cel, dfds, Ct)
-        !Calculate the elasto-plastic tangent stiffness matrix
+        ! Calculate the elasto-plastic tangent stiffness matrix
         implicit none
         real(8), dimension(ntens, ntens) :: Cel, Ct
         real(8), dimension(ntens) :: dfds
@@ -496,14 +533,13 @@ c ! 7  : equivalent plastic strain (PEEQ)
 
         hh = 0.d0
         ca = 0.d0
-        Ct = 0.d0
         do i=1,ntens
             do j=1,ntens
                 hh =  hh + dfds(i) * Cel(i,j) * dfds(j)
                 ca(i) = ca(i) + Cel(i,j) * dfds(j)
             end do
         end do
-        hh = hh + 4.*khard
+        hh = hh + khard
         do i=1,ntens
             do j=1,ntens
                 Ct(i,j) = Cel(i,j) - ca(i)*ca(j)/hh
@@ -601,6 +637,4 @@ c ! 7  : equivalent plastic strain (PEEQ)
       end subroutine findRoot
 
       end subroutine umat
-    
-    
-    
+
