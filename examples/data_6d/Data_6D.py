@@ -19,12 +19,12 @@ def rgb_to_hex(rgb):
 
 
 # Import Data
-db = FE.Data("Data_Base_Updated_Final_Rotated_Train.JSON", wh_data=True)
+db = FE.Data("Data_Base_Updated_Goss.json", wh_data=True) #"Data_Base_Updated_Final_Rotated_Train.JSON"
 #db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
 mat_ref = FE.Material(name="reference")  # define reference material, J2 plasticity, linear w.h.
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])
 mat_ref.plasticity(sy=db.mat_data['sy_av'], khard=4.5e3)
-mat_ref.calc_properties(verb=False, eps=0.03, sigeps=True)
+mat_ref.calc_properties(verb=False, eps=0.02, sigeps=True)
 
 # db.plot_yield_locus(db =db, mat_data= db.mat_data, active ='flow_stress')
 print(f'Successfully imported data for {db.mat_data["Nlc"]} load cases')
@@ -32,14 +32,14 @@ mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
 
 # Train SVC with data from all microstructures
-mat_ml.train_SVC(C=10, gamma=0.4, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
+mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
-# Testing
-sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Test.json")
-yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
-Results = CTD.training_score(yf_ref, yf_ml)
-print(Results)
+# # Testing
+# sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Test.json")
+# yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
+# Results = CTD.training_score(yf_ref, yf_ml)
+# print(Results)
 #Plot Hardening levels over a meshed space
 #Plot initial and final hardening level of trained ML yield function together with data points
 ngrid = 100
@@ -75,7 +75,7 @@ handle1 = Line2D([], [], color=colors_hex[0], label='Equivalent Plastic Strain :
 handle2 = Line2D([], [], color=colors_hex[1], label='Equivalent Plastic Strain : 0.5% ')
 handle3 = Line2D([], [], color=colors_hex[2], label='Equivalent Plastic Strain : 1% ')
 handle4 = Line2D([], [], color=colors_hex[3], label='Equivalent Plastic Strain : 1.5% ')
-handle5 = Line2D([], [], color=colors_hex[4], label='Equivalent Plastic Strain : 2% ')
+handle5 = Line2D([], [], color=colors_hex[4], label='Equivalent Plastic Strain : 1.8% ')
 handle6 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
@@ -181,7 +181,7 @@ grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
 normalized_grad_hh = grad_hh / FE.eps_eq(grad_hh)[:, None]  # norm_6d
 Z0 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.,
                    pred=False)  # value of yield function for every grid point
-Z1 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.025,
+Z1 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.015,
                    pred=False)
 fig = plt.figure(figsize=(4.2, 4.2))
 ax = fig.add_subplot(111, projection='polar')

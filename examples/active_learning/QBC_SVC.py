@@ -84,7 +84,7 @@ def creator_rnd(npoints, precision=8):
         points.append(point_rounded)
     return np.vstack(points)
 
-def hard_test_cases(npoints):
+def hard_test_cases(a,b):
     """
     Generate hard test cases by creating random unit vectors, scaling them based on the
     solutions from the function 'find_yloc', and then concatenating the results.
@@ -98,11 +98,12 @@ def hard_test_cases(npoints):
         Array of concatenated test cases.
     """
     # Create random unit vectors and scale them by 0.99 times the solution from 'find_yloc'
-    sunit1=creator_rnd(npoints)
+    sunit1= FE.load_cases(number_3d=a, number_6d=b)
+    npoints= (a + b)
     x1=fsolve(find_yloc, np.ones(npoints) * mat_h.sy, args = (sunit1, mat_h), xtol = 1.e-5)
     sig1=sunit1 * 0.99 * x1[:, None]
     # Create another set of random unit vectors and scale them by 1.01 times the solution from 'find_yloc'
-    sunit2=creator_rnd(npoints)
+    sunit2=FE.load_cases(number_3d=a, number_6d=b)
     x2=fsolve(find_yloc, np.ones(npoints) * mat_h.sy, args = (sunit2, mat_h), xtol = 1.e-5)
     sig2=sunit2 * 1.01 * x2[:, None]
     sig=np.concatenate((sig1, sig2))
@@ -167,18 +168,19 @@ def plot_variances(var_list):
     plt.savefig('variances_vs_iterations.png', dpi = 300)
     plt.close()
 
-def save_hard_test_cases(num_cases, num_tests=5):
+def save_hard_test_cases(a , b, num_tests=5):
     test_arrays=[[] for _ in range(num_tests)]
     for i in range(num_tests):
-        sig_test=hard_test_cases(num_cases)
+        sig_test=hard_test_cases(a, b)
         np.savetxt(f'sig_test_{i + 1}.txt', sig_test)
         test_arrays[i]=sig_test
     return test_arrays
 
 # Query by committee parameters
+
 nmembers=5  # Number of committee members
-nsamples_init=5 # Number of initial samples - can be chosen by the user
-nsamples_to_generate=5 #  Number of iterations
+ # Number of initial samples - can be chosen by the user
+nsamples_to_generate=70 #  Number of iterations
 sampling_scheme='max_disagreement'  # max disagreement for yf-predictions, for classifiers generally possible: vote_entropy, consensus_entropy or maximum_disagreement, cf. https://modal-python.readthedocs.io/en/latest/content/query_strategies/Disagreement-sampling.html#disagreement-sampling
 subset_percentage=0.8
 subset_assignment='random'
@@ -192,11 +194,13 @@ mat_h=FE.Material(name = 'Hill-reference')
 mat_h.elasticity(E = E, nu = nu)
 mat_h.plasticity(sy = sy, hill = hill)
 mat_h.calc_properties(eps = 0.0013, sigeps = True)
-
-# create set of unit stresses and
-N=nsamples_init
-sunit=creator_rnd(N)
+c = 8
+d = 22
+N = c+d
+nsamples_init = N
+sunit= FE.load_cases(number_3d=c, number_6d=d)
 np.savetxt('Test_Cases.txt', sunit)
+# create set of unit stresses and
 print('Created {0} unit stresses (6d Voigt tensor).'.format(N))
 x1=fsolve(find_yloc, np.ones(N) * mat_h.sy, args = (sunit, mat_h), xtol = 1.e-5)
 sig=sunit * x1[:, None]
@@ -204,9 +208,6 @@ print('Calculated {} yield stresses.'.format(N))
 sc0=FE.sig_princ2cyl(sig)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
-tests=save_hard_test_cases(300)
-tests_1, tests_2, tests_3, tests_4, tests_5=tests
-results_lists=[[], [], [], [], []]
 var = []
 for i in range(nsamples_to_generate):
     # train SVC committee with yield stress data generated from Hill flow rule
@@ -230,7 +231,6 @@ for i in range(nsamples_to_generate):
         sunit_neww=res.x
         sunit_new=spherical_to_cartesian(sunit_neww)
         variance=res.fun
-
     # Calculate corresponding stress state and update data set
     x1=fsolve(find_yloc, mat_h.sy, args = (sunit_new, mat_h), xtol = 1.e-5)
     sig_new=sunit_new * x1[:, None]
@@ -239,24 +239,16 @@ for i in range(nsamples_to_generate):
     if i == nsamples_to_generate - 1:
         np.savetxt('DATA_sig_iter_{}.txt'.format(i + 1), sig)
         np.savetxt('DATA_sunit_iter_{}.txt'.format(i + 1), sunit)
-
     # train SVC with yield stress data generated from Hill flow rules
     C=2
     gamma=2.5
     mat_ml=FE.Material(name = 'ML-Hill')  # define material
     mat_ml.train_SVC(C = C, gamma = gamma, sdata = sig, gridsearch = True)
-
     # stress strain curves
     print("Calculating properties of ML material, this might take a while ...")
     mat_ml.elasticity(E = E, nu = nu)
     mat_ml.plasticity(sy = sy)
     mat_ml.calc_properties(verb = False, eps = 0.0013, sigeps = True)
-    for idx, sig_test in enumerate(tests):
-        yf_ml=mat_ml.calc_yf(sig_test)
-        yf_h=mat_h.calc_yf(sig_test)
-        mae, precision, accuracy, recall, f1score, mcc=FE.training_score(yf_h, yf_ml)
-        results_lists[idx].append((mae, precision, accuracy, recall, f1score, mcc))
-    results_1, results_2, results_3, results_4, results_5=results_lists
 
     if i == nsamples_to_generate - 1 or i == 0:
         ngrid=50
@@ -282,5 +274,3 @@ for i in range(nsamples_to_generate):
 
 np.savetxt('variance.txt', var)
 plot_variances(var)
-for idx, result in enumerate(results_lists):
-    np.savetxt(f'Results_{idx + 1}.txt', result)

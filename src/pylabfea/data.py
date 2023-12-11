@@ -89,7 +89,7 @@ class Data(object):
                  name='Dataset', mat_name="Simulanium",
                  sdim=6,
                  epl_crit=2.e-3,
-                 epl_start=1.e-3, epl_max=0.03,
+                 epl_start=1.e-3, epl_max=0.02,
                  plot=False,
                  wh_data=True):
         if sdim!=3 and sdim!=6:
@@ -130,7 +130,7 @@ class Data(object):
             Sigma = [res["S11"], res["S22"], res["S33"], res["S12"], res["S13"], res["S23"]]
             E_Total = [res["E11"], res["E22"], res["E33"], res["E12"], res["E13"], res["E23"]]
             E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep12"], res["Ep13"], res["Ep23"]]
-            Load = val["Initial_Load"]
+            # Load = val["Initial_Load"]
             Len_Sigma = len(Sigma[0])
             seq_full = np.zeros(Len_Sigma)
             peeq_full = np.zeros(Len_Sigma)
@@ -155,7 +155,7 @@ class Data(object):
                 peeq_full[i] = FE.eps_eq(E_Total_6D)
                 Original_Total_Strains[i] = E_Total_6D
 
-            Final_Data[key] = {"SEQ": seq_full, "PEEQ": peeq_plastic, "TEEQ": peeq_full, "Load": Load,
+            Final_Data[key] = {"SEQ": seq_full, "PEEQ": peeq_plastic, "TEEQ": peeq_full, #"Load": Load,
                                "Stress": Original_Stresses,
                                "Plastic_Strain": Original_Plastic_Strains, "Total_Strain": Original_Total_Strains}
 
