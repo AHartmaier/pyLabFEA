@@ -1506,10 +1506,8 @@ class Material(object):
         # plastic_range_start = 2.-Fe if Nseq == 1 else 2.-Ce
         # seq = np.append(seq, np.linspace(plastic_range_start, 2. - Fe, Nseq))
         if Nseq == 1:
-            midpoint = (Fe + Ce) / 2
-            elastic_seq = np.linspace(midpoint, midpoint, 1)
-            plastic_seq = np.linspace(2. - midpoint, 2. - midpoint, 1)
-            seq = np.append(elastic_seq, plastic_seq)
+            midpoint = 0.5*(Fe + Ce)
+            seq = np.array([midpoint, 2.-midpoint])
         else:
             elastic_seq = np.linspace(Fe, Ce, Nseq)
             plastic_seq = np.linspace(2. - Ce, 2. - Fe, Nseq)
