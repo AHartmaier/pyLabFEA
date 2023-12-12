@@ -252,7 +252,7 @@ nsamples_init = N
 sunit_random= FE.load_cases(number_3d=c, number_6d=d)
 sunit = apply_repulsion(sunit_random, k=5, iterations=60, learning_rate=0.01)
 np.savetxt('Test_Cases.txt', sunit)
-final_knn_distances = calculate_knn_distances(final_points, k =5)
+final_knn_distances = calculate_knn_distances(sunit, k =5)
 average_distance = np.mean(final_knn_distances)
 # create set of unit stresses and
 print('Created {0} unit stresses (6d Voigt tensor).'.format(N))
@@ -279,11 +279,13 @@ for i in range(nsamples_to_generate):
 
     # Search for next unit vector to query
     bounds=[(0, np.pi)] + [(0, 2 * np.pi)] * 4
+    sunit_new_list=[]
+    sig_new_list=[]
     if sampling_scheme == 'max_disagreement':
         res=differential_evolution(
             eval_max_disagreement,
             bounds,
-            args = (committee, repulsed_points, average_distance, 999, 'input_comparison', mat_h, sig),
+            args = (committee, sunit_new_list, average_distance, 999, 'input_comparison', mat_h, sig),
             popsize = 90,
             polish = True,
             updating = 'immediate'
@@ -299,7 +301,8 @@ for i in range(nsamples_to_generate):
         sunit_new_list.append(sunit_new)
         sig_new_list.append(sig_new)
         variance=res.fun
-        average_distance=calculate_average_min_distance(sunit_new_list)
+        final_knn_distances=calculate_knn_distances(sunit, k = 5)
+        average_distance=np.mean(final_knn_distances)
 
     if i == nsamples_to_generate - 1:
         np.savetxt('DATA_sig_iter_{}.txt'.format(i + 1), sig)
