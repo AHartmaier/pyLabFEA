@@ -5,15 +5,15 @@ This script introduces an Active Learning method for SVM to enhance data selecti
 in training Machine Learning yield functions. Using the Query-By-Committee algorithm
 we prioritize data points where model predictions show high disagreement,
 leading to reduced variance in predictions.
+A key enhancement in this approach is the application of a distance penalty. This feature aims to encourage exploration
+of the model in the feature space by penalizing new data points that are too close to existing points.
+Such a strategy ensures a more diverse and comprehensive sampling of the data space,
+leading to potentially more robust and generalized models.
 
-Authers: Ronak Shoghi1, Lukas Morand2, Alexandere Hartmaier1
-1: [ICAMS/Ruhr University Bochum, Germany]
-2: [Fraunhofer Institute for Mechanics of Materials (IWM)]
-July 2023
+December 2023
 """
 
 import sys
-import numpy as np
 from scipy.spatial import distance_matrix
 sys.path.append('src/data-gen')
 sys.path.append('src/verify')
@@ -27,7 +27,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.metrics import classification_report
 from scipy.optimize import differential_evolution
 import matplotlib.pyplot as plt
-
 matplotlib.use('Agg')
 print('pyLabFEA version', FE.__version__)
 
@@ -44,10 +43,8 @@ def apply_repulsion(points, k, iterations, learning_rate):
         distances = distance_matrix(points, points)
         np.fill_diagonal(distances, np.inf)
         indices = np.argsort(distances, axis=1)[:, :k]  # Indices of k nearest neighbors
-
         # Initialize displacement vector
         displacement = np.zeros_like(points)
-
         # Calculate repulsion from each of the k nearest neighbors
         for i, point in enumerate(points):
             neighbors = points[indices[i]]
@@ -55,16 +52,12 @@ def apply_repulsion(points, k, iterations, learning_rate):
             distances_to_neighbors = distances[i, indices[i]].reshape(-1, 1)
             repulsion = diff / distances_to_neighbors ** 2  # Repulsion proportional to inverse square of distance
             displacement[i] = repulsion.sum(axis=0)
-
         # Update points with displacement
         points += learning_rate * displacement
-
         # Normalize to keep points on the sphere surface
         norms = np.linalg.norm(points, axis=1).reshape(-1, 1)
         points /= norms
-
     return points
-
 
 def spherical_to_cartesian(angles):
     """
