@@ -12,9 +12,9 @@ from pylabfea.model import Model
 from pylabfea.material import Material
 from pylabfea.data import Data
 from pylabfea.training import load_cases, training_score
-from pkg_resources import get_distribution
+from importlib.metadata import version
 
 __author__ = """Alexander Hartmaier"""
 __email__ = 'alexander.hartmaier@rub.de'
-__version__ = get_distribution('pylabfea').version
+__version__ = version('pylabfea')
 

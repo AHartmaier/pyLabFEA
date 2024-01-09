@@ -3,7 +3,7 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages, Extension
+from setuptools import setup, find_packages
 
 with open('README.md') as readme_file:
     readme = readme_file.read()
@@ -41,6 +41,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/AHartmaier/pyLabFEA',
-    version='4.3',
+    version='4.3.1',
     zip_safe=False,
 )
