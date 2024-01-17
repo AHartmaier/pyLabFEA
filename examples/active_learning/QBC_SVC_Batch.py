@@ -216,7 +216,7 @@ def plot_variances(var_list):
     plt.ylabel('Variance')
     plt.title('Variance vs Iteration')
     plt.grid()
-    plt.savefig('variances_vs_iterations.png', dpi = 300)
+    plt.savefig('variances_vs_iterations_weight=999.png', dpi = 300)
     plt.close()
 
 def save_hard_test_cases(a , b, num_tests=5):
@@ -231,7 +231,7 @@ def save_hard_test_cases(a , b, num_tests=5):
 
 nmembers=5  # Number of committee members
 # Number of initial samples - can be chosen by the user
-nsamples_to_generate=70 #  Number of iterations
+nsamples_to_generate=50 #  Number of iterations
 sampling_scheme='max_disagreement'  # max disagreement for yf-predictions, for classifiers generally possible: vote_entropy, consensus_entropy or maximum_disagreement, cf. https://modal-python.readthedocs.io/en/latest/content/query_strategies/Disagreement-sampling.html#disagreement-sampling
 subset_percentage=0.8
 subset_assignment='random'
@@ -245,8 +245,8 @@ mat_h=FE.Material(name = 'Hill-reference')
 mat_h.elasticity(E = E, nu = nu)
 mat_h.plasticity(sy = sy, hill = hill)
 mat_h.calc_properties(eps = 0.0013, sigeps = True)
-c = 8
-d = 22
+c = 1
+d = 99
 N = c+d
 nsamples_init = N
 sunit_random= FE.load_cases(number_3d=c, number_6d=d)
@@ -254,6 +254,7 @@ sunit = apply_repulsion(sunit_random, k=5, iterations=60, learning_rate=0.01)
 np.savetxt('Test_Cases.txt', sunit)
 final_knn_distances = calculate_knn_distances(sunit, k =5)
 average_distance = np.mean(final_knn_distances)
+print('Average distance to 5th nearest neighbor: {0:.4f}'.format(average_distance))
 # create set of unit stresses and
 print('Created {0} unit stresses (6d Voigt tensor).'.format(N))
 x1=fsolve(find_yloc, np.ones(N) * mat_h.sy, args = (sunit, mat_h), xtol = 1.e-5)
@@ -274,7 +275,7 @@ for i in range(nsamples_to_generate):
         else:
             raise NotImplementedError('chosen subset assignment not implemented')
         mat_ml=FE.Material(name = 'ML-Hill_{}'.format(j))
-        mat_ml.train_SVC(C = C, gamma = gamma, sdata = sig[idx, :], gridsearch = True)
+        mat_ml.train_SVC(C = C, gamma = gamma, sdata = sig[idx, :], gridsearch = False)
         committee.append(mat_ml)
 
     # Search for next unit vector to query
@@ -285,7 +286,7 @@ for i in range(nsamples_to_generate):
         res=differential_evolution(
             eval_max_disagreement,
             bounds,
-            args = (committee, sunit_new_list, average_distance, 999, 'input_comparison', mat_h, sig),
+            args = (committee, sunit_new_list, average_distance, 99, 'input_comparison', mat_h, sig),
             popsize = 90,
             polish = True,
             updating = 'immediate'
@@ -303,6 +304,7 @@ for i in range(nsamples_to_generate):
         variance=res.fun
         final_knn_distances=calculate_knn_distances(sunit, k = 5)
         average_distance=np.mean(final_knn_distances)
+        print('Average distance to 5th nearest neighbor: {0:.4f}'.format(average_distance))
 
     if i == nsamples_to_generate - 1:
         np.savetxt('DATA_sig_iter_{}.txt'.format(i + 1), sig)
@@ -311,7 +313,7 @@ for i in range(nsamples_to_generate):
     C=2
     gamma=2.5
     mat_ml=FE.Material(name = 'ML-Hill')  # define material
-    mat_ml.train_SVC(C = C, gamma = gamma, sdata = sig, gridsearch = True)
+    mat_ml.train_SVC(C = C, gamma = gamma, sdata = sig, gridsearch = False)
     # stress strain curves
     print("Calculating properties of ML material, this might take a while ...")
     mat_ml.elasticity(E = E, nu = nu)

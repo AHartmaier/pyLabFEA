@@ -25,7 +25,7 @@ def find_yloc(x, sunit, epl, mat):
 
 
 # Import Data
-db = FE.Data("Data_Base_Updated_Final_Rotated_Train.json", wh_data=True)
+db = FE.Data("Database_Random.json", wh_data=True)
 # db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
 # define reference material, J2 plasticity, linear w.h.
 mat_ref = FE.Material(name="reference")

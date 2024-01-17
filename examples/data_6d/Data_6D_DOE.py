@@ -24,7 +24,7 @@ def rgb_to_hex(rgb):
     return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
 
 #Training
-db = FE.Data("Data_Base_Updated_Final_Rotated_Train.json", wh_data=True)
+db = FE.Data("Database_Random.json", wh_data=True)
 mat_ref = FE.Material(name="reference") # define reference material, J2 plasticity, linear w.h.
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])             # identic elastic properties as mat1
 mat_ref.plasticity(sy=db.mat_data['sy_av'], khard= 4.5e3)        # same yield strength as mat1 and mat2, high w.h. coefficient 4.5e3)

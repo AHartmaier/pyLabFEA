@@ -19,7 +19,7 @@ def rgb_to_hex(rgb):
 
 
 # Import Data
-db = FE.Data("Data_Base_Updated_Goss.json", wh_data=True) #"Data_Base_Updated_Final_Rotated_Train.JSON"
+db = FE.Data("Data_Base_Updated_Final_Rotated_Train.JSON", wh_data=True) #"Data_Base_Updated_Final_Rotated_Train.JSON"
 #db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
 mat_ref = FE.Material(name="reference")  # define reference material, J2 plasticity, linear w.h.
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])
@@ -36,10 +36,10 @@ mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
 # # Testing
-# sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Test.json")
-# yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
-# Results = CTD.training_score(yf_ref, yf_ml)
-# print(Results)
+sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Train.JSON")
+yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
+Results = CTD.training_score(yf_ref, yf_ml)
+print(Results)
 #Plot Hardening levels over a meshed space
 #Plot initial and final hardening level of trained ML yield function together with data points
 ngrid = 100
@@ -57,8 +57,8 @@ Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # va
 Z2 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.005, pred=False)
 Z3 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.01, pred=False)
 Z4 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.015, pred=False)
-Z5 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.02, pred=False)
-Z6 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.025, pred=False)
+Z5 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.018, pred=False)
+# Z6 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.025, pred=False)
 
 colors_hex = ['#550000', '#990000', '#bb0000', '#cc3333', '#ee3333', '#ff5050']
 fig = plt.figure(figsize=(4.2, 4.2))
@@ -69,18 +69,18 @@ line2 = mat_ml.plot_data(Z2, ax, xx, yy, c=colors_hex[1])
 line3 = mat_ml.plot_data(Z3, ax, xx, yy, c=colors_hex[2])
 line4 = mat_ml.plot_data(Z4, ax, xx, yy, c=colors_hex[3])
 line5 = mat_ml.plot_data(Z5, ax, xx, yy, c=colors_hex[4])
-line6 = mat_ml.plot_data(Z6, ax, xx, yy, c=colors_hex[5])
+# line6 = mat_ml.plot_data(Z6, ax, xx, yy, c=colors_hex[5])
 fig.savefig('Hardening_Levels.png', dpi=300)
 handle1 = Line2D([], [], color=colors_hex[0], label='Equivalent Plastic Strain : 0 ')
 handle2 = Line2D([], [], color=colors_hex[1], label='Equivalent Plastic Strain : 0.5% ')
 handle3 = Line2D([], [], color=colors_hex[2], label='Equivalent Plastic Strain : 1% ')
 handle4 = Line2D([], [], color=colors_hex[3], label='Equivalent Plastic Strain : 1.5% ')
 handle5 = Line2D([], [], color=colors_hex[4], label='Equivalent Plastic Strain : 1.8% ')
-handle6 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
+# handle6 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')
-ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5, handle6], loc="center")
+ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5], loc="center")
 fig_leg.savefig('Legend.png', dpi=300)
 plt.show()
 #
@@ -104,7 +104,7 @@ plt.show()
 
 # Reconstruct Stress-Strain Curve
 Keys = list(db.Data_Visualization.keys())
-Key = "Us_A1B2C2D1E1F2_4092b_5e411_Tx_Rnd"  # random.choice(Keys) # Select Data from database randomly
+Key = "Us_A2B2C1D0E0F0_592bb_0abb1_Tx_Gs"  # random.choice(Keys) # Us_A2B2C2D2E1F1_09ad0_0abb1_Tx_Gs
 print("Selected Key is: {}".format(Key))
 Stresses = db.Data_Visualization[Key]["Stress"]
 Eq_Stresses = db.Data_Visualization[Key]["Eq_Stress"]
@@ -163,9 +163,9 @@ plt.show()
 # get stress data
 peeq_dat = FE.eps_eq(db.mat_data['plastic_strain'])
 # ind0 = np.nonzero(peeq_dat < 0.0002)[0]
-ind0 =np.nonzero(np.logical_and(peeq_dat > 0.00018, peeq_dat < 0.00022))[0]
+ind0 =np.nonzero(np.logical_and(peeq_dat > 0.00019, peeq_dat < 0.00021))[0]
 sig_d0 = FE.s_cyl(db.mat_data['flow_stress'][ind0, :], mat_ml)
-ind1 = np.nonzero(np.logical_and(peeq_dat > 0.0248, peeq_dat < 0.0252))[0]
+ind1 = np.nonzero(np.logical_and(peeq_dat > 0.0149, peeq_dat < 0.0151))[0] #0.0248, 0.0252
 sig_d1 = FE.s_cyl(db.mat_data['flow_stress'][ind1, :], mat_ml)
 # calculate ML flow stresses
 ngrid = 100
@@ -193,7 +193,7 @@ plt.scatter(sig_d1[:, 1], sig_d1[:, 0], s=5, c="black")
 fig.savefig('ML+ScatterData.png', dpi=300)
 plt.show()
 handle1 = mlines.Line2D([], [], color="#550000", label='Equivalent Plastic Strain : 0 ')
-handle2 = mlines.Line2D([], [], color="#ff3333", label='Equivalent Plastic Strain : 2.5% ')
+handle2 = mlines.Line2D([], [], color="#ff3333", label='Equivalent Plastic Strain : 1.5% ')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')

@@ -89,7 +89,7 @@ class Data(object):
                  name='Dataset', mat_name="Simulanium",
                  sdim=6,
                  epl_crit=2.e-3,
-                 epl_start=1.e-3, epl_max=0.02,
+                 epl_start=1.e-3, epl_max=0.01,
                  plot=False,
                  wh_data=True):
         if sdim!=3 and sdim!=6:

@@ -9,7 +9,7 @@ October 2023
 import pylabfea as FE
 
 # Import Data
-db = FE.Data("Data_Base_Updated_Final_Rotated_Train.json", wh_data=True)
+db = FE.Data("Database_Random.json", wh_data=True)
 
 # db.plot_yield_locus(db=db, mat_data=db.mat_data, active='flow_stress')
 print(f'Successfully imported data for {db.mat_data["Nlc"]} load cases')
