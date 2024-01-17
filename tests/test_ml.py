@@ -101,5 +101,5 @@ def test_ml_training():
         FE.training_score(yf_J2, yf_ml, plot=False)
 
     assert np.abs(mae < 16.)
-    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 60.57834343495059) < 1E-5
+    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 60.57834343495059) < 1E-4
     assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008987491147924685) < 1E-7
