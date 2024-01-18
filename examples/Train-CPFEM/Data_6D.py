@@ -19,7 +19,7 @@ def rgb_to_hex(rgb):
 
 
 # Import Data
-db = FE.Data("Data_Base_Updated_Final_Rotated_Train.JSON", wh_data=True) #"Data_Base_Updated_Final_Rotated_Train.JSON"
+db = FE.Data("Data_Random_Texture.json", wh_data=True) #"Data_Base_Updated_Final_Rotated_Train.JSON"
 #db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
 mat_ref = FE.Material(name="reference")  # define reference material, J2 plasticity, linear w.h.
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])
@@ -58,7 +58,7 @@ Z2 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.005, pred=False)
 Z3 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.01, pred=False)
 Z4 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.015, pred=False)
 Z5 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.018, pred=False)
-# Z6 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.025, pred=False)
+Z6 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.025, pred=False)
 
 colors_hex = ['#550000', '#990000', '#bb0000', '#cc3333', '#ee3333', '#ff5050']
 fig = plt.figure(figsize=(4.2, 4.2))
@@ -69,14 +69,14 @@ line2 = mat_ml.plot_data(Z2, ax, xx, yy, c=colors_hex[1])
 line3 = mat_ml.plot_data(Z3, ax, xx, yy, c=colors_hex[2])
 line4 = mat_ml.plot_data(Z4, ax, xx, yy, c=colors_hex[3])
 line5 = mat_ml.plot_data(Z5, ax, xx, yy, c=colors_hex[4])
-# line6 = mat_ml.plot_data(Z6, ax, xx, yy, c=colors_hex[5])
+line6 = mat_ml.plot_data(Z6, ax, xx, yy, c=colors_hex[5])
 fig.savefig('Hardening_Levels.png', dpi=300)
 handle1 = Line2D([], [], color=colors_hex[0], label='Equivalent Plastic Strain : 0 ')
 handle2 = Line2D([], [], color=colors_hex[1], label='Equivalent Plastic Strain : 0.5% ')
 handle3 = Line2D([], [], color=colors_hex[2], label='Equivalent Plastic Strain : 1% ')
 handle4 = Line2D([], [], color=colors_hex[3], label='Equivalent Plastic Strain : 1.5% ')
 handle5 = Line2D([], [], color=colors_hex[4], label='Equivalent Plastic Strain : 1.8% ')
-# handle6 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
+handle6 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
 ax_leg.axis('off')
