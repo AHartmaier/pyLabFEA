@@ -13,15 +13,15 @@ import matplotlib.pyplot as plt
 import pylabfea.training as CTD
 from matplotlib.lines import Line2D
 import matplotlib.lines as mlines
+from matplotlib.gridspec import GridSpec
+import random
 
 def rgb_to_hex(rgb):
     return '#{:02x}{:02x}{:02x}'.format(int(rgb[0]*255), int(rgb[1]*255), int(rgb[2]*255))
 
-
-# Import Data
-db = FE.Data("Data_Random_Texture.json", wh_data=True) #"Data_Base_Updated_Final_Rotated_Train.JSON"
-#db = FE.Data("Data_Base_UpdatedE-07.json", Work_Hardening=False)
-mat_ref = FE.Material(name="reference")  # define reference material, J2 plasticity, linear w.h.
+# Import data from micromechanical simulations
+db = FE.Data("Data_Random_Texture.json", wh_data=True)
+mat_ref = FE.Material(name="reference")  # define reference material
 mat_ref.elasticity(E=db.mat_data['E_av'], nu=db.mat_data['nu_av'])
 mat_ref.plasticity(sy=db.mat_data['sy_av'], khard=4.5e3)
 mat_ref.calc_properties(verb=False, eps=0.02, sigeps=True)
@@ -35,13 +35,14 @@ mat_ml.from_data(db.mat_data)  # data-based definition of material
 mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
-# # Testing
-sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Base_Updated_Final_Rotated_Train.JSON")
+# Testing
+sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Random_Texture_Test.json")
 yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
 Results = CTD.training_score(yf_ref, yf_ml)
 print(Results)
+
 #Plot Hardening levels over a meshed space
-#Plot initial and final hardening level of trained ML yield function together with data points
+save_fig = True
 ngrid = 100
 xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
 yy *= mat_ml.scale_seq
@@ -59,31 +60,29 @@ Z3 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.01, pred=False)
 Z4 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.015, pred=False)
 Z5 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.018, pred=False)
 Z6 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.025, pred=False)
-
 colors_hex = ['#550000', '#990000', '#bb0000', '#cc3333', '#ee3333', '#ff5050']
-fig = plt.figure(figsize=(4.2, 4.2))
+fig = plt.figure(figsize=(6.7, 4))
+fig.set_constrained_layout(True)
 ax = fig.add_subplot(111, projection='polar')
-ax.grid(True)
 line = mat_ml.plot_data(Z, ax, xx, yy, c=colors_hex[0])
 line2 = mat_ml.plot_data(Z2, ax, xx, yy, c=colors_hex[1])
 line3 = mat_ml.plot_data(Z3, ax, xx, yy, c=colors_hex[2])
 line4 = mat_ml.plot_data(Z4, ax, xx, yy, c=colors_hex[3])
 line5 = mat_ml.plot_data(Z5, ax, xx, yy, c=colors_hex[4])
 line6 = mat_ml.plot_data(Z6, ax, xx, yy, c=colors_hex[5])
-fig.savefig('Hardening_Levels.png', dpi=300)
 handle1 = Line2D([], [], color=colors_hex[0], label='Equivalent Plastic Strain : 0 ')
 handle2 = Line2D([], [], color=colors_hex[1], label='Equivalent Plastic Strain : 0.5% ')
 handle3 = Line2D([], [], color=colors_hex[2], label='Equivalent Plastic Strain : 1% ')
 handle4 = Line2D([], [], color=colors_hex[3], label='Equivalent Plastic Strain : 1.5% ')
 handle5 = Line2D([], [], color=colors_hex[4], label='Equivalent Plastic Strain : 1.8% ')
 handle6 = Line2D([], [], color=colors_hex[5], label='Equivalent Plastic Strain : 2.5% ')
-fig_leg = plt.figure(figsize=(4, 4))
-ax_leg = fig_leg.add_subplot(111)
-ax_leg.axis('off')
-ax_leg.legend(handles=[handle1, handle2, handle3, handle4, handle5], loc="center")
-fig_leg.savefig('Legend.png', dpi=300)
+
+ax.legend(handles=[handle1, handle2, handle3, handle4, handle5, handle6],
+          loc='upper left', bbox_to_anchor=(1.05, 1))
+if save_fig:
+    fig.savefig('Hardening_Levels.png', dpi=300)
 plt.show()
-#
+
 # Plot initial yield locus in pi-plane with the average yield strength from data
 Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # value of yield fct for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.6, 4.5))
@@ -99,12 +98,13 @@ ax.set_ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=14)
 ax.tick_params(axis='both', which='major', labelsize=12)
 ax.legend(handles=legend_elements, loc='upper right', fontsize=12)
 plt.tight_layout()
-fig.savefig('Initial_Yield_Locus.png', dpi=300)
+if save_fig:
+    fig.savefig('Initial_Yield_Locus.png', dpi=300)
 plt.show()
 
 # Reconstruct Stress-Strain Curve
 Keys = list(db.Data_Visualization.keys())
-Key = "Us_A2B2C1D0E0F0_592bb_0abb1_Tx_Gs"  # random.choice(Keys) # Us_A2B2C2D2E1F1_09ad0_0abb1_Tx_Gs
+Key = random.choice(Keys)
 print("Selected Key is: {}".format(Key))
 Stresses = db.Data_Visualization[Key]["Stress"]
 Eq_Stresses = db.Data_Visualization[Key]["Eq_Stress"]
@@ -115,7 +115,6 @@ Response = []
 Strains_for_Response = []
 Eq_Stress_Drawing = []
 Eq_Strains_Drawing = []
-
 for counter, Eq_Strain in enumerate(Eq_Strains):
     if np.isnan(Eq_Shifted_Strains[counter]):
         continue
@@ -139,7 +138,6 @@ for counter, Eq_Strain in enumerate(Eq_Strains):
         Eq_Strains_Drawing.append(Eq_Strains[counter])
 
 fig = plt.figure(figsize=(5.6, 4.7))
-
 plt.scatter(Eq_Strains_Drawing, Eq_Stress_Drawing, label="Data", s=8, color='black')
 plt.scatter(Strains_for_Response, Response, label="ML", s=8,  color='#c60000')
 plt.axvline(x=0.002, color='black', linestyle='--', ymax=50.5/plt.ylim()[1])
@@ -156,13 +154,13 @@ legend = plt.legend(fontsize=legend_font_size)
 legend.legendHandles[0]._sizes = [50]
 legend.legendHandles[1]._sizes = [50]
 plt.tight_layout()
-fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
+if save_fig:
+    fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
 plt.show()
 
 # Plot initial and final hardening level of trained ML yield function together with data points
 # get stress data
 peeq_dat = FE.eps_eq(db.mat_data['plastic_strain'])
-# ind0 = np.nonzero(peeq_dat < 0.0002)[0]
 ind0 =np.nonzero(np.logical_and(peeq_dat > 0.00019, peeq_dat < 0.00021))[0]
 sig_d0 = FE.s_cyl(db.mat_data['flow_stress'][ind0, :], mat_ml)
 ind1 = np.nonzero(np.logical_and(peeq_dat > 0.0149, peeq_dat < 0.0151))[0] #0.0248, 0.0252
@@ -177,28 +175,24 @@ Cart_hh = FE.sp_cart(hh)
 zeros_array = np.zeros((10000, 3))
 Cart_hh_6D = np.hstack((Cart_hh, zeros_array))
 grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
-#norm_6d = np.linalg.norm(grad_hh)
 normalized_grad_hh = grad_hh / FE.eps_eq(grad_hh)[:, None]  # norm_6d
 Z0 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.,
                    pred=False)  # value of yield function for every grid point
 Z1 = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0.015,
                    pred=False)
-fig = plt.figure(figsize=(4.2, 4.2))
+
+fig = plt.figure(figsize=(6.7, 4))
+fig.set_constrained_layout(True)
 ax = fig.add_subplot(111, projection='polar')
-ax.grid(True)
 line = mat_ml.plot_data(Z0, ax, xx, yy, c="#600000")
 line = mat_ml.plot_data(Z1, ax, xx, yy, c="#ff5050")
 plt.scatter(sig_d0[:, 1], sig_d0[:, 0], s=5, c="black")
 plt.scatter(sig_d1[:, 1], sig_d1[:, 0], s=5, c="black")
-fig.savefig('ML+ScatterData.png', dpi=300)
-plt.show()
 handle1 = mlines.Line2D([], [], color="#550000", label='Equivalent Plastic Strain : 0 ')
 handle2 = mlines.Line2D([], [], color="#ff3333", label='Equivalent Plastic Strain : 1.5% ')
-fig_leg = plt.figure(figsize=(4, 4))
-ax_leg = fig_leg.add_subplot(111)
-ax_leg.axis('off')
-ax_leg.legend(handles=[handle1, handle2], loc="center")
-fig_leg.savefig('Legend2.png', dpi=300)
+ax.legend(handles=[handle1, handle2],loc='upper left', bbox_to_anchor=(1.05, 1))
+if save_fig:
+    fig.savefig('ML+ScatterData.png', dpi=300)
 plt.show()
 
 # Plot initial Hardening level with scatter data points
@@ -247,8 +241,6 @@ ax = fig.add_subplot(111, projection='polar')
 ax.grid(True)
 line = mat_ml.plot_data(Z, ax, xx, yy, c = "black")
 plt.scatter(theta_Cyl, Seq_Cyl, s= 6, c = "red")
-
-fig.savefig('ML+ScatterData.png', dpi=300)
 handle1 = mlines.Line2D([], [], color = "blue", label='Equivalent Plastic Strain : 0 ')
 fig_leg = plt.figure(figsize=(4, 4))
 ax_leg = fig_leg.add_subplot(111)
