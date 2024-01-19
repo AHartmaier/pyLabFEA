@@ -116,7 +116,7 @@ ncpu=1
 fac = 0.01*0.04 # scaling factor for boundary conditions (strain * side length)
 ang = np.radians(np.linspace(0,90,num=3))  # list of angles for load cases
 abq_job = 'femBlock'  # Abaqus .inp file
-abq_umat = 'ml_umat' # umat
+abq_umat = 'ml_umat' # UMAT
 f_name = 'abq_'+ml_name+'-res.csv'  # result file
 meta_fname = 'abq_'+ml_name+'-res_meta.json'  # metadata file
 
@@ -140,7 +140,7 @@ meta = {
       "Owner"       : owner,
       "Institution" : "ICAMS, Ruhr University Bochum, Germany", 
       "Date"        : today,
-      "Description" : "Mechanical data from ML umat",
+      "Description" : "Mechanical data from ML UMAT",
       "Method"      : "FEA",
       "System": {
           "sysname"  : sys[0],

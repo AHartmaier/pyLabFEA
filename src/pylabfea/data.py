@@ -171,7 +171,7 @@ class Data(object):
             Strain_Plastic = [Final_Data[key]["PEEQ"]]
             self.SPE_data[key] = {"Stress": Stress, "Strain": Strain_Plastic}
 
-        # This code block produced divide by zero error and Data_Visualization doesn't seem to be used
+        #For having also the elastic data and shift the 0 plastic strain to 0.02% to match the micromechanical data. Can be used in Stress-Strain Reconstruction.
         self.Data_Visualization = {}
         for key, dat in Final_Data.items():
             Stress = dat["Stress"]
