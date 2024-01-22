@@ -128,19 +128,23 @@ istop = db.mat_data['lc_indices'][ilc]
 sig_dat = db.mat_data['flow_stress'][istart:istop, :] # filter below 0.02% strain
 epl_dat = db.mat_data['plastic_strain'][istart:istop, :] # filter below 0.02% strain
 epl_plt = FE.eps_eq(epl_dat)
+valid_indices = epl_plt >= 0.002
+# Update epl_dat and sig_dat based on the filter
+epl_dat_filtered = epl_dat[valid_indices, :]
+sig_dat_filtered = sig_dat[valid_indices, :]
+epl_plt_filtered = FE.eps_eq(epl_dat_filtered)
 # define unit stress in loading direction
-sig0 = sig_dat[-1, :] / FE.sig_eq_j2(sig_dat[-1, :])
-Nlc = len(epl_dat)
+sig0 = sig_dat_filtered[-1, :] / FE.sig_eq_j2(sig_dat_filtered[-1, :])
+Nlc = len(epl_dat_filtered)
 sig_ml = []
 for i in range(Nlc):
-    x1 = fsolve(find_yloc, mat_ml.sy, args=(sig0, epl_dat[i, :], mat_ml),
+    x1 = fsolve(find_yloc, mat_ml.sy, args=(sig0, epl_dat_filtered[i, :], mat_ml),
                 xtol=1.e-5)
     sig_ml.append(sig0 * x1)
 sig_ml = np.array(sig_ml)
-
 fig = plt.figure(figsize=(5.6, 4.7))
-plt.scatter(epl_plt, FE.sig_eq_j2(sig_dat), label="Data", s=9, color='black')
-plt.scatter(epl_plt, FE.sig_eq_j2(sig_ml), label="ML", s=10, color='#d60404')
+plt.scatter(epl_plt_filtered , FE.sig_eq_j2(sig_dat_filtered), label="Data", s=9, color='black')
+plt.scatter(epl_plt_filtered, FE.sig_eq_j2(sig_ml), label="ML", s=10, color='#d60404')
 text_size = 12
 plt.tick_params(axis='both', which='major', labelsize=12)
 plt.xlabel(xlabel="Equivalent Plastic Strain (.)", fontsize=14)
