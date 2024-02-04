@@ -219,6 +219,8 @@ class Data(object):
         ct = 0
         sig_ideal = []
         lc_ind_list = np.zeros(Nlc + 1, dtype=int)
+        elstrains = []
+        elstress = []
         for key, val in db.items():
             # estimate yield point for ideal plasticity consideration
             i_ideal = np.nonzero(val['PEEQ'] > epl_crit)[0]
@@ -275,7 +277,8 @@ class Data(object):
             Key_Translated = self.key_parser(key)
             self.mat_data['ms_type'] = Key_Translated["Texture_Type"]  # unimodal texture type
             ct += 1
-
+            elstrains.append(val['Total_Strain'][iel[-1]])
+            elstress.append(val['Stress'][iel[-1]])
         E_av /= Nlc
         nu_av /= Nlc
         sy_av /= Nlc
@@ -289,6 +292,8 @@ class Data(object):
         self.mat_data['Nlc'] = Nlc
         self.mat_data['sy_list'] = sy_list
         self.mat_data['sig_ideal'] = np.array(sig_ideal)
+        self.mat_data['elstress'] = elstress
+        self.mat_data['elstrains'] = elstrains
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print('Estimated elastic constants: E=%5.2f GPa, nu=%4.2f' % (E_av / 1000, nu_av))
