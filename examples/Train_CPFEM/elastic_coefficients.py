@@ -4,16 +4,16 @@ from scipy.optimize import minimize
 import random
 import matplotlib.pyplot as plt
 
-
-db = FE.Data("Data_Random_Texture.json", wh_data=True) # If we use an isotropic material should we expect to have zeros in elements? should this be inherent to the optimization problem?
-stress = db.mat_data['elstress']
-strain = db.mat_data['elstrains']
+db=FE.Data("Data_Random_Texture.json",
+           wh_data = True)  # If we use an isotropic material should we expect to have zeros in elements? should this be inherent to the optimization problem?
+stress=db.mat_data['elstress']
+strain=db.mat_data['elstrains']
 assert len(stress) == len(strain), "Stress and strain data must have the same length"
-data_pairs = list(zip(strain, stress))
+data_pairs=list(zip(strain, stress))
+
 
 def map_flat_to_matrix(C_flat):
-    """
-        Maps a flat array of coefficients into a symmetric matrix C. This function takes the
+    """Maps a flat array of coefficients into a symmetric matrix C. This function takes the
         elements from the input array and places them into both the upper and the lower
         triangular portions of the matrix, ensuring symmetry. The operation is particularly
         useful for reconstructing symmetric matrices, such as stiffness or elasticity matrices,
@@ -28,16 +28,16 @@ def map_flat_to_matrix(C_flat):
         - C (np.ndarray): A 6x6 symmetric matrix constructed from the input coefficients.
      """
 
-    C = np.zeros((6, 6))
-    indices = np.triu_indices(6)
-    C[indices] = C_flat
-    C[(indices[1], indices[0])] = C_flat
+    C=np.zeros((6, 6))
+    indices=np.triu_indices(6)
+    C[indices]=C_flat
+    C[(indices[1], indices[0])]=C_flat
     return C
 
-#for Cholesky decomporion: https://en.wikipedia.org/wiki/Cholesky_decomposition
+
+# for Cholesky decomporion: https://en.wikipedia.org/wiki/Cholesky_decomposition
 def map_flat_to_L_and_C(C_flat):
-    """
-    Maps a flat array of coefficients into a lower triangular matrix L, and then
+    """Maps a flat array of coefficients into a lower triangular matrix L, and then
     computes a symmetric positive definite matrix C by multiplying L with its transpose.
     This approach is commonly used in the decomposition of a stiffness or elasticity matrix,
     enabling the reconstruction of these matrices from a reduced set of parameters in
@@ -54,23 +54,54 @@ def map_flat_to_L_and_C(C_flat):
           into the lower triangular indices of a 6x6 matrix.
         - C (np.ndarray): The symmetric positive definite matrix computed as the dot product of L and its transpose.
         """
-    L = np.zeros((6, 6))
-    indices = np.tril_indices(6)
-    L[indices] = C_flat
-    C = np.dot(L, L.T)
+    L=np.zeros((6, 6))
+    indices=np.tril_indices(6)
+    L[indices]=C_flat
+    C=np.dot(L, L.T)
     return L, C
 
+
 def calculate_stress_from_strain(strain, C):
-    strain_vector = np.array(strain)
-    stress_predicted = np.dot(C, strain_vector)
+    """Calculates the predicted stress for a given strain using the material's stiffness
+        matrix. This function multiplies the stiffness matrix C by the strain vector to
+        predict the resulting stress, according to Hooke's Law for linear elastic materials.
+
+        Parameters:
+        - strain (list or np.ndarray): The strain vector, representing the deformation in
+          the material. This should be a 1D array or list of length 6, corresponding to the
+          three normal and three shear components of strain.
+        - C (np.ndarray): The stiffness matrix of the material. This should be a 6x6 symmetric
+          matrix representing the material's resistance to deformation. The matrix correlates
+          the strain to the stress in the material.
+
+        Returns:
+        - np.ndarray: The predicted stress vector, calculated as the dot product of the stiffness
+          matrix C and the strain vector. This vector has the same dimension as the strain
+          input, containing the three normal and three shear components of stress.
+    """
+    strain_vector=np.array(strain)
+    stress_predicted=np.dot(C, strain_vector)
     return stress_predicted
 
+
 def is_positive_definite(C):
+    """Checks whether a given matrix is positive definite. A matrix is positive definite
+        if all its eigenvalues are greater than zero. This characteristic is essential for
+        ensuring the stability and uniqueness of solutions in many mathematical contexts,
+        including optimization problems and systems of linear equations.
+
+        Parameters:
+        - C (np.ndarray): The matrix to be checked. This should be a square matrix.
+
+        Returns:
+        - bool: True if the matrix is positive definite, meaning all its eigenvalues are
+          greater than zero; False otherwise.
+        """
     return np.all(np.linalg.eigvals(C) > 0)
 
+
 def objective_function(x_flat, method, penalty_weight=1e9, lambda_reg=1e-3):
-    """
-        Calculates the objective function value for an optimization problem that aims
+    """Calculates the objective function value for an optimization problem that aims
         to find the stiffness matrix coefficients. This function supports both direct
         mapping and decomposition methods to construct the stiffness matrix from a flat
         array of coefficients. It includes penalties for non-positive definiteness of
@@ -94,25 +125,25 @@ def objective_function(x_flat, method, penalty_weight=1e9, lambda_reg=1e-3):
         - ValueError: If an invalid method is selected.
     """
     if method == 'direct':
-        C = map_flat_to_matrix(x_flat)
+        C=map_flat_to_matrix(x_flat)
     elif method == 'decomposition':
-        _, C = map_flat_to_L_and_C(x_flat)
+        _, C=map_flat_to_L_and_C(x_flat)
     else:
         raise ValueError("Invalid method selected. Choose 'direct' or 'decomposition'.")
-    penalty = 0
+    penalty=0
     if not is_positive_definite(C):
-        penalty = penalty_weight * np.sum(np.min(np.linalg.eigvals(C), 0) ** 2)
-    sum_squared_residuals = 0
+        penalty=penalty_weight * np.sum(np.min(np.linalg.eigvals(C), 0) ** 2)
+    sum_squared_residuals=0
     for strain, observed_stress in data_pairs:
-        predicted_stress = calculate_stress_from_strain(strain, C)
-        residuals = observed_stress - predicted_stress
-        sum_squared_residuals += np.sum(residuals ** 2)
-    regularization_term = lambda_reg * np.sum(x_flat ** 2)
+        predicted_stress=calculate_stress_from_strain(strain, C)
+        residuals=observed_stress - predicted_stress
+        sum_squared_residuals+=np.sum(residuals ** 2)
+    regularization_term=lambda_reg * np.sum(x_flat ** 2)
     return sum_squared_residuals + penalty + regularization_term
 
+
 def least_square(random_pairs_number=100):
-    """
-        Calculates the least squares solution for a set of equations derived from
+    """Calculates the least squares solution for a set of equations derived from
         a specified number of random experiment pairs. Each pair consists of strains
         and stresses. In the case of general symmetry, the coefficients of the stiffness
         matrix are reduced to 21 from 36, and at least 4 stress-strain pairs (24 equations) are required
@@ -170,13 +201,13 @@ def least_square(random_pairs_number=100):
             Pair_Counter+=1
 
     b.reshape(-1, 1)
-    C_flat, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
-    C = map_flat_to_matrix(C_flat)
+    C_flat, _, _, _=np.linalg.lstsq(A, b, rcond = None)
+    C=map_flat_to_matrix(C_flat)
     return C
 
+
 def get_elastic_coefficients(method='direct', initial_guess=None):
-    """
-    A function to compute the elastic coefficients (stiffness matrix) for a material
+    """A function to compute the elastic coefficients (stiffness matrix) for a material
     based on stress-strain data. This function supports two methods for determining
     the stiffness matrix: a direct least squares approach and an optimization approach.
     The least squares method is used when 'least_square' is specified, which processes
@@ -207,7 +238,7 @@ def get_elastic_coefficients(method='direct', initial_guess=None):
     success=False
     while attempts < max_attempts and not success:
         if method == 'least_square':
-            optimized_C=least_square(random_pairs_number = 296) # All available stress-strain pair is 296
+            optimized_C=least_square(random_pairs_number = 296)  # All available stress-strain pair is 296
             success=True
             print(optimized_C)
         else:
@@ -231,18 +262,18 @@ def get_elastic_coefficients(method='direct', initial_guess=None):
     return np.array(optimized_C)
 
 
-C = get_elastic_coefficients(method='least_square')
+C=get_elastic_coefficients(method = 'least_square')
 
-#Visualize the results. Using the calculated C matrix to predict stresses from strains
-predicted_stresses = np.array([calculate_stress_from_strain(s, C) for s in strain])
-stresses = np.array(stress)
-predicted_stresses = np.array(predicted_stresses)
-num_data_points = stresses.shape[0]
-subset_size = int(num_data_points * 0.1)
+# Visualize the results. Using the calculated C matrix to predict stresses from strains for 10% of the data points.
+predicted_stresses=np.array([calculate_stress_from_strain(s, C) for s in strain])
+stresses=np.array(stress)
+predicted_stresses=np.array(predicted_stresses)
+num_data_points=stresses.shape[0]
+subset_size=int(num_data_points * 0.1)
 np.random.seed(42)
-selected_indices = np.random.choice(num_data_points, subset_size, replace=False)
-selected_actual_stresses = stresses[selected_indices]
-selected_predicted_stresses = predicted_stresses[selected_indices]
+selected_indices=np.random.choice(num_data_points, subset_size, replace = False)
+selected_actual_stresses=stresses[selected_indices]
+selected_predicted_stresses=predicted_stresses[selected_indices]
 fig, axes=plt.subplots(2, 3, figsize = (15, 10))
 axes=axes.flatten()
 component_names=['Stress_11', 'Stress_22', 'Stress_33', 'Stress_12', 'Stress_13', 'Stress_23']
