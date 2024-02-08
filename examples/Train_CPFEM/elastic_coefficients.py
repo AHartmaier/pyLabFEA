@@ -5,6 +5,7 @@ import random
 import matplotlib.pyplot as plt
 
 
+
 def map_flat_to_matrix(C_flat):
     """Maps a flat array of coefficients into a symmetric matrix C. This function takes the
         elements from the input array and places them into both the upper and the lower
@@ -105,25 +106,22 @@ def is_positive_definite(C):
     return np.all(np.linalg.eigvals(C) > 0)
 
 
-def objective_function(x_flat, method, penalty_weight=1e9, lambda_reg=1e-3):
+def objective_function(x_flat, penalty_weight=1e9, lambda_reg=1e-3):
     """Calculates the objective function value for an optimization problem that aims
-        to find the stiffness matrix coefficients. This function supports both direct
-        mapping and decomposition methods to construct the stiffness matrix from a flat
-        array of coefficients. It includes penalties for non-positive definiteness of
-        the matrix and a regularization term to prevent overfitting.
+        to find the stiffness matrix coefficients using the decomposition method
+        to construct the stiffness matrix from a flat array of coefficients. It includes
+        penalties for non-positive definiteness of the matrix and a regularization term
+        to prevent overfitting.
 
         Parameters
         ----------
         x_flat: np.ndarray
             A flat array of stiffness matrix coefficients.
-        method: str
-            The method to construct the stiffness matrix from `x_flat`.
-            Valid options are 'direct' and 'decomposition'.
         penalty_weight: float
             The weight of the penalty for non-positive definiteness. (Optional, default is 1e9).
         lambda_reg: float
             The regularization parameter to prevent overfitting by penalizing
-            large coefficients. (Optional, efault is 1e-3).
+            large coefficients. (Optional, default is 1e-3).
 
         Returns
         -------
@@ -131,17 +129,8 @@ def objective_function(x_flat, method, penalty_weight=1e9, lambda_reg=1e-3):
             The value of the objective function, which includes the sum of squared residuals
             between observed and predicted stresses, a penalty for non-positive definiteness, and
             a regularization term.
-
-        Raises
-        ------
-        ValueError: If an invalid method is selected.
     """
-    if method == 'direct':
-        C = map_flat_to_matrix(x_flat)
-    elif method == 'decomposition':
-        _, C = map_flat_to_L_and_C(x_flat)
-    else:
-        raise ValueError("Invalid method selected. Choose 'direct' or 'decomposition'.")
+    _, C = map_flat_to_L_and_C(x_flat)
     penalty = 0
     if not is_positive_definite(C):
         penalty = penalty_weight * np.sum(np.min(np.linalg.eigvals(C), 0) ** 2)
@@ -225,8 +214,8 @@ def get_elastic_coefficients(method='direct', initial_guess=None):
     based on stress-strain data. This function supports two methods for determining
     the stiffness matrix: a direct least squares approach and an optimization approach.
     The least squares method is used when 'least_square' is specified, which processes
-    any desired stress-strain pairs( minimum must be 4). The optimization approach,
-    used by default or when 'direct' or 'decomposition' methods are specified, iteratively adjusts the
+    any desired stress-strain pairs( minimum must be 4).  The optimization approach,
+    used when 'decomposition' method is specified, iteratively adjusts the
     stiffness matrix to minimize an objective function that measures the fit to the
     observed data, subject to physical plausibility constraints.
 
@@ -234,11 +223,11 @@ def get_elastic_coefficients(method='direct', initial_guess=None):
     ----------
     method: str
         Method to be used for calculating the stiffness matrix. Options
-        include 'least_square', 'direct', and 'decomposition'. The 'least_square' method
+        include 'least_square' and 'decomposition'. The 'least_square' method
         calculates the stiffness matrix using a least squares fit to the stress-strain data.
-        The 'direct' and 'decomposition' methods use an optimization approach with the
+        The 'decomposition' method uses an optimization approach with the
         specified method for interpreting the stiffness matrix from the optimization
-        variables. (Optional: default is 'direct').
+        variables. (Optional: default is 'decomposition').
     initial_guess: np.ndarray or None
         Initial guess for the stiffness matrix coefficients
         used in the optimization approach. If None, a random initial guess is generated.
@@ -259,24 +248,26 @@ def get_elastic_coefficients(method='direct', initial_guess=None):
             optimized_C = least_square(random_pairs_number=296)  # All available stress-strain pair is 296
             success = True
             print(optimized_C)
-        else:
+        elif method == 'decomposition':
             if initial_guess is None:
-                initial_guess = np.random.rand(21)
-            result = minimize(objective_function, initial_guess, args=(method,), method='L-BFGS-B')
+                initial_guess = np.random.rand(21)  # Adjust the number according to the actual problem dimension
+            result = minimize(objective_function, initial_guess, args = (method,), method = 'L-BFGS-B')
             if result.success:
-                success = True
-                if method == 'direct':
-                    optimized_C = map_flat_to_matrix(result.x)
-                elif method == 'decomposition':
-                    _, optimized_C = map_flat_to_L_and_C(result.x)
-                print("Optimization succeeded after {} attempts".format(attempts + 1))
-                print("Optimized C matrix:")
-                print(optimized_C)
+                success=True
+                _, optimized_C = map_flat_to_L_and_C(result.x)
             else:
-                print("Optimization attempt {} failed".format(attempts + 1))
-            attempts += 1
-        if not success:
-            print("Optimization failed after {} attempts".format(max_attempts))
+                attempts += 1
+                print("Optimization attempt {} failed".format(attempts))
+        else:
+            raise ValueError("Invalid method selected. Choose 'least_square' or 'decomposition'.")
+
+    if success:
+        print("Optimization succeeded after {} attempts".format(attempts))
+        print("Optimized C matrix:")
+        print(optimized_C)
+    else:
+        print("Optimization failed after {} attempts".format(max_attempts))
+
     return np.array(optimized_C)
 
 # main code block
