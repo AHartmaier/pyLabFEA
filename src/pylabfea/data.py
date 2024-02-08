@@ -20,6 +20,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import warnings
 from scipy import interpolate
+from scipy.signal import savgol_filter
 
 
 class Data(object):
@@ -208,6 +209,42 @@ class Data(object):
         epl_max : float
             Maximum equiv. strain up to which data is considered
         """
+        def find_transition_index(stress, strain):
+            """Calculates the index at which a significant transition in the total stress-strain relationship occurs.
+            The function applies a Savitzky-Golay filter to smooth the stress data and then calculates the first
+            and second derivatives of the smoothed stress with respect to strain. It identifies the transition index
+            by finding the maximum absolute value in the second derivative, signaling a notable transition in the
+            total stress-strain curve. This approach relies on the overall behavior of the stress-strain relationship
+            rather than focusing on a specific plastic strain threshold (e.g., 0.002%).
+            The function includes a conditional check to refine the identified transition index, correcting potential
+            errors from anomalies in the second derivative calculations. This is achieved by adjusting the index based
+            on a threshold condition related to a strain value, aiming for a more accurate determination of the
+            transition point based on total stress-strain values.
+
+            Parameters:
+            ----------
+            stress: list
+                Array of stress values.
+            strain: list
+                Array of corresponding strain values.
+
+            Returns:
+            ----------
+            transition_index: (int)
+            The index within the stress or strain array where the significant transition occurs.
+            """
+            stress = np.array(stress)
+            strain = np.array(strain)
+            stress = stress.flatten()
+            strain = strain.flatten()
+            smoothed_stress = savgol_filter(stress, window_length = 51, polyorder = 3)
+            derivative_smoothed = np.gradient(smoothed_stress, strain)
+            second_derivative = np.gradient(derivative_smoothed, strain)
+            transition_index = np.argmax(np.abs(second_derivative))
+            while val["TEEQ"][transition_index] > 0.0003:
+                 transition_index = transition_index - 5
+            return transition_index
+
         Nlc = len(db.keys())
         E_av = 0.
         nu_av = 0.
@@ -277,8 +314,11 @@ class Data(object):
             Key_Translated = self.key_parser(key)
             self.mat_data['ms_type'] = Key_Translated["Texture_Type"]  # unimodal texture type
             ct += 1
-            elstrains.append(val['Total_Strain'][iel[-1]])
-            elstress.append(val['Stress'][iel[-1]])
+            it_stress = val["SEQ"]
+            it_strain = val["TEEQ"]
+            it = find_transition_index(it_stress, it_strain)
+            elstrains.append(val['Total_Strain'][it])
+            elstress.append(val['Stress'][it])
         E_av /= Nlc
         nu_av /= Nlc
         sy_av /= Nlc
