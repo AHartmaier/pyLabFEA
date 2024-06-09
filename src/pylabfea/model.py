@@ -1653,26 +1653,26 @@ class Model(object):
             return hh, text_cb
 
         field = {
-            'strain1': strain1(),
-            'strain2': strain2(),
-            'strain12': strain12(),
-            'stress1': stress1(),
-            'stress2': stress2(),
-            'stress12': stress12(),
-            'plastic1': plastic1(),
-            'plastic2': plastic2(),
-            'plastic12': plastic12(),
-            'seq': stress_eq(),
-            'seqJ2': stress_eqJ2(),
-            'peeq': strain_peeq(),
-            'etot': strain_etot(),
-            'ux': disp_x(),
-            'uy': disp_y(),
-            'mat': disp_mat()
+            'strain1': strain1,
+            'strain2': strain2,
+            'strain12': strain12,
+            'stress1': stress1,
+            'stress2': stress2,
+            'stress12': stress12,
+            'plastic1': plastic1,
+            'plastic2': plastic2,
+            'plastic12': plastic12,
+            'seq': stress_eq,
+            'seqJ2': stress_eqJ2,
+            'peeq': strain_peeq,
+            'etot': strain_etot,
+            'ux': disp_x,
+            'uy': disp_y,
+            'mat': disp_mat
         }
 
         # define color value by mapping field value of element to interval [0,1]
-        val, text_cb = field[fsel]
+        val, text_cb = field[fsel]()
         auto_scale = (vmin is None) and (vmax is None)
         if vmin is None:
             vmin = np.amin(val)
@@ -1741,7 +1741,7 @@ class Model(object):
 
         # add colorbar
         axl = fig.add_axes([1.01, 0.15, 0.04, 0.7])  # [left, bottom, width, height]
-        # for use in juypter note book: left = 1.01, for python: left = 0.86
+        # for use in juypter notebook: left = 1.01, for python: left = 0.86
         norm = colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
         cb1 = colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
         cb1.set_label(text_cb)
