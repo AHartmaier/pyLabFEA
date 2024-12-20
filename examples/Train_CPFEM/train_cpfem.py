@@ -11,6 +11,9 @@ import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
 import pylabfea.training as CTD
+import matplotlib
+matplotlib.use('TkAgg')
+import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.optimize import fsolve
 import matplotlib.lines as mlines
@@ -151,8 +154,8 @@ plt.xlabel(xlabel="Equivalent Plastic Strain (.)", fontsize=14)
 plt.ylabel(ylabel="Equivalent Stress (MPa)", fontsize=14)
 legend_font_size = 12
 legend = plt.legend(fontsize=legend_font_size)
-legend.legendHandles[0]._sizes = [50]
-legend.legendHandles[1]._sizes = [50]
+legend.legend_handles[0]._sizes = [50]
+legend.legend_handles[1]._sizes = [50]
 plt.tight_layout()
 if save_fig:
     fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)
