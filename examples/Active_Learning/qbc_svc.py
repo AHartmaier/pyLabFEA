@@ -27,7 +27,7 @@ from sklearn.metrics import classification_report
 from scipy.optimize import differential_evolution
 import matplotlib.pyplot as plt
 
-matplotlib.use('Agg')
+#matplotlib.use('Agg')
 print('pyLabFEA version', FE.__version__)
 
 
@@ -180,7 +180,7 @@ def save_hard_test_cases(a , b, num_tests=5):
 
 nmembers=5  # Number of committee members
  # Number of initial samples - can be chosen by the user
-nsamples_to_generate=30 #  Number of iterations
+nsamples_to_generate=200 #  Number of iterations
 sampling_scheme='max_disagreement'  # max disagreement for yf-predictions, for classifiers generally possible: vote_entropy, consensus_entropy or maximum_disagreement, cf. https://modal-python.readthedocs.io/en/latest/content/query_strategies/Disagreement-sampling.html#disagreement-sampling
 subset_percentage=0.8
 subset_assignment='random'
@@ -196,10 +196,10 @@ mat_h.plasticity(sy = sy, hill = hill)
 mat_h.calc_properties(eps = 0.0013, sigeps = True)
 c = 200
 d = 99
-N = 200
+N = 100
 nsamples_init = N
 # sunit= FE.load_cases(number_3d=c, number_6d=d)
-sunit = creator_rnd(200,8)
+sunit = creator_rnd(N,8)
 np.savetxt('Test_Cases.txt', sunit)
 # create set of unit stresses and
 print('Created {0} unit stresses (6d Voigt tensor).'.format(N))
@@ -210,6 +210,8 @@ sc0=FE.sig_princ2cyl(sig)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
 var = []
+hyp_C_list = []
+hyp_g_list = []
 for i in range(nsamples_to_generate):
     # train SVC committee with yield stress data generated from Hill flow rule
     C=2
@@ -223,6 +225,8 @@ for i in range(nsamples_to_generate):
         mat_ml=FE.Material(name = 'ML-Hill_{}'.format(j))
         mat_ml.train_SVC(C = C, gamma = gamma, sdata = sig[idx, :], gridsearch = True)
         committee.append(mat_ml)
+        hyp_C_list.append(mat_ml.C_yf)
+        hyp_g_list.append(mat_ml.gam_yf)
 
     # Search for next unit vector to query
     bounds=[(0, np.pi)] + [(0, 2 * np.pi)] * 4

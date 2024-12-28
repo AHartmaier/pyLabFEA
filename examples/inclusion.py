@@ -9,15 +9,18 @@ in stress and strain fields.
 
 Lateral sides can be fixed or free.
 
-Created on Sun Jan 23 00:06:32 2022
+Author: Alexander Hartmaier
+ICAMS / Ruhr University Bochum, Germany
 
-@author: Alexander Hartmaier
+December 2024
+
+Published as part of pyLabFEA package under GNU GPL v3 license
 """
 from pylabfea import Model, Material
 import numpy as np
 
 # boundary conditions
-sides = 'force'  # fixed sides, change to 'disp' for fixed lateral sides
+sides = 'force'  # free sides, change to 'disp' for fixed lateral sides
 eps_tot = 0.01  # total strain in y-direction
 
 # elastic material parameters
