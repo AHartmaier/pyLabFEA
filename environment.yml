@@ -1,7 +1,6 @@
 name: pylabfea
 channels:
   - conda-forge
-  - defaults
 dependencies:
   - numpy
   - matplotlib
@@ -9,4 +8,5 @@ dependencies:
   - scikit-learn
   - pytest
   - jupyter
-
+  - jupyterlab
+  - ipympl

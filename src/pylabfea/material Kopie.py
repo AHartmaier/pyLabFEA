@@ -316,9 +316,7 @@ class Material(object):
         self.msg['nsteps'] = niter
         return fy1, sig, depl, grad_stiff
 
-    def calc_yf(self, sig, epl=None,
-                accumulated_strain=0.0, max_stress=0.0,
-                ana=False, pred=False):
+    def calc_yf(self, sig, epl=None, ana=False, pred=False):
         """Calculate yield function
 
         Parameters
@@ -327,8 +325,6 @@ class Material(object):
             Stresses (arrays of Voigt or principal stresses)
         epl : (sdim, ) array
             Equivalent plastic strain tensor (optional, default: 0)
-        max_stress
-        accumulated_strain
         ana  : Boolean
             Indicator if analytical solution should be used, rather than ML yield fct (optional, default: False)
         pred : Boolean
@@ -345,7 +341,6 @@ class Material(object):
         if type(epl) in (float, np.float64):
             # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
             epl = epl * np.array([1., -0.5, -0.5, 0., 0., 0.])
-
         if self.ML_yf and not ana:
             if sh == (3,) or sh == (6,):
                 sig = np.array([sig])
@@ -353,7 +348,6 @@ class Material(object):
             else:
                 N = len(sig)
             x = np.zeros((N, self.Ndof))
-            # Populate feature vector x with stress data
             if self.sdim == 3:
                 x[:, 0] = sig_eq_j2(sig) / self.scale_seq - 1.
                 x[:, 1] = sig_polar_ang(sig) / np.pi
@@ -364,11 +358,8 @@ class Material(object):
                     x[:, 0:6] = sig[:, 0:6] / self.scale_seq
                 else:
                     x[:, 0:3] = sig[:, 0:3] / self.scale_seq
-            # Add plastic strain + 2 extra dof for load reversals
             if self.whdat:
                 x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
-                x[:, self.ind_wh + self.sdim] = accumulated_strain
-                x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -446,14 +437,14 @@ class Material(object):
                 else:
                     x0 *= 0.5
             x1 = x0
-            while self.calc_yf(x0 * su, epl=epl) >= 0. and x0 > 0.01:
+            while self.calc_yf(x0*su, epl=epl) >= 0. and x0 > 0.01:
                 # find x0 with negative yield fct
                 x0 *= 0.98
-            while self.calc_yf(x1 * su, epl=epl) < 0. and x1 < 5. * sflow:
+            while self.calc_yf(x1*su, epl=epl) < 0. and x1 < 5. * sflow:
                 # find x1 with positive yield fct
                 x1 *= 1.02
-            f0 = self.calc_yf(x0 * su, epl=epl)
-            f1 = self.calc_yf(x1 * su, epl=epl)
+            f0 = self.calc_yf(x0*su, epl=epl)
+            f1 = self.calc_yf(x1*su, epl=epl)
             if f0 * f1 > 0.:
                 warnings.warn('ML_full_yf: Could not bracket yield function: '
                               + 'sunit={}, x0={}, f0={}, x1={}, f1={}'
@@ -646,9 +637,7 @@ class Material(object):
         seq = (0.25 * seq) ** (1. / a)
         return seq
 
-    def calc_fgrad(self, sig, epl=None, seq=None,
-                   accumulated_strain=0.0, max_stress=0.0,
-                   ana=False):
+    def calc_fgrad(self, sig, epl=None, seq=None, ana=False):
         """Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield
         function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield
         function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function
@@ -660,8 +649,6 @@ class Material(object):
             Stress value (Pricipal stress or full stress tensor)
         epl : (sdim,) array
             Plastic strain tensor (optional, default = None)
-        accumulated_strain
-        max_stress
         seq : float or (N,) array
             Equivalent stresses (optional)
         ana : Boolean
@@ -732,8 +719,6 @@ class Material(object):
                     x[:, 0:6] = sig[:, 0:6] / self.scale_seq
             if self.whdat:
                 x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
-                x[:, self.ind_wh + self.sdim] = accumulated_strain
-                x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
             if self.txdat:
                 ih = self.ind_tx
                 x[:, ih:ih + self.Nset] = [self.tx_cur[i] / self.scale_text[i] - 1. for i in range(self.Nset)]
@@ -748,8 +733,8 @@ class Material(object):
                 else:
                     fgrad[i, 0:6] = dKdx[0:6] / self.scale_seq
                 if self.whdat:
-                    hk -= dKdx[self.ind_wh:self.ind_wh + self.sdim + 2] * self.scale_seq / self.scale_wh
-            self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation ???
+                    hk -= dKdx[self.ind_wh:self.ind_wh + self.sdim] * self.scale_seq / self.scale_wh
+            self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation
             if self.khard < 0.:
                 self.khard = 0.  # strain softening not supported
             self.msg['gradient'] = 'gradient to ML_yf'
@@ -988,10 +973,7 @@ class Material(object):
         X_train = np.zeros((N, self.Ndof))
         X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
         if self.whdat:
-            X_train[:, self.ind_wh:self.ind_wh + self.sdim] =\
-                x[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
-            X_train[:, self.ind_wh + self.sdim] = x[:, self.ind_wh + self.sdim]
-            X_train[:, self.ind_wh + self.sdim + 1] = x[:, self.ind_wh + self.sdim + 1] / self.scale_seq
+            X_train[:, self.ind_wh:self.ind_wh + 6] = x[:, self.ind_wh:self.ind_wh + 6] / self.scale_wh
             print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
                   % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
         if self.txdat:
@@ -1007,12 +989,9 @@ class Material(object):
         if x_test is not None:
             Ntest = len(x_test)
             X_test = np.zeros((Ntest, self.Ndof))
-            X_test[:, 0:self.sdim] = x_test[:, 0:self.sdim] / self.scale_seq
+            X_test[:, 0:6] = x_test[:, 0:6] / self.scale_seq
             if self.whdat:
-                X_test[:, self.ind_wh:self.ind_wh + self.sdim] = \
-                    x_test[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
-                X_test[:, self.ind_wh + self.sdim] = x_test[:, self.ind_wh + self.sdim]
-                X_test[:, self.ind_wh + self.sdim + 1] = x_test[:, self.ind_wh + self.sdim + 1] / self.scale_seq
+                X_test[:, self.ind_wh:self.ind_wh + 6] = x_test[:, self.ind_wh:self.ind_wh + 6] / self.scale_wh
             if self.txdat:
                 ih = self.ind_tx
                 for i in range(self.Nset):
@@ -1026,7 +1005,7 @@ class Material(object):
                 if C not in cvals:
                     cvals.append(C)
             if gvals is None:
-                gvals = [0.5, 1, 1.5, 2, 2.5, 3]
+                gvals = [0.5, 1, 1.5, 2]
                 if gamma not in gvals:
                     gvals.append(gamma)
             param_grid = {'C': cvals, 'gamma': gvals}
@@ -1137,7 +1116,7 @@ class Material(object):
         N = len(x)
         X_train = np.zeros((N, self.Ndof))
         if not cyl:
-            # principal stresses
+            # princ. stresses
             X_train[:, 0] = sig_eq_j2(x[:, 0:3]) / self.scale_seq - 1.
             X_train[:, 1] = sig_polar_ang(x[:, 0:3]) / np.pi
             print('Converting principal stresses to cylindrical stresses for training')
@@ -1329,54 +1308,43 @@ class Material(object):
             if self.whdat:
                 Ndinp = len(self.msparam[0]['flow_stress'])
             else:
-                Ndinp = len(self.msparam[0]['sig_ideal'])
-            Nsdata = 2 * Nseq + 4 if extend else 2 * Nseq
+                Ndinp=len(self.msparam[0]['sig_ideal'])
+            Nsdata = 2*Nseq + 4 if extend else 2*Nseq
             N0 = Nlc * Nsdata  # total number of training data points per Ppl for each microstructure
             Nt = Ndinp * Nsdata
             dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
+            if self.whdat:
+                iwh = self.ind_wh
+            if self.txdat:
+                itx = self.ind_tx
             xt = np.zeros((Nt, dtrain))
 
             if self.whdat:
                 # create training data in entire stress space from raw data
-                # training data generated here is unscaled
+                            # training data generated here is unscaled
                 sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['flow_stress'],
-                                                     Nseq=Nseq,
-                                                     extend=extend, Fe=Fe, Ce=Ce)
+                                                           Nseq=Nseq,
+                                                           extend=extend, Fe=Fe, Ce=Ce)
             else:
                 sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['sig_ideal'],
-                                                     Nseq=Nseq,
-                                                     extend=extend, Fe=Fe, Ce=Ce)
+                                                           Nseq=Nseq,
+                                                           extend=extend, Fe=Fe, Ce=Ce)
 
             xt[:, 0:self.sdim] = sig_train
+#            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
             if self.whdat:
-                # Add DOF for strain hardening
-                if 'normalized_accumulated_strain' in self.msparam[0].keys():
-                    reversal = True
-                    if 'max_stress' not in self.msparam[0].keys():
-                        raise ValueError("Data contains field for 'normalized_accumulated_strain' "
-                                         "but not for 'max_stress'. Cannot continue.")
-                    if self.Ndof < 2 * self.sdim + 2:
-                        raise ValueError("Data for 'normalized_accumulated_strain' is given, "
-                                         "but not enough DOF are defined for work hardening paramaters.")
-                else:
-                    reversal = False
+                # Add DOF for work Plastic Strain
                 for i in range(Ndinp):
                     for j in range(Nsdata):
-                        xt[i + j * Ndinp, self.ind_wh:self.ind_wh + self.sdim] = \
+                        xt[i + j*Ndinp, self.sdim:self.sdim + iwh] = \
                             self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
-                        if reversal:
-                            xt[i + j * Ndinp, self.ind_wh + self.sdim] = \
-                                self.msparam[0]['normalized_accumulated_strain'][i]
-                            xt[i + j * Ndinp, self.ind_wh + self.sdim + 1] = \
-                                self.msparam[0]['max_stress'][i]
 
             print(
                 '%i training data sets created, with %i load cases' % (Nt, Nlc))
 
         if np.any(np.abs(yt) <= 0.99):
             warnings.warn(
-                'train_SVC: result vector for yield function contains more categories '
-                'than "-1" and "+1". Will result in higher dimensional SVC.')
+                'train_SVC: result vector for yield function contains more categories than "-1" and "+1". Will result in higher dimensional SVC.')
         # Train SVC with data from all microstructures in data
         if self.sdim == 3:
             # assuming Cartesian stresses
@@ -1441,143 +1409,14 @@ class Material(object):
                     if self.msparam is None:
                         plt.title = self.name
                     else:
-                        plt.title = 'Flow stress, PEEQ=' + str(work_hard[j].round(decimals=4)) + ', TP=' \
-                                    + str(self.msparam[0]['texture'][k].round(decimals=2))
+                        plt.title = 'Flow stress, PEEQ=' + str(work_hard[j].round(decimals=4)) + ', TP='\
+                            + str(self.msparam[0]['texture'][k].round(decimals=2))
                     # plt.xlabel(r'$\theta$ (rad)', fontsize=fontsize-2)
                     # plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize-2)
                     plt.legend(loc=(.95, 0.85), fontsize=fontsize - 2)
                     plt.tick_params(axis="x", labelsize=fontsize - 4)
                     plt.tick_params(axis="y", labelsize=fontsize - 4)
             plt.show()
-
-    # just for having an easy way to get the score score from the data similar as we have the
-    # training data as Jan suggested. SHould be removed I guess later  ???
-    def test_data_generation(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=False,
-                             mat_ref=None, sdata=None, fontsize=16,
-                             gridsearch=False, cvals=None, gvals=None, Fe=0.1, Ce=0.99):
-        """A function to generate test data to get the scores, which is exactly as we are generating
-        the training data but use those to test and get the score.
-
-        Parameters
-        ----------
-        C     : float
-            Parameter needed for training process, larger values lead to more
-            flexibility (optional, default: 10)
-        gamma : float
-            Parameter of Radial Basis Function of SVC kernel, larger values,
-            lead to faster decay of influence of individual
-            support vectors, i.e., to more short ranged kernels
-            (optional, default: 4)
-        Nlc   : int
-            Number of load cases to be considered, will be overwritten if
-            material has microstructure
-            information (optional, default: 36)
-        Nseq  : int
-            Number of training and test stresses to be generated in elastic
-            regime, same number will be
-            produced in plastic regime (optional, default: 25)
-        fs : float
-            Parameter to ensure peridicity of yield function wrt. theta
-        extend : Boolean
-            Indicate whether training data should be extended further into
-            plastic regime (optional, default: True)
-        mat_ref : object of class ``Material``
-            reference material needed to calculate yield function if only N is
-            provided (optional, ignored if sdata is given)
-        sdata: (N, sdim) array
-            List of Cartsian stresses lying on yield locus. Based on these
-            yield stresses, training data in entire deviatoric stress space
-            is created (optional, f no data in self.msparam is given, either
-                        sdata or N and mat_ref must be provided)
-        plot  : Boolean
-            Indicate if graphical output should be performed
-            (optional, default: False)
-        fontsize : int
-            Fontsize for graph annotations (optional, default: 16)
-        gridsearch : Boolean
-            Perform grid search to optimize hyperparameters of ML flow rule
-            (optional, default: False)
-        Fe    : float
-            Relative value of lowest stress in elastic regime (optional, default: 0.1)
-        Ce    : float
-            Relative value of largest stress in elastic regime (optional, default: 0.99)
-        """
-        print('\n---------------------------\n')
-        print('SVM classification training')
-        print('---------------------------\n')
-        # augment raw data and create result vector (yield function) for all
-        # data on work hardening and textures
-        if self.msparam is None:
-            Npl = 1
-            Ntext = 1
-            if sdata is None:
-                # create regular pattern of stresses in sdim-dimensional stress
-                # space based on reference material
-                if mat_ref is None:
-                    raise ValueError(
-                        'create_data_sig: Neither sdata nor mat_ref are provided, cannot generate training data')
-                # define material parameters otherwise defines in material.plasticity
-                if mat_ref.CV is None:
-                    self.elasticity(C11=mat_ref.C11, C12=mat_ref.C12, C44=mat_ref.C44)
-                else:
-                    self.elasticity(CV=mat_ref.CV)
-                self.plasticity(sy=mat_ref.sy, sdim=mat_ref.sdim)
-                xt, yt = self.create_sig_data(N=Nlc, mat_ref=mat_ref, Nseq=Nseq, extend=extend)
-                print('Training data created from reference material', mat_ref.name, ', with', Nlc, 'load cases.')
-            else:
-                # based on given yield stresses
-                Nlc = len(sdata[:, 0])
-                seq = sig_eq_j2(sdata)
-                self.plasticity(sy=np.mean(seq), sdim=len(sdata[0, :]))
-                xt, yt = self.create_sig_data(sdata=sdata, Nseq=Nseq, extend=extend)
-                print('Training data created from {}-dimensional yield stresses with {} load cases.' \
-                      .format(self.sdim, Nlc))
-            self.Ndof = 2 if self.sdim == 3 else 6
-        else:
-            '''WARNING: There are no more hardening levels !!!'''
-            Nlc = self.msparam[0]['Nlc']
-            if self.whdat:
-                Ndinp = len(self.msparam[0]['flow_stress'])
-            else:
-                Ndinp = len(self.msparam[0]['sig_ideal'])
-            Nsdata = 2 * Nseq + 4 if extend else 2 * Nseq
-            N0 = Nlc * Nsdata  # total number of training data points per Ppl for each microstructure
-            Nt = Ndinp * Nsdata
-            dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
-            xt = np.zeros((Nt, dtrain))
-
-            if self.whdat:
-                # create training data in entire stress space from raw data
-                # training data generated here is unscaled
-                sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['flow_stress'],
-                                                     Nseq=Nseq,
-                                                     extend=extend, Fe=Fe, Ce=Ce)
-            else:
-                sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['sig_ideal'],
-                                                     Nseq=Nseq,
-                                                     extend=extend, Fe=Fe, Ce=Ce)
-
-            xt[:, 0:self.sdim] = sig_train
-            #            print('HERE: ', Ndinp, Nsdata, self.ind_wh, self.msparam[0]['plastic_strain'][0, :].shape)
-            if self.whdat:
-                # Add DOF for work Plastic Strain
-                if 'normalized_accumulated_strain' in self.msparam[0].keys():
-                    reversal = True
-                for i in range(Ndinp):
-                    for j in range(Nsdata):
-                        xt[i + j * Ndinp, self.sdim:self.sdim + self.ind_wh] = \
-                            self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
-                        if reversal:
-                            # xt[i + j * Ndinp, self.sdim + self.ind_wh]=self.msparam[0]['normalized_loop_indicator'][i]
-                            # xt[i + j * Ndinp, self.sdim + self.ind_wh + 1]=self.msparam[0]['normalized_accumulated_strain'][i]
-                            # xt[i + j * Ndinp, self.sdim + self.ind_wh + 2]=self.msparam[0]['max_stress'][i]
-                            xt[i + j * Ndinp, self.sdim + self.ind_wh] = self.msparam[0]['normalized_accumulated_strain'][i]
-                            xt[i + j * Ndinp, self.sdim + self.ind_wh + 1] = self.msparam[0]['max_stress'][i]
-
-            print(
-                '%i test data sets created, with %i load cases' % (Nt, Nlc))
-
-        return xt, yt
 
     def create_sig_data(self, N=None, mat_ref=None, sdata=None, Nseq=2, sflow=None,
                         offs=0.01, extend=False, rand=False, Fe=0.1, Ce=0.99):
@@ -1667,8 +1506,8 @@ class Material(object):
         # plastic_range_start = 2.-Fe if Nseq == 1 else 2.-Ce
         # seq = np.append(seq, np.linspace(plastic_range_start, 2. - Fe, Nseq))
         if Nseq == 1:
-            midpoint = 0.5 * (Fe + Ce)
-            seq = np.array([midpoint, 2. - midpoint])
+            midpoint = 0.5*(Fe + Ce)
+            seq = np.array([midpoint, 2.-midpoint])
         else:
             elastic_seq = np.linspace(Fe, Ce, Nseq)
             plastic_seq = np.linspace(2. - Ce, 2. - Fe, Nseq)
@@ -1988,7 +1827,7 @@ class Material(object):
         """
         if sy < 0.:
             raise ValueError('Initial yield strength cannot be negative.')
-        if khard < 0.:
+        if khard <0.:
             warnings.warn('Strain softening not supported. khard is set to 0.')
             khard = 0.
         self.sy0 = sy  # store initial yield strength of material
@@ -2007,14 +1846,14 @@ class Material(object):
             hill = np.ones(self.sdim)
             if len(rv) != self.sdim:
                 raise ValueError(f'plasticity: wrong dimension of yield stress ratios, must be {sdim}')
-            rinv = 1. / np.array(rv)
-            hill[0] = rinv[0] ** 2 + rinv[1] ** 2 - rinv[2] ** 2
-            hill[1] = rinv[1] ** 2 + rinv[2] ** 2 - rinv[0] ** 2
-            hill[2] = rinv[2] ** 2 + rinv[0] ** 2 - rinv[1] ** 2
+            rinv = 1./np.array(rv)
+            hill[0] = rinv[0]**2 + rinv[1]**2 - rinv[2]**2
+            hill[1] = rinv[1]**2 + rinv[2]**2 - rinv[0]**2
+            hill[2] = rinv[2]**2 + rinv[0]**2 - rinv[1]**2
             if self.sdim == 6:
-                hill[3] = rinv[3] ** 2
-                hill[4] = rinv[4] ** 2
-                hill[5] = rinv[5] ** 2
+                hill[3] = rinv[3]**2
+                hill[4] = rinv[4]**2
+                hill[5] = rinv[5]**2
         elif hill is not None and rv is not None:
             warnings.warn('plasticity: Both, hill and rv, have been provided. Using Hill parameters.')
         lh = len(hill)
@@ -2112,7 +1951,7 @@ class Material(object):
         self.Ndof = 2 if self.sdim == 3 else 6
         if self.whdat:
             self.ind_wh = self.Ndof  # starting index for dof associated with work hardening
-            self.Ndof += self.sdim + 2  # add dof's for work hardening parameter if data exists
+            self.Ndof += self.sdim  # add dof's for work hardening parameter if data exists
         if self.txdat:
             self.ind_tx = self.Ndof  # starting index for dof associated with textures
             self.Ndof += self.Nset  # add dof's for textures

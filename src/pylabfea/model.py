@@ -1499,7 +1499,8 @@ class Model(object):
         self.glob['epl'] = epl / Vm
 
     def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True,
-             vmin=None, vmax=None, annot=True, file=None):
+             vmin=None, vmax=None, annot=True, file=None, show_fig=True, pos_bar=0.83,
+             fig=None, ax=None, show_bar=True):
         '''Produce graphical output: draw elements in deformed shape with color 
         according to field variable 'fsel'; uses matplotlib
         
@@ -1525,6 +1526,11 @@ class Model(object):
             Show annotations for x and y-axis (optional, default: True)
         file  : str
             If a filename is provided, plot is exported as PDF (optional, default: None)
+        show_fig : bool
+            True: show figure, False: return figure handle (optional, default: True)
+        pos_bar : float
+            Position of color bar, (optional;
+            for use in Jupyter notebook: 1.01, for python: 0.83)
             
         Keyword Arguments
         -----------------
@@ -1561,7 +1567,11 @@ class Model(object):
         mat     :
             materials and sections of model
         '''
-        fig, ax = plt.subplots(1)
+        if fig is None:
+            fig, ax = plt.subplots(1)
+        else:
+            if ax is None:
+                raise ValueError('Figure handle is provided, but no axis handle.')
         cmap = plt.cm.get_cmap(colormap, cdepth)
 
         def strain1():
@@ -1740,11 +1750,11 @@ class Model(object):
             ax.scatter(hx, hy, s=50, c='red', marker='o', zorder=3)
 
         # add colorbar
-        axl = fig.add_axes([1.01, 0.15, 0.04, 0.7])  # [left, bottom, width, height]
-        # for use in juypter notebook: left = 1.01, for python: left = 0.86
-        norm = colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
-        cb1 = colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
-        cb1.set_label(text_cb)
+        if show_bar:
+            axl = fig.add_axes([pos_bar, 0.15, 0.04, 0.7])  # [left, bottom, width, height]
+            norm = colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
+            cb1 = colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
+            cb1.set_label(text_cb)
         # add axis annotations
         if annot:
             ax.set_xlabel('x (mm)')
@@ -1754,4 +1764,7 @@ class Model(object):
         # save plot to file if filename is provided
         if file is not None:
             fig.savefig(file + '.pdf', format='pdf', dpi=300)
-        plt.show()
+        if show_fig:
+            plt.show()
+        else:
+            return fig, ax

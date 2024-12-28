@@ -6,7 +6,7 @@ that is required to define a material, i.e., all parameters for elasticity, plas
 and microstructures are provided from the data. Materials are defined in
 module pylabfea.material based on the analyzed data of this module.
 
-uses NumPy, SciPy, MatPlotLib, Pandas
+uses NumPy, SciPy, MatPlotLib
 
 Version: 4.0 (2021-11-27)
 Last Update: (24-04-2023)
@@ -19,7 +19,6 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
-from scipy import interpolate
 from scipy.signal import savgol_filter
 
 
@@ -86,6 +85,7 @@ class Data(object):
         |    sig_ideal : interpolated stress tensors at onset of plastic yielding (epc) for each load case
 
     """
+
     def __init__(self, source, path_data='./',
                  name='Dataset', mat_name="Simulanium",
                  sdim=6,
@@ -93,7 +93,7 @@ class Data(object):
                  epl_start=1.e-3, epl_max=0.03,
                  plot=False,
                  wh_data=True):
-        if sdim!=3 and sdim!=6:
+        if sdim != 3 and sdim != 6:
             raise ValueError('Value of sdim must be either 3 or 6')
         self.mat_data = dict()
         self.mat_data['epc'] = epl_crit
@@ -108,7 +108,7 @@ class Data(object):
         self.mat_data['texture'] = np.zeros(1)
 
         if type(source) is str:
-            raw_data = self.read_data(path_data+source)
+            raw_data = self.read_data(path_data + source)
             self.parse_data(raw_data, epl_crit, epl_start, epl_max)  # add data to mat_data
         else:
             raw_data = np.array(source)
@@ -156,7 +156,7 @@ class Data(object):
                 peeq_full[i] = FE.eps_eq(E_Total_6D)
                 Original_Total_Strains[i] = E_Total_6D
 
-            Final_Data[key] = {"SEQ": seq_full, "PEEQ": peeq_plastic, "TEEQ": peeq_full, #"Load": Load,
+            Final_Data[key] = {"SEQ": seq_full, "PEEQ": peeq_plastic, "TEEQ": peeq_full,  # "Load": Load,
                                "Stress": Original_Stresses,
                                "Plastic_Strain": Original_Plastic_Strains, "Total_Strain": Original_Total_Strains}
 
@@ -172,7 +172,7 @@ class Data(object):
             Strain_Plastic = [Final_Data[key]["PEEQ"]]
             self.SPE_data[key] = {"Stress": Stress, "Strain": Strain_Plastic}
 
-        #For having also the elastic data and shift the 0 plastic strain to 0.02% to match the micromechanical data. Can be used in Stress-Strain Reconstruction.
+        # For having also the elastic data and shift the 0 plastic strain to 0.02% to match the micromechanical data. Can be used in Stress-Strain Reconstruction.
         self.Data_Visualization = {}
         for key, dat in Final_Data.items():
             Stress = dat["Stress"]
@@ -209,6 +209,7 @@ class Data(object):
         epl_max : float
             Maximum equiv. strain up to which data is considered
         """
+
         def find_transition_index(stress, strain):
             """Calculates the index at which a significant transition in the total stress-strain relationship occurs.
             The function applies a Savitzky-Golay filter to smooth the stress data and then calculates the first
@@ -237,12 +238,12 @@ class Data(object):
             strain = np.array(strain)
             stress = stress.flatten()
             strain = strain.flatten()
-            smoothed_stress = savgol_filter(stress, window_length = 51, polyorder = 3)
+            smoothed_stress = savgol_filter(stress, window_length=51, polyorder=3)
             derivative_smoothed = np.gradient(smoothed_stress, strain)
             second_derivative = np.gradient(derivative_smoothed, strain)
             transition_index = np.argmax(np.abs(second_derivative))
             while val["TEEQ"][transition_index] > 0.0003:
-                 transition_index = transition_index - 5
+                transition_index = transition_index - 5
             return transition_index
 
         Nlc = len(db.keys())
@@ -316,9 +317,9 @@ class Data(object):
             ct += 1
             it_stress = val["SEQ"]
             it_strain = val["TEEQ"]
-            it = find_transition_index(it_stress, it_strain)
-            elstrains.append(val['Total_Strain'][it])
-            elstress.append(val['Stress'][it])
+            # it = find_transition_index(it_stress, it_strain)
+            # elstrains.append(val['Total_Strain'][it])
+            # elstress.append(val['Stress'][it])
         E_av /= Nlc
         nu_av /= Nlc
         sy_av /= Nlc
@@ -332,15 +333,14 @@ class Data(object):
         self.mat_data['Nlc'] = Nlc
         self.mat_data['sy_list'] = sy_list
         self.mat_data['sig_ideal'] = np.array(sig_ideal)
-        self.mat_data['elstress'] = elstress
-        self.mat_data['elstrains'] = elstrains
+        # self.mat_data['elstress'] = elstress
+        # self.mat_data['elstrains'] = elstrains
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print('Estimated elastic constants: E=%5.2f GPa, nu=%4.2f' % (E_av / 1000, nu_av))
         print('Estimated yield strength: %5.2f MPa at PEEQ = %5.3f' % (sy_av, epl_start))
 
     def convert_data(self, sig):
-        print("inside where it shoulld not be")
         """
         Convert data provided only for stress tensor at yield point into mat_param dictionary
 
@@ -349,8 +349,9 @@ class Data(object):
         sig : ndarray
             Stress tensors at yield onset
         """
+        print("inside where it should not be")
         Nlc = len(sig)
-        sdim = len(sig[0,:])
+        sdim = len(sig[0, :])
         if sdim != self.mat_data['sdim']:
             warnings.warn(
                 'Warning: dimension of stress in data does not agree with parameter sdim. Use value from data.')
@@ -400,11 +401,11 @@ class Data(object):
         syc_1 = []
         for i, key in enumerate(db.keys()):
             plt.subplot(1, 2, 2)  # , projection='polar')
-            syc = FE.s_cyl(np.array(db[key]["Parsered_Data"]["S_yld"]))
-            plt.plot(np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Plastic_data"], 1],
-                     np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Plastic_data"], 0], 'or')
-            plt.plot(np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Elastic_data"], 1],
-                     np.array(db[key]["Parsered_Data"]["S_Cyl"])[db[key]["Parsered_Data"]["Elastic_data"], 0], 'ob')
+            syc = FE.s_cyl(np.array(db[key]["Parsed_Data"]["S_yld"]))
+            plt.plot(np.array(db[key]["Parsed_Data"]["S_Cyl"])[db[key]["Parsed_Data"]["Plastic_data"], 1],
+                     np.array(db[key]["Parsed_Data"]["S_Cyl"])[db[key]["Parsed_Data"]["Plastic_data"], 0], 'or')
+            plt.plot(np.array(db[key]["Parsed_Data"]["S_Cyl"])[db[key]["Parsed_Data"]["Elastic_data"], 1],
+                     np.array(db[key]["Parsed_Data"]["S_Cyl"])[db[key]["Parsed_Data"]["Elastic_data"], 0], 'ob')
             syc_0.append(syc[0][0])
             syc_1.append(syc[0][1])
 
