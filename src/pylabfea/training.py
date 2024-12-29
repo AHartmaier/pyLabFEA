@@ -254,7 +254,7 @@ def Create_Test_Sig(Json, Number_sig_per_strain = 4):
 
     db2 = FE.Data(Json)
     mat_ts = FE.Material(name="Test")  # define material
-    mat_ts.elasticity(E=db2.mat_data['E_av'], nu=db2.mat_data['nu_av'])
+    mat_ts.elasticity(CV=db2.mat_data['elast_const'])
     mat_ts.plasticity(sy=db2.mat_data['sy_av'], khard=4.5e3)
     mat_ts.calc_properties(verb=False, eps=0.03, sigeps=True)
     mat_ts.from_data(db2.mat_data)
