@@ -248,7 +248,8 @@ print('Calculated {} yield stresses.'.format(nsamples_init))
 C = 1.0
 gamma = 1.0
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.train_SVC(C=C, gamma=gamma, sdata=sig, gridsearch=True)
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.7, Ce=0.9, Nseq=2, sdata=sig,
+                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5])
 plot_yield_locus(mat_ml=mat_ml, mat_h=mat_h, niter=0)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
@@ -263,7 +264,8 @@ for i in range(nsamples_to_generate):
     for j in range(nmembers):
         idx = np.random.choice(np.arange(sig.shape[0]), int(sig.shape[0] * subset_percentage), replace=False)
         mat_ml = FE.Material(name='ML-Hill_{}'.format(j))
-        mat_ml.train_SVC(C=C, gamma=gamma, sdata=sig[idx, :],
+        mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.7, Ce=0.9, Nseq=2,
+                         sdata=sig[idx, :],
                          gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5])
         hyp_C_list.append(mat_ml.C_yf)
         hyp_g_list.append(mat_ml.gam_yf)
@@ -286,7 +288,9 @@ for i in range(nsamples_to_generate):
     sunit = np.vstack([sunit, sunit_new])
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.train_SVC(C=C, gamma=gamma, sdata=sig, gridsearch=True)
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.7, Ce=0.9, Nseq=2,
+                 sdata=sig,
+                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5])
 
 #Create ML model with conventional training approach
 Ntot = nsamples_init + nsamples_to_generate
@@ -302,16 +306,12 @@ plot_yield_locus(mat_ml, mat_h, nsamples_to_generate, mat3=mat_ml_r)
 plot_variances(var)
 
 fig = plt.figure()
-plt.hist(hyp_C_list, label='C')
-plt.hist(hyp_g_list, label='gamma')
-plt.legend()
-plt.show()
-
-fig = plt.figure()
 plt.plot(hyp_g_list, 'b.', label='gamma')
 plt.plot(hyp_C_list, 'r.', label='C')
 plt.legend()
+plt.title('Evolution of hyperparameters')
 plt.xlabel('iteration * committee')
+plt.ylabel('C, gamma')
 plt.show()
 
 np.savetxt('DATA_sig_iter_{}.txt'.format(i + 1), sig)
