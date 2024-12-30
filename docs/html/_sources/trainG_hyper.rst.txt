@@ -1,0 +1,7 @@
+trainG\_hyper module
+====================
+
+.. automodule:: trainG_hyper
+   :members:
+   :undoc-members:
+   :show-inheritance:

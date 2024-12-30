@@ -1,0 +1,7 @@
+bench\_plast module
+===================
+
+.. automodule:: bench_plast
+   :members:
+   :undoc-members:
+   :show-inheritance:

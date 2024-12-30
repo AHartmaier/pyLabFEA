@@ -1,0 +1,7 @@
+test\_Barlat module
+===================
+
+.. automodule:: test_Barlat
+   :members:
+   :undoc-members:
+   :show-inheritance:

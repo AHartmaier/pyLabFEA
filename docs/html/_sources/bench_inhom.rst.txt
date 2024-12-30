@@ -1,0 +1,7 @@
+bench\_inhom module
+===================
+
+.. automodule:: bench_inhom
+   :members:
+   :undoc-members:
+   :show-inheritance:
