@@ -43,7 +43,7 @@ mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
 mat_ml.from_data(db.mat_data)  # data-based definition of material
 
 # Train SVC with data from all microstructures
-mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False) # check the parameters with the values in the paper! # materials.py put a comment for Nseq= 1.
+mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=False)
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
 # Testing

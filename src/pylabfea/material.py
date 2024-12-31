@@ -2278,8 +2278,7 @@ class Material(object):
                        origin='lower', cmap=plt.cm.PuOr_r)
         contour = axs.contour(xx, yy, Z, levels=[0], linewidths=1.5,
                               linestyles='solid', colors=c)
-        line = contour.collections
-        return line
+        return contour
 
     def plot_yield_locus(self, fun=None, label=None, data=None, trange=1.e-2, peeq=0.,
                          xstart=None, xend=None, axis1=[0], axis2=[1], iso=False, ref_mat=None,

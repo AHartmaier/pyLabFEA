@@ -14,19 +14,20 @@ July 2023
 Published as part of pyLabFEA package under GNU GPL v3 license
 """
 
-#import sys
-#import os
-#import matplotlib
+# import sys
+# import os
+# import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pylabfea as FE
 from scipy.optimize import differential_evolution
 from scipy.optimize import fsolve
+from matplotlib.lines import Line2D
 
 
-#matplotlib.use('Agg')  # required???
-#sys.path.append('src/data-gen')  # required???
-#sys.path.append('src/verify')
+# matplotlib.use('Agg')  # required???
+# sys.path.append('src/data-gen')  # required???
+# sys.path.append('src/verify')
 
 
 def spherical_to_cartesian(angles):
@@ -137,7 +138,7 @@ def plot_variances(var_list):
     plt.grid()
     plt.savefig('variances_vs_iterations_weight=999.png', dpi=300)
     plt.show()
-    #plt.close()
+    # plt.close()
 
 
 def plot_yield_locus(mat_ml, mat_h, niter, mat3=None):
@@ -150,23 +151,21 @@ def plot_yield_locus(mat_ml, mat_h, niter, mat3=None):
     Z = mat_ml.calc_yf(FE.sig_cyl2princ(hh))  # value of yield function for every grid point
     Z2 = mat_h.calc_yf(FE.sig_cyl2princ(hh))
     fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
-    line = mat_ml.plot_data(Z, ax, xx, yy, c='black')
-    lines = [line[0]]
-    labels = ['ML active learning']
+    contour = mat_ml.plot_data(Z, ax, xx, yy, c='black')
+    legend_elements = [Line2D([0], [0], color='black', lw=2, label='ML active learning')]
     if mat3 is not None:
         Z3 = mat3.calc_yf(FE.sig_cyl2princ(hh))
-        line3 = mat3.plot_data(Z3, ax, xx, yy)
-        lines.append(line3[0])
-        labels.append('ML conventional')
-    line2 = mat_h.plot_data(Z2, ax, xx, yy, c='blue')
-    lines.append(line2[0])
-    labels.append('Reference')
+        contour = mat3.plot_data(Z3, ax, xx, yy)
+        legend_elements.append(Line2D([0], [0], color=contour.colors, lw=2, label='ML conventional'))
+    contour = mat_h.plot_data(Z2, ax, xx, yy, c='blue')
+    legend_elements.append(Line2D([0], [0], color='blue', lw=2, label='Reference'))
+
     ax.set_xlabel(r'$\theta$ (rad)', fontsize=22)
     ax.set_ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=22)
     ax.tick_params(axis="x", labelsize=18)
     ax.tick_params(axis="y", labelsize=18)
     plt.savefig('PLOTS_equiv_yield_stresses_iter_{}.png'.format(niter))
-    plt.legend(lines, labels)
+    plt.legend(handles=legend_elements)
     plt.show()
     # plt.close('all')
 
@@ -225,7 +224,7 @@ nsamples_to_generate = 200  # Number of iterations, std. 30
 subset_percentage = 0.8
 
 # setup reference material with Hill-like anisotropy
-#path = os.path.dirname(__file__)
+# path = os.path.dirname(__file__)
 sy = 50.
 E = 200000.
 nu = 0.3
@@ -233,10 +232,10 @@ hill = [1.4, 1.0, 0.7, 1.3, 0.8, 1.0]
 mat_h = FE.Material(name='Hill-reference')
 mat_h.elasticity(E=E, nu=nu)
 mat_h.plasticity(sy=sy, hill=hill)
-#mat_h.calc_properties(eps=0.0013, sigeps=True)
-#c = int(nsamples_init*2/3)
-#d = nsamples_init - c
-#sunit = FE.load_cases(number_3d=c, number_6d=d)
+# mat_h.calc_properties(eps=0.0013, sigeps=True)
+# c = int(nsamples_init*2/3)
+# d = nsamples_init - c
+# sunit = FE.load_cases(number_3d=c, number_6d=d)
 sunit = creator_rnd(nsamples_init, 8)
 np.savetxt('Test_Cases.txt', sunit)
 # create set of unit stresses and
@@ -245,11 +244,18 @@ x1 = fsolve(find_yloc, np.ones(nsamples_init) * mat_h.sy, args=(sunit, mat_h), x
 sig = sunit * x1[:, None]
 print('Calculated {} yield stresses.'.format(nsamples_init))
 # train SVC with yield stress data generated from Hill flow rules
-C = 1.0
-gamma = 1.0
+C = 6.0
+gamma = 2.0
+Fe = 0.5
+Ce = 0.99
+Nseq = 20
+vlevel = 0
+cvals = [5., 6., 8.]
+gvals = [1., 2., 3.]
+
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.7, Ce=0.9, Nseq=2, sdata=sig,
-                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5])
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq, sdata=sig,
+                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5], vlevel=vlevel)
 plot_yield_locus(mat_ml=mat_ml, mat_h=mat_h, niter=0)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
@@ -264,9 +270,9 @@ for i in range(nsamples_to_generate):
     for j in range(nmembers):
         idx = np.random.choice(np.arange(sig.shape[0]), int(sig.shape[0] * subset_percentage), replace=False)
         mat_ml = FE.Material(name='ML-Hill_{}'.format(j))
-        mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.7, Ce=0.9, Nseq=2,
+        mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                          sdata=sig[idx, :],
-                         gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5])
+                         gridsearch=True, cvals=cvals, gvals=gvals, vlevel=vlevel)
         hyp_C_list.append(mat_ml.C_yf)
         hyp_g_list.append(mat_ml.gam_yf)
         committee.append(mat_ml)
@@ -279,8 +285,8 @@ for i in range(nsamples_to_generate):
     variance = res.fun
 
     var.append(-variance)
-    #print(-variance)
-    #print("number of iteration is:", i)
+    # print(-variance)
+    # print("number of iteration is:", i)
     # Calculate corresponding stress state and update data set
     x1 = fsolve(find_yloc, mat_h.sy, args=(sunit_new, mat_h), xtol=1.e-5)
     sig_new = sunit_new * x1[:, None]
@@ -288,11 +294,11 @@ for i in range(nsamples_to_generate):
     sunit = np.vstack([sunit, sunit_new])
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.7, Ce=0.9, Nseq=2,
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                  sdata=sig,
-                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5])
+                 gridsearch=True, cvals=cvals, gvals=gvals, vlevel=vlevel)
 
-#Create ML model with conventional training approach
+# Create ML model with conventional training approach
 Ntot = nsamples_init + nsamples_to_generate
 c = int(Ntot / 3)
 d = Ntot - c
@@ -300,7 +306,9 @@ sunit_r = FE.load_cases(number_3d=c, number_6d=d)
 x1 = fsolve(find_yloc, np.ones(Ntot) * mat_h.sy, args=(sunit_r, mat_h), xtol=1.e-5)
 sig_r = sunit_r * x1[:, None]
 mat_ml_r = FE.Material(name='ML-Hill')  # define material
-mat_ml_r.train_SVC(C=C, gamma=gamma, sdata=sig_r, gridsearch=True)
+mat_ml_r.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
+                   sdata=sig_r,
+                   gridsearch=True, cvals=cvals, gvals=gvals, vlevel=vlevel)
 
 plot_yield_locus(mat_ml, mat_h, nsamples_to_generate, mat3=mat_ml_r)
 plot_variances(var)
