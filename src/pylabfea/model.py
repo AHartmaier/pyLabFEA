@@ -1499,8 +1499,8 @@ class Model(object):
         self.glob['epl'] = epl / Vm
 
     def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True,
-             vmin=None, vmax=None, annot=True, file=None, show_fig=True, pos_bar=0.83,
-             fig=None, ax=None, show_bar=True):
+             vmin=None, vmax=None, annot=True, file=None, showfig=True, pos_bar=0.83,
+             fig=None, ax=None, showbar=True):
         '''Produce graphical output: draw elements in deformed shape with color 
         according to field variable 'fsel'; uses matplotlib
         
@@ -1526,8 +1526,10 @@ class Model(object):
             Show annotations for x and y-axis (optional, default: True)
         file  : str
             If a filename is provided, plot is exported as PDF (optional, default: None)
-        show_fig : bool
+        showfig : bool
             True: show figure, False: return figure handle (optional, default: True)
+        showbar : bool
+            True: show color bar, False: no color bar shown (optional, default: True)
         pos_bar : float
             Position of color bar, (optional;
             for use in Jupyter notebook: 1.01, for python: 0.83)
@@ -1710,8 +1712,8 @@ class Model(object):
                 jh = np.amax(el.nodes)  # right node of current element
                 ih1 = ih * self.dim  # position of ux in u vector
                 jh1 = jh * self.dim  # position of ux in u vector
-                hx1 = self.npos[ih]  # x position of left node
-                hx2 = self.npos[jh]  # x position of right node
+                hx1 = np.array(self.npos[ih])  # x position of left node
+                hx2 = np.array(self.npos[jh])  # x position of right node
                 if mag > 0. and self.u is not None:
                     hx1 += mag * self.u[ih1]  # add nodal displacement
                     hx2 += mag * self.u[jh1]
@@ -1724,8 +1726,8 @@ class Model(object):
                 k = [0, 3, 1, 2]
                 for p, ih in enumerate(el.nodes):
                     j = ih * self.dim
-                    hx[k[p]] = self.npos[j]
-                    hy[k[p]] = self.npos[j + 1]
+                    hx[k[p]] = np.array(self.npos[j])
+                    hy[k[p]] = np.array(self.npos[j + 1])
                     if mag > 0. and self.u is not None:
                         hx[k[p]] += mag * self.u[j]
                         hy[k[p]] += mag * self.u[j + 1]
@@ -1738,7 +1740,7 @@ class Model(object):
 
         # plot nodes
         if (shownodes):
-            hh = self.npos
+            hh = np.array(self.npos)
             if mag > 0. and self.u is not None:
                 hh += mag * self.u
             if (self.dim == 1):
@@ -1750,7 +1752,7 @@ class Model(object):
             ax.scatter(hx, hy, s=50, c='red', marker='o', zorder=3)
 
         # add colorbar
-        if show_bar:
+        if showbar:
             axl = fig.add_axes([pos_bar, 0.15, 0.04, 0.7])  # [left, bottom, width, height]
             norm = colors.Normalize(vmin=vmin, vmax=vmax, clip=False)
             cb1 = colorbar.ColorbarBase(axl, cmap=cmap, norm=norm, orientation='vertical')
@@ -1764,7 +1766,7 @@ class Model(object):
         # save plot to file if filename is provided
         if file is not None:
             fig.savefig(file + '.pdf', format='pdf', dpi=300)
-        if show_fig:
+        if showfig:
             plt.show()
         else:
             return fig, ax

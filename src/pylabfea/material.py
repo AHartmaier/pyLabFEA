@@ -20,6 +20,7 @@ from pylabfea.training import load_cases
 from scipy.optimize import root_scalar
 from scipy.optimize import fsolve
 from sklearn import svm
+from matplotlib.lines import Line2D
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
@@ -1221,7 +1222,7 @@ class Material(object):
         if x_test is None:
             test_sc = None
         else:
-            test_sc = 100 * self.svm_yf.score(x_test, y_test)
+            test_sc = 100 * self.svm_yf.score(X_test, y_test)
         # create plot if requested
         if plot:
             print('Plot of extended training data for SVM classification in 2D cylindrical stress space')
@@ -2396,7 +2397,8 @@ class Material(object):
                 ref_mat = False
                 axis1[j] = 0
             else:
-                warnings.warn('plot_yield_locus: axis1 not defined properly, set to sig_1:{} {}'.format(axis1, j))
+                warnings.warn('plot_yield_locus: axis1 not defined properly, set to sig_1:{} {}'\
+                              .format(axis1, j))
                 s1 = xx.ravel()
                 title = r'$\sigma_1$'
                 if scaling:
@@ -2434,7 +2436,8 @@ class Material(object):
                     ylab = r'$\sigma_3$ (MPa)'
                 axis2[j] = 2
             else:
-                warnings.warn('plot_yield_locus: axis2 not defined properly, set to sig_2: {} {}'.format(axis2, j))
+                warnings.warn('plot_yield_locus: axis2 not defined properly, set to sig_2: {} {}'\
+                              .format(axis2, j))
                 s2 = yy.ravel()
                 title += r'-$\sigma_2$ slice'
                 if scaling:
@@ -2465,15 +2468,15 @@ class Material(object):
                 Z = fun(sig, pred=True) * sf
             if label is None:
                 label = self.name
-            hl = self.plot_data(Z, ax, xx, yy, field=field)
-            lines.extend(hl)
-            labels.extend([label])
+            contour = self.plot_data(Z, ax, xx, yy, field=field)
+            lines.append(Line2D([0], [0], color=contour.colors, lw=2))
+            labels.append(label)
             # plot reference function if provided
             if ref_mat is not None:
                 Z = ref_mat.calc_yf(sig, epl=peeq, pred=True) * sf
-                labels.extend([ref_mat.name])
-                hl = self.plot_data(Z, ax, xx, yy, field=False, c='black')
-                lines.extend(hl)
+                labels.append(ref_mat.name)
+                contour = self.plot_data(Z, ax, xx, yy, field=False, c='black')
+                lines.append(Line2D([0], [0], color=contour.colors, lw=2))
             # plot ellipsis as reference if requested
             if iso:
                 x0, y0 = self.ellipsis()  # reference for isotropic material
