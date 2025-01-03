@@ -1,0 +1,14 @@
+name: pylabfea-intelex
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9.12
+  - scikit-learn-intelex=2023.2.1
+  - numpy
+  - matplotlib
+  - scipy
+  - scikit-learn
+  - pytest
+  - jupyter
+
