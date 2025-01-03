@@ -7,7 +7,7 @@
 
 ### Python Laboratory for Finite Element Analysis
 
-  - Authors: Alexander Hartmaier, Ronak Shoghi
+  - Authors: Alexander Hartmaier, Ronak Shoghi, Jan Schmidt
   - Organization: ICAMS, Ruhr University Bochum, Germany
   - Contact: <alexander.hartmaier@rub.de>
 
