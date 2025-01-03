@@ -338,6 +338,7 @@ class Material(object):
     def calc_yf(self, sig, tex=None, epl=None,
                 accumulated_strain=0.0, max_stress=0.0,
                 ana=False, pred=False):
+
         """Calculate yield function
 
         Parameters
@@ -679,6 +680,7 @@ class Material(object):
               np.abs(Stp1[2] - Stp2[0]) ** a + np.abs(Stp1[2] - Stp2[1]) ** a + np.abs(Stp1[2] - Stp2[2]) ** a
         seq = (0.25 * seq) ** (1. / a)
         return seq
+
 
     def calc_fgrad(self, sig, text=None, epl=None, seq=None,
                    accumulated_strain=0.0, max_stress=0.0,
@@ -1050,7 +1052,7 @@ class Material(object):
                         'Using texture data "%s" for training: %i data sets with texture_parameters in range [%4.2f,%4.2f]'
                         % (self.msparam[i]['ms_type'], self.msparam[i]['Ntext'], self.msparam[i]['texture'][0],
                            self.msparam[i]['texture'][-1]))
-    
+
             # coordinate transformation for test data
             if x_test is not None:
                 Ntest = len(x_test)
@@ -1528,7 +1530,6 @@ class Material(object):
         if np.any(np.abs(yt) <= 0.99):
             warnings.warn(
                 'train_SVC: result vector for yield function contains more categories than "-1" and "+1". Will result in higher dimensional SVC.')
-                
         # Train SVC with data from all microstructures in data
         if self.sdim == 3:
             # assuming Cartesian stresses
@@ -1543,6 +1544,7 @@ class Material(object):
                                                      cvals=cvals, gvals=gvals,
                                                      verbose=verbose,
                                                      metric=metric, pca_dim=pca_dim)
+
 
         print(self.svm_yf)
         # print("Training set score: {} %".format(train_sc))  # JS: Commented out for grid
@@ -2246,6 +2248,7 @@ class Material(object):
         # JS TODO: self.msparam[0]['Ntext'] is always = 1 as one Data Object just contains 1 Texture
         # JS TODO: self.set_texture function is outdated as it was based on mixing texture components
         # import dictionaries with all microstructure parameters resulting from data module
+
         self.msparam = np.array(param, ndmin=1)  # required as array ???
         # JS: Storing all data dicts might blow up storage!
         self.Nset = len(self.msparam)  # number of microstructures in material definition
@@ -2306,6 +2309,7 @@ class Material(object):
             self.Ndof += self.tdim
 
         # assign average properties to material and initialize texture and work-hardening
+
         self.elasticity(CV=self.msparam[0]['elast_const'])
         # JS: Is also making less sense if multiple textures are in one material. Why just take the first E, nu, sy???
         self.plasticity(sy=self.msparam[0]['sy_av'], sdim=self.sdim)
