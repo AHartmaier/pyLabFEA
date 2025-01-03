@@ -682,7 +682,7 @@ class Material(object):
         return seq
 
 
-    def calc_fgrad(self, sig, text=None, epl=None, seq=None,
+    def calc_fgrad(self, sig, tex=None, epl=None, seq=None,
                    accumulated_strain=0.0, max_stress=0.0,
                    ana=False):
         """Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield

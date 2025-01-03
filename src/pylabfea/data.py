@@ -410,7 +410,7 @@ class Data(object):
                  plot=False,
                  wh_data=True,
                  tx_data=False,
-                 texture_name='Random'
+                 texture_name='Random',
                  tx_descriptor='GSH_3',
                  mode='RS',
                  red_wh_data=False):
@@ -465,8 +465,15 @@ class Data(object):
         # JS TODO: Store CYL data correctly
         data = json.load(open(Data_File))
         Final_Data = dict()
+        if self.mat_data['epc'] is None:
+            epc = 0.0
+        else:
+            epc = self.mat_data['epc']
 
         for key, val in data.items():
+            if 'cyl' in key:
+                # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
+                Final_Data[key] = {"Stress": res}
             if key == 'Texture':
                 self.mat_data['tx_name'] = val['name']
                 try:
@@ -498,25 +505,29 @@ class Data(object):
             E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]
             Len_Sigma = len(Sigma[0])
             seq_full = np.zeros(Len_Sigma)
-            peeq_full = np.zeros(Len_Sigma)
+            teeq_full = np.zeros(Len_Sigma)
             peeq_plastic = np.zeros(Len_Sigma)
             Original_Stresses = np.zeros((Len_Sigma, 6))
             Original_Plastic_Strains = np.zeros((Len_Sigma, 6))
             Original_Total_Strains = np.zeros((Len_Sigma, 6))
             Plastic_Strains_Shifted = np.zeros((Len_Sigma, 6))
             epl = []
-            if self.mat_data['epc'] is None:
-                epc = 0.0
-            else:
-                epc = self.mat_data['epc']
             for i in range(Len_Sigma):
                 Stress_6D = np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i], Sigma[3][i], Sigma[4][i], Sigma[5][i]])
                 Original_Stresses[i, :] = Stress_6D
                 seq_full[i] = FE.sig_eq_j2(Stress_6D)
-                if 'cyl' in key:
-                    # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
-                    Final_Data[key] = {"Stress": res}
-                peeq_full[i] = FE.eps_eq(E_Total_6D)
+
+                E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
+                                         E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
+
+                peeq_plastic[i] = FE.eps_eq(E_Plastic_6D)
+                Original_Plastic_Strains[i, :] = E_Plastic_6D
+
+                E_Total_6D = np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
+                                       E_Total[3][i], E_Total[4][i], E_Total[5][i]])
+
+                
+                teeq_full[i] = FE.eps_eq(E_Total_6D)
                 Original_Total_Strains[i] = E_Total_6D
                 # For having also the elastic data and shift the 0 plastic strain
                 # to 0.02% to match the micromechanical data.
@@ -530,7 +541,7 @@ class Data(object):
                                "Eq_Strain_Plastic": peeq_plastic,  # always shifted ???
                                "Shifted_Strain_Plastic": Plastic_Strains_Shifted,  # required ???
                                "Strain_Total": Original_Total_Strains,
-                               "Eq_Strain_Total": peeq_full,
+                               "Eq_Strain_Total": teeq_full,
                                }
         return Final_Data
 
@@ -551,8 +562,8 @@ class Data(object):
             Minimum separation of plastic strains used for training, if 0, no minimum is enforced
         """
         # initializations
-        # Nlc = len(self.lc_data.keys())
-        Nlc = len(db.keys()) # JS: includes cyl keys
+        Nlc = len(self.lc_data.keys())
+        # Nlc = len(db.keys()) # JS: includes cyl keys ???
         Ncyl = 0 # JS: counts cyl keys
         E_av = 0.
         nu_av = 0.
@@ -570,8 +581,8 @@ class Data(object):
         elstrain = []
         elstress = []
         it_list = []
-        #for key, val in self.lc_data.items():
-        for key, val in db.items():
+        #for key, val in db.items():  ???
+        for key, val in self.lc_data.items():
             if 'cyl' in key:
                 # JS: CYL dicts contain only stress tensor at yield onset -> only append sig_ideal
                 Ncyl += 1

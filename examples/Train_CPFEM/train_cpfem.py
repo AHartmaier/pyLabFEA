@@ -19,7 +19,6 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.optimize import fsolve
-import matplotlib.lines as mlines
 from matplotlib.gridspec import GridSpec
 import random
 
@@ -83,8 +82,7 @@ plt.show()
 # Plot initial yield locus in pi-plane with the average yield strength from data
 Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * 0, pred=False)  # value of yield fct for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(5.6, 4.5))
-linet, = mat_ml.plot_data(Z, ax, xx, yy, c='black')
-linet.set_linewidth(2.2)
+cont = mat_ml.plot_data(Z, ax, xx, yy, c='black')
 lineu = ax.axhline(db.mat_data['sy_av'], color='#9A1414', lw=2)
 legend_elements = [
     Line2D([0], [0], color='black', lw=2, label='ML'),
@@ -122,8 +120,8 @@ mat_ml.plot_data(Z0, ax, xx, yy, c="#600000")
 mat_ml.plot_data(Z1, ax, xx, yy, c="#ff5050")
 plt.scatter(sig_d0[:, 1], sig_d0[:, 0], s=5, c="black")
 plt.scatter(sig_d1[:, 1], sig_d1[:, 0], s=5, c="black")
-handle1 = mlines.Line2D([], [], color="#550000", label='Equivalent Plastic Strain : 0%')
-handle2 = mlines.Line2D([], [], color="#ff3333", label='Equivalent Plastic Strain : 2.5%')
+handle1 = Line2D([], [], color="#600000", label='Equivalent Plastic Strain : 0%')
+handle2 = Line2D([], [], color="#ff5050", label='Equivalent Plastic Strain : 2.5%')
 ax.legend(handles=[handle1, handle2], loc='upper left', bbox_to_anchor=(1.05, 1))
 if save_fig:
     fig.savefig('ML+ScatterData.png', dpi=300)
