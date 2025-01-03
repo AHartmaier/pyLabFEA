@@ -10,6 +10,7 @@ with open('README.md') as readme_file:
 
 test_requirements = ['pytest>=3', ]
 setup_requirements = ['pytest-runner', ]
+install_requires = ['numpy', 'matplotlib', 'scipy', 'scikit-learn', 'pytest']
 
 setup(
     name='pylabfea',
@@ -34,7 +35,7 @@ setup(
     include_package_data=True,
     keywords='FEA',
     packages=find_packages('src', exclude=["*tests*"]),
-    package_dir={'':'src'},
+    package_dir={'': 'src'},
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
