@@ -2309,7 +2309,6 @@ class Material(object):
             self.Ndof += self.tdim
 
         # assign average properties to material and initialize texture and work-hardening
-
         self.elasticity(CV=self.msparam[0]['elast_const'])
         # JS: Is also making less sense if multiple textures are in one material. Why just take the first E, nu, sy???
         self.plasticity(sy=self.msparam[0]['sy_av'], sdim=self.sdim)

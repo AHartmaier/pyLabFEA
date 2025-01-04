@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Train ML flow rule to reference material with Goss texture.
-Reference material is described by parameters for Barlat Yld2004-18p model.
-Application of trained ML flow rule in FEA
+"""Train ML flow rule to reference material with Goss texture
+reference material described by parameters for Barlat Yld2004-18p model
+application of trained ML flow rule in FEA
 
 Authors: Ronak Shoghi, Alexander Hartmaier
 ICAMS/Ruhr University Bochum, Germany
