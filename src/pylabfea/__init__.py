@@ -11,7 +11,7 @@ from pylabfea.basic import Strain, Stress, a_vec, b_vec, yf_tolerance, \
 from pylabfea.model import Model
 from pylabfea.material import Material
 from pylabfea.data import Data, find_transition_index, get_elastic_coefficients
-from pylabfea.training import load_cases, training_score
+from pylabfea.training import load_cases, training_score, create_test_sig
 from importlib.metadata import version
 
 __author__ = """Alexander Hartmaier, Ronak Shoghi"""

@@ -7,8 +7,9 @@ under various loading conditions.
 
 uses NumPy, ScipPy, MatPlotLib, sklearn, pickle, and pyLabFEA.model
 
-Version: 4.1 (2022-01-23)
-Authors: Alexander Hartmaier, Ronak Shoghi, ICAMS/Ruhr University Bochum, Germany
+Last Update: 2025-01-05)
+Authors: Alexander Hartmaier, Ronak Shoghi, Jan Schmidt
+ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
 
 distributed under GNU General Public License (GPLv3)"""
@@ -120,7 +121,8 @@ class Material(object):
         Contains data for 'sig' (2d-array - stress), 'eps' (2d-array - strain),
         'epl' (2d-array - plastic strain)
     msparam :
-        Store data on microstructure parameters: 'Npl', 'Nlc, 'Ntext', 'texture', 'peeq_max', 'work_hard', 'flow_stress'
+        Store data on microstructure parameters: 'Npl', 'Nlc, 'Ntext', 'texture', 'peeq_max',
+        'work_hard', 'flow_stress'
         are obtained from data analysis module. Other parameters can be added.
     msg :
         Messages that can be retrieved: 'yield_fct', 'gradient', 'nsteps', 'equiv'
@@ -1225,7 +1227,7 @@ class Material(object):
         N = len(x)
         X_train = np.zeros((N, self.Ndof))
         if not cyl:
-            # princ. stresses
+            # principal stresses
             X_train[:, 0] = sig_eq_j2(x[:, 0:3]) / self.scale_seq - 1.
             X_train[:, 1] = sig_polar_ang(x[:, 0:3]) / np.pi
             print('Converting principal stresses to cylindrical stresses for training')
@@ -1235,7 +1237,7 @@ class Material(object):
             X_train[:, 1] = x[:, 1] / np.pi
             print('Using cylindrical stresses for training')
         if self.whdat:
-            X_train[:, self.ind_wh] = x[:, self.ind_wh + 1] / self.scale_wh  # JS : Why add one on the ind_wh
+            X_train[:, self.ind_wh] = x[:, self.ind_wh] / self.scale_wh
             print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
                   % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
 
@@ -1469,7 +1471,7 @@ class Material(object):
             print(f" Training {metric}: {results_dict[f'hp-set_{idx_best}'][f'train_{metric}']}")
             print(f"     Test {metric}: {results_dict[f'hp-set_{idx_pair}'][f'test_{metric}']}")
             print(80 * "+")
-            return train_sc, test_sc
+            return train_sc, test_sc  # why return here ??? What happens later???
 
         if self.msparam is None:
             Npl = 1
@@ -1488,14 +1490,18 @@ class Material(object):
                 else:
                     self.elasticity(CV=mat_ref.CV)
                 self.plasticity(sy=mat_ref.sy, sdim=mat_ref.sdim)
-                xt, yt = self.create_sig_data(N=Nlc, mat_ref=mat_ref, Nseq=Nseq, extend=extend)
+                xt, yt = self.create_sig_data(N=Nlc, mat_ref=mat_ref,
+                                              Nseq=Nseq, Fe=Fe, Ce=Ce,
+                                              extend=extend)
                 print('Training data created from reference material', mat_ref.name, ', with', Nlc, 'load cases.')
             else:
                 # based on given yield stresses
                 Nlc = len(sdata[:, 0])
                 seq = sig_eq_j2(sdata)
                 self.plasticity(sy=np.mean(seq), sdim=len(sdata[0, :]))
-                xt, yt = self.create_sig_data(sdata=sdata, Nseq=Nseq, extend=extend)
+                xt, yt = self.create_sig_data(sdata=sdata,
+                                              Nseq=Nseq, Fe=Fe, Ce=Ce,
+                                              extend=extend)
                 print('Training data created from {}-dimensional yield stresses with {} load cases.' \
                       .format(self.sdim, Nlc))
             self.Ndof = 2 if self.sdim == 3 else 6
@@ -1657,20 +1663,34 @@ class Material(object):
             # create training data in entire stress space from raw data
             # training data generated here is unscaled
             sig_train, yt = self.create_sig_data(sdata=ms_dict['flow_stress'],
-                                                 Nseq=Nseq,
-                                                 extend=extend, Fe=Fe, Ce=Ce)
+                                                 Nseq=Nseq, Fe=Fe, Ce=Ce,
+                                                 extend=extend)
         else:
             sig_train, yt = self.create_sig_data(sdata=ms_dict['sig_ideal'],
-                                                 Nseq=Nseq,
-                                                 extend=extend, Fe=Fe, Ce=Ce)
+                                                 Nseq=Nseq, Fe=Fe, Ce=Ce,
+                                                 extend=extend)
         xt[:, 0:self.sdim] = sig_train
-        #            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
         if self.whdat:
             # Add DOF for work Plastic Strain
+            if 'normalized_accumulated_strain' in self.msparam[0].keys():
+                reversal = True
+                if 'max_stress' not in self.msparam[0].keys():
+                    raise ValueError("Data contains field for 'normalized_accumulated_strain' "
+                                     "but not for 'max_stress'. Cannot continue.")
+                if self.Ndof < 2 * self.sdim + 2:
+                    raise ValueError("Data for 'normalized_accumulated_strain' is given, "
+                                     "but not enough DOF are defined for work hardening parameters.")
+            else:
+                reversal = False
             for i in range(Ndinp):
                 for j in range(Nsdata):
-                    xt[i + j * Ndinp, self.sdim:self.sdim + iwh] = \
-                        ms_dict['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
+                    xt[i + j * Ndinp, self.ind_wh:self.ind_wh + self.sdim] = \
+                        self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
+                    if reversal:
+                        xt[i + j * Ndinp, self.ind_wh + self.sdim] = \
+                            self.msparam[0]['normalized_accumulated_strain'][i]
+                        xt[i + j * Ndinp, self.ind_wh + self.sdim + 1] = \
+                            self.msparam[0]['max_stress'][i]
         if self.txdat:
             # JS: Add DOF for Texture
             # print(f"Control Print: Nlc: {Nlc} - Ndinp: {Ndinp} - shape xt: {xt.shape} - idtx: {self.ind_tx}"
@@ -1703,8 +1723,8 @@ class Material(object):
             (optional, either sdata or N and mat_ref must be provided)
         Nseq : int
             Number of training stresses to be generated in the range 'offs' to the yield strength (optional, default: 12)
-        sflow : float
-            Expected flow stress of data set (optional, default: self.sy)
+        sflow : None
+            Depracted parameter
         offs : float
             Start of range for equiv. stress (optional, default: 0.01)
         extend : Boolean
@@ -1723,8 +1743,8 @@ class Material(object):
         yt : (M,) array
             Result vector of categorial yield function (-1 or +1) for supervised training
         """
-        if sflow is None:
-            sflow = self.sy
+        if sflow is not None:
+            print('WARNING: Parameter "sflow" no longer used in function "create_sig_data".')
         if sdata is None:
             if mat_ref is None:
                 raise ValueError(
@@ -1750,7 +1770,7 @@ class Material(object):
                 su = load_cases(n3, n6)
                 if self.dev_only:
                     su = sig_dev(su)
-            x1 = fsolve(mat_ref.find_yloc, np.ones(N) * mat_ref.sy, args=(su), xtol=1.e-5)
+            x1 = fsolve(mat_ref.find_yloc, np.ones(N) * mat_ref.sy, args=(su, ), xtol=1.e-5)
             sdata = su * x1[:, None]  # yield stress tensors representing ground truth
         else:
             # read stress data as seeding points for generation of further training stresses in entire 
@@ -2106,6 +2126,13 @@ class Material(object):
             # warnings.warn('elasticity: E and nu calculated from anisotropic elastic parameters')
         else:
             raise ValueError('elasticity: Inconsistent definition of material parameters')
+        if CV is None:
+            CV = np.zeros((6, 6))
+            CV[0, 0] = CV[1, 1] = CV[2, 2] = self.C11
+            CV[0, 1] = CV[0, 2] = CV[1, 2] = self.C12
+            CV[1, 0] = CV[2, 0] = CV[2, 1] = self.C12
+            CV[3, 3] = CV[4, 4] = CV[5, 5] = self.C44
+            self.CV = CV
 
     def plasticity(self, sy=None, sdim=6, drucker=0., khard=0.,
                    tresca=False,
@@ -2309,7 +2336,10 @@ class Material(object):
             self.Ndof += self.tdim
 
         # assign average properties to material and initialize texture and work-hardening
-        self.elasticity(CV=self.msparam[0]['elast_const'])
+        if self.msparam[0]['elast_const'] is None:
+            print('WARNING: No data on elastic properties in data.')
+        else:
+            self.elasticity(CV=self.msparam[0]['elast_const'])
         # JS: Is also making less sense if multiple textures are in one material. Why just take the first E, nu, sy???
         self.plasticity(sy=self.msparam[0]['sy_av'], sdim=self.sdim)
         tp = np.zeros(self.Nset)

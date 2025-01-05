@@ -8,10 +8,11 @@ module pylabfea.material based on the analyzed data of this module.
 
 uses NumPy, SciPy, MatPlotLib
 
-Version: 4.0 (2021-11-27)
-Last Update: (24-04-2023)
-Authors: Ronak Shoghi, Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
+Last Update: (2025-01-05)
+Authors: Ronak Shoghi, Alexander Hartmaier, Jan Schmidt
+ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
+
 distributed under GNU General Public License (GPLv3)"""
 import os.path
 
@@ -405,7 +406,8 @@ class Data(object):
                  name='Dataset', mat_name="Simulanium",
                  sdim=6,
                  epl_crit=None,
-                 epl_start=None, epl_max=None,
+                 epl_start=None,
+                 epl_max=None,
                  depl=0.,
                  plot=False,
                  wh_data=True,
@@ -440,9 +442,15 @@ class Data(object):
         if isinstance(source, str):
             self.lc_data = self.read_data(os.path.join(path_data, source))
             self.parse_data(epl_crit, epl_start, epl_max, depl)  # add data to mat_data
-        else:
+        elif isinstance(source, dict):
+            self.lc_data = source
+            self.parse_data(epl_crit, epl_start, epl_max, depl)  # add data to mat_data
+        elif isinstance(source, list) or isinstance(source, np.ndarray):
+            print('WARNING: This data type will be no longer supported.')
             raw_data = np.array(source)
             self.convert_data(raw_data)  # add data to mat_data
+        else:
+            raise ValueError('Only sources of type "str" or "dict" are supported.')
         if plot:
             self.plot_training_data()
 
@@ -462,6 +470,19 @@ class Data(object):
         return Keys_Parsed
 
     def read_data(self, Data_File):
+        """
+        Read database in form of JSON file and convert it into a dictionary containing stress and strain
+        data for each load case
+        Parameters
+        ----------
+        Data_File : str
+            Path to JSON file to read
+
+        Returns
+        -------
+        Final_Data : dict
+            Dictionary containing stress and strain data for each load case in form of 1-dim arrays
+        """
         # JS TODO: Store CYL data correctly
         data = json.load(open(Data_File))
         Final_Data = dict()
@@ -592,7 +613,7 @@ class Data(object):
                 # estimate yield point for load case
                 # (1) find transition index w/o definition of critical plastic strain
                 it = find_transition_index(val["Eq_Stress"])
-                elstrain.append(val['Strain_Total'][it])  # total strain tensor at transition
+                elstrain.append(val['Strain_Total'][it] - val['Strain_Plastic'][it])  # elastic strain tensor at transition
                 elstress.append(val['Stress'][it])  # stress tensor at transition
                 peeq = val['Eq_Strain_Plastic']
                 if epl_crit is None:
@@ -609,7 +630,7 @@ class Data(object):
                     epm_lc = epl_max
     
                 # (2) estimate yield point for ideal plasticity consideration
-                i_ideal = np.nonzero(peeq < epc_lc)[0]
+                i_ideal = np.nonzero(peeq <= epc_lc)[0]
                 if len(i_ideal) < 2:
                     print(
                         f'Skipping data set {key} (No {ct}): No elastic range before yield onset.')
@@ -617,8 +638,8 @@ class Data(object):
                     continue
     
                 # (3) identify elastic and plastic regions based on critical values for plastic strain
-                iel = np.nonzero(peeq < eps_lc)[0]
-                ipl = np.nonzero(np.logical_and(peeq >= eps_lc, peeq <= epm_lc))[0]
+                iel = np.nonzero(peeq <= eps_lc)[0]
+                ipl = np.nonzero(np.logical_and(peeq > eps_lc, peeq <= epm_lc))[0]
                 if len(iel) < 2:
                     print(f'Skipping data set {key} (No {ct}): No elastic range: IEL: {iel}, vals: {len(peeq)}')
                     Nlc -= 1
@@ -637,7 +658,7 @@ class Data(object):
     
                 # get initial yield stress
                 sig_ideal.append(val['Stress'][i_ideal[-1]])  # stress tensor at crit. plastic strain
-                sy_av += val['Eq_Stress'][i_ideal[-1]]  # calculate avereaged equiv. stress at epc over all load cases
+                sy_av += val['Eq_Stress'][i_ideal[-1]]  # calculate averaged equiv. stress at epc over all load cases
                 s0 = val['Eq_Stress'][iel[-1]]
                 s1 = val['Eq_Stress'][ipl[0]]
                 e0 = peeq[iel[-1]]
@@ -703,7 +724,6 @@ class Data(object):
         sig : ndarray
             Stress tensors at yield onset
         """
-        print("inside where it should not be")
         Nlc = len(sig)
         sdim = len(sig[0, :])
         if sdim != self.mat_data['sdim']:
@@ -713,10 +733,9 @@ class Data(object):
         self.mat_data['wh_data'] = False
         lc_ind_list = np.linspace(0, Nlc)
         self.mat_data['lc_indices'] = np.append(lc_ind_list, 0.)
-        self.mat_data['E_av'] = 1.  # WARNING: value cannot be derived from data
-        self.mat_data['nu_av'] = 0.3  # WARNING: value cannot be derived from data
+        self.mat_data['elast_const'] = None  # cannot be determined from yield stress data
         self.mat_data['sy_av'] = np.mean(FE.sig_eq_j2(sig))
-        self.mat_data['peeq_max'] = self.mat_data['epc']
+        self.mat_data['peeq_max'] = 0.0
         self.mat_data['Nlc'] = Nlc
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Converted data for {Nlc} stress tensors at yield onset into material data.')

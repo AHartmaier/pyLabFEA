@@ -59,9 +59,9 @@ def test_ml_shear():
     fem.solve()
     fem.calc_global()
 
-    assert np.abs(fem.glob['sig'][5] - 79.6435732946163) < 1E-5
-    assert np.abs(fem.element[3].epl[5] - 0.003800884140613953) < 1E-7
-    assert np.abs(fem.element[3].sig[1] - 43.846140704269885) < 1E-5
+    assert np.abs(fem.glob['sig'][5] - 77.53778881971542) < 1E-5
+    assert np.abs(fem.element[3].epl[5] - 0.003942707316048245) < 1E-7
+    assert np.abs(fem.element[3].sig[1] - 43.90605524724592) < 1E-5
 
 
 def test_ml_training():
@@ -81,7 +81,8 @@ def test_ml_training():
     name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
     mat_ml2 = FE.Material(name)  # define material
     mat_ml2.dev_only = False
-    mat_ml2.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150)
+    mat_ml2.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150,
+                      Nseq=25, Fe=0.1, Ce=0.99)
     mat_ml2.calc_properties(verb=False, eps=0.01, sigeps=True)
 
     # analyze training result
