@@ -296,7 +296,7 @@ for i in range(nsamples_to_generate):
 mat_ml = FE.Material(name='ML-Hill')  # define material
 mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                  sdata=sig,
-                 gridsearch=True, cvals=cvals, gvals=gvals, vlevel=vlevel)
+                 gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
 
 # Create ML model with conventional training approach
 Ntot = nsamples_init + nsamples_to_generate
@@ -308,7 +308,7 @@ sig_r = sunit_r * x1[:, None]
 mat_ml_r = FE.Material(name='ML-Hill')  # define material
 mat_ml_r.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                    sdata=sig_r,
-                   gridsearch=True, cvals=cvals, gvals=gvals, vlevel=vlevel)
+                   gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
 
 plot_yield_locus(mat_ml, mat_h, nsamples_to_generate, mat3=mat_ml_r)
 plot_variances(var)
