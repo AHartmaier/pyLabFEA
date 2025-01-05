@@ -37,8 +37,8 @@ mat_h.calc_properties(eps=0.01, sigeps=True)
 C = 2.0
 gamma = 1.0
 Ce = 0.99
-Fe = 0.5
-Nseq = 20
+Fe = 0.1
+Nseq = 25
 Nlc = 300
 nbase = 'ML-Hill-p1'
 name = name = f'{nbase}_C{C:3.1f}_G{gamma:3.1f}'
@@ -123,7 +123,7 @@ ax.scatter(sty[1:, 0], sty[1:, 1], s=s, c='y', edgecolors='#0000cc')
 ax.scatter(et2[1:, 0], et2[1:, 1], s=s, c='y', edgecolors='k')
 ax.scatter(ect[1:, 0], ect[1:, 1], s=s, c='y', edgecolors='#cc00cc')
 plt.show()
-plt.close()
+plt.close('all')
 
 print('===================================================')
 print('=== Combined FEA with reference and ML material ===')

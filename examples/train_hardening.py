@@ -224,7 +224,7 @@ handle1 = Line2D([0], [0], color="#600000", label='Equivalent Plastic Strain : 0
 handle2 = Line2D([0], [0], color="#ff5050", label='Equivalent Plastic Strain : 2.0%')
 ax.legend(handles=[handle1, handle2], loc='upper left', bbox_to_anchor=(1.05, 1))
 plt.show()
-'''
+
 # calculate and plot stress strain curves
 print('Calculating stress-strain data ...')
 mat_mlh.calc_properties(verb=False, eps=0.01, sigeps=True)
@@ -260,7 +260,7 @@ ax.scatter(sty[1:, 0], sty[1:, 1], s=s, c='c', edgecolors='#0000cc')
 ax.scatter(et2[1:, 0], et2[1:, 1], s=s, c='c', edgecolors='k')
 ax.scatter(ect[1:, 0], ect[1:, 1], s=s, c='c', edgecolors='#cc00cc')
 plt.show()
-plt.close('all')'''
+plt.close('all')
 
 '''
 # setup material definition for soft elastic square-shaped inclusion embedded

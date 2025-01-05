@@ -255,7 +255,7 @@ gvals = [1., 2., 3.]
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
 mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq, sdata=sig,
-                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5], vlevel=vlevel)
+                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5], verbose=vlevel)
 plot_yield_locus(mat_ml=mat_ml, mat_h=mat_h, niter=0)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
@@ -272,7 +272,7 @@ for i in range(nsamples_to_generate):
         mat_ml = FE.Material(name='ML-Hill_{}'.format(j))
         mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                          sdata=sig[idx, :],
-                         gridsearch=True, cvals=cvals, gvals=gvals, vlevel=vlevel)
+                         gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
         hyp_C_list.append(mat_ml.C_yf)
         hyp_g_list.append(mat_ml.gam_yf)
         committee.append(mat_ml)

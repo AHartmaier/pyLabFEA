@@ -30,7 +30,7 @@ def find_yloc(x, sig, mat):
 
 
 # define Barlat material for Goss texture
-# fitted to micromechanical data
+# anisotropic Barlat parameters have been fitted to micromechanical data
 bp = [0.81766901, -0.36431565, 0.31238124, 0.84321164, -0.01812166, 0.8320893, 0.35952332,
       0.08127502, 1.29314957, 1.0956107, 0.90916744, 0.27655112, 1.090482, 1.18282173,
       -0.01897814, 0.90539357, 1.88256105, 0.0127306]
@@ -51,8 +51,8 @@ sunit[1, 1] = 1.
 sunit[2, 2] = 1.
 sunit[3, 0] = 1.
 sunit[3, 1] = 1.
-sunit[4, 0] = 1. / np.sqrt(3.)
-sunit[4, 1] = -1. / np.sqrt(3.)
+sunit[4, 0] = -1. / np.sqrt(3.)
+sunit[4, 1] = 1. / np.sqrt(3.)
 x1 = fsolve(find_yloc, np.ones(5) * mat_GB.sy, args=(sunit, mat_GB), xtol=1.e-5)
 sy_ref = sunit * x1[:, None]
 seq_ref = FE.sig_eq_j2(sy_ref)
@@ -144,9 +144,14 @@ ax.scatter(stx[1:, 0], stx[1:, 1], s=s, c='r', edgecolors='#cc0000')
 ax.scatter(sty[1:, 0], sty[1:, 1], s=s, c='b', edgecolors='#0000cc')
 ax.scatter(et2[1:, 0], et2[1:, 1], s=s, c='#808080', edgecolors='k')
 ax.scatter(ect[1:, 0], ect[1:, 1], s=s, c='m', edgecolors='#cc00cc')
+syr_sc = sy_ref / mat_mlGB.sy
+ax.scatter(syr_sc[0, 0], syr_sc[0, 1], s=s, c='c', edgecolors='k')
+ax.scatter(syr_sc[1, 0], syr_sc[1, 1], s=s, c='c', edgecolors='k')
+ax.scatter(syr_sc[3, 0], syr_sc[3, 1], s=s, c='c', edgecolors='k')
+ax.scatter(syr_sc[4, 0], syr_sc[4, 1], s=s, c='c', edgecolors='k')
 plt.show()
 plt.close('all')
-'''
+
 # setup material definition for soft elastic square-shaped inclusion embedded
 # in elastic-plastic material with trained ML flow rule
 print('Calculating FE model with elastic inclusion')
@@ -179,4 +184,4 @@ fem.solve()
 # plot results
 fem.plot('mat', shownodes=False, mag=0)
 fem.plot('seq', shownodes=False, showmesh=False, mag=10)
-fem.plot('peeq', shownodes=False, showmesh=False, mag=10)'''
+fem.plot('peeq', shownodes=False, showmesh=False, mag=10)
