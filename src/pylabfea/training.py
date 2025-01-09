@@ -254,27 +254,29 @@ def create_test_sig(file, number_sig_per_strain=4):
         This array will be used as reference in the training_score function.
     """
 
-    db2 = FE.Data(file)
-    mat_ts = FE.Material(name="Test")  # define material
-    mat_ts.elasticity(CV=db2.mat_data['elast_const'])
-    mat_ts.plasticity(sy=db2.mat_data['sy_av'], khard=4.5e3)
-    mat_ts.calc_properties(verb=False, eps=0.03, sigeps=True)
-    mat_ts.from_data(db2.mat_data)
+    db2 = FE.Data(file, 
+             epl_crit=2.e-3, epl_start=1.e-3, epl_max=0.03,
+             depl=0.0)
+    #mat_ts = FE.Material(name="Test")  # define material
+    #mat_ts.elasticity(CV=db2.mat_data['elast_const'])
+    #mat_ts.plasticity(sy=db2.mat_data['sy_av'], khard=4.5e3)
+    #mat_ts.calc_properties(verb=False, eps=0.03, sigeps=True)
+    #mat_ts.from_data(db2.mat_data)
     pl_sig = []
     el_sig = []
     epl_ts = []
 
-    for j in range(len(mat_ts.msparam[0]['plastic_strain'])):
-        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.5)
-        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.2)
-        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.1)
-        pl_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 1.01)
-        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.99)
-        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.9)
-        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.8)
-        el_sig.append(mat_ts.msparam[0]['flow_stress'][j] * 0.5)
+    for j in range(len(db2.mat_data['plastic_strain'])):
+        pl_sig.append(db2.mat_data['flow_stress'][j] * 1.5)
+        pl_sig.append(db2.mat_data['flow_stress'][j] * 1.2)
+        pl_sig.append(db2.mat_data['flow_stress'][j] * 1.1)
+        pl_sig.append(db2.mat_data['flow_stress'][j] * 1.01)
+        el_sig.append(db2.mat_data['flow_stress'][j] * 0.99)
+        el_sig.append(db2.mat_data['flow_stress'][j] * 0.9)
+        el_sig.append(db2.mat_data['flow_stress'][j] * 0.8)
+        el_sig.append(db2.mat_data['flow_stress'][j] * 0.5)
         for nsps in range(int(number_sig_per_strain)):
-            epl_ts.append(mat_ts.msparam[0]['plastic_strain'][j].tolist())
+            epl_ts.append(db2.mat_data['plastic_strain'][j].tolist())
 
     sig_tot = pl_sig + el_sig
     epl_tot = epl_ts + epl_ts

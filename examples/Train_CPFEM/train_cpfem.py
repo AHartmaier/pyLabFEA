@@ -27,7 +27,7 @@ def rgb_to_hex(rgb):
 # Import data from micromechanical simulations
 db = FE.Data("Data_Random_Texture.json",
              epl_crit=2.e-3, epl_start=1.e-3, epl_max=0.03,
-             depl=1.e-3,
+             depl=0, # 1.e-3,
              wh_data=True)
 mat_ref = FE.Material(name="reference")  # define reference material
 mat_ref.elasticity(CV=db.mat_data['elast_const'])

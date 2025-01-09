@@ -617,13 +617,22 @@ class Data(object):
                 elstress.append(val['Stress'][it])  # stress tensor at transition
                 peeq = val['Eq_Strain_Plastic']
                 if epl_crit is None:
-                    epc_lc = peeq[it]
+                    epc_lc = max(peeq[it]*1.1, 0.002)
+                    print(f'Critical value for plastic strain at start of plastic regime set to epl_crit={epc_lc*100}%')
+                    if epl_start is not None:
+                        print('WARNING: Value for "epl_start" has been given, but not for "epl_crit".')
+                        if epl_start > epc_lc:
+                            raise ValueError(f'Value of epl_start={epl_start} is larger than epl_crit={epc_lc}.')
                 else:
                     epc_lc = epl_crit
                 if epl_start is None:
                     eps_lc = peeq[it]
+                    print(
+                        f'Critical value for plastic strain at end of elastic regime set to epl_crit={eps_lc * 100}%')
                 else:
                     eps_lc = epl_start
+                    if epl_start > epc_lc:
+                        raise ValueError(f'Value of epl_start={epl_start} is larger than epl_crit={epc_lc}.')
                 if epl_max is None:
                     epm_lc = max(peeq)
                 else:
@@ -634,6 +643,11 @@ class Data(object):
                 if len(i_ideal) < 2:
                     print(
                         f'Skipping data set {key} (No {ct}): No elastic range before yield onset.')
+                    Nlc -= 1
+                    continue
+                elif len(i_ideal) >= len(peeq) - 2:
+                    print(
+                        f'Skipping data set {key} (No {ct}): Plastic range after yield onset not sufficient.')
                     Nlc -= 1
                     continue
     
@@ -713,7 +727,7 @@ class Data(object):
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
         print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print(f'Estimated elastic constants (in GPa): C={C * 1.E-3}')  # get units from metadata ???
-        print(f'Estimated yield strength: {sy_av:5.2f} MPa at PEEQ = {ep_s:5.3f}')
+        print(f'Estimated yield strength: {sy_av:5.2f} MPa at PEEQ = {(ep_s/Nlc):5.3f}')
 
     def convert_data(self, sig):
         """
