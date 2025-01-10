@@ -14,8 +14,8 @@ ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
 
 distributed under GNU General Public License (GPLv3)"""
-import os.path
 
+import os
 import json
 import random
 import warnings
@@ -639,7 +639,7 @@ class Data(object):
                     epm_lc = epl_max
     
                 # (2) estimate yield point for ideal plasticity consideration
-                i_ideal = np.nonzero(peeq <= epc_lc)[0]
+                i_ideal = np.nonzero(peeq <= epc_lc)[0]  # aha: changed from Ronak's version, makes a difference in sy_av
                 if len(i_ideal) < 2:
                     print(
                         f'Skipping data set {key} (No {ct}): No elastic range before yield onset.')
@@ -652,7 +652,7 @@ class Data(object):
                     continue
     
                 # (3) identify elastic and plastic regions based on critical values for plastic strain
-                iel = np.nonzero(peeq <= eps_lc)[0]
+                iel = np.nonzero(peeq <= eps_lc)[0]  # aha: changed to make consistent definition with i_ideal
                 ipl = np.nonzero(np.logical_and(peeq > eps_lc, peeq <= epm_lc))[0]
                 if len(iel) < 2:
                     print(f'Skipping data set {key} (No {ct}): No elastic range: IEL: {iel}, vals: {len(peeq)}')

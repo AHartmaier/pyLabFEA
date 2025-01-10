@@ -23,6 +23,7 @@ from pylabfea.training import load_cases
 from scipy.optimize import root_scalar
 from scipy.optimize import fsolve
 from scipy.spatial import distance
+
 try:
     from sklearnex import patch_sklearn  # JS: This is patching scikit-learn on intel hardware
     # patch_sklearn()
@@ -337,10 +338,9 @@ class Material(object):
         self.msg['nsteps'] = niter
         return fy1, sig, depl, grad_stiff
 
-    def calc_yf(self, sig, tex=None, epl=None,
-                accumulated_strain=0.0, max_stress=0.0,
+    def calc_yf(self, sig, epl=None,
+                accumulated_strain=0.0, max_stress=0.0, tex=None,
                 ana=False, pred=False):
-
         """Calculate yield function
 
         Parameters
@@ -419,7 +419,9 @@ class Material(object):
             self.msg['yield_fct'] = 'analytical'
         return f
 
-    def ML_full_yf(self, sig, epl=None, ld=None, verb=True):
+    def ML_full_yf(self, sig, epl=None, ld=None,
+                   accumulated_strain=0.0, max_stress=0.0, tex=None,
+                   verb=True):
         """Calculate full ML yield function as distance of a single given stress
         tensor to the yield locus in loading direction.
         
@@ -477,14 +479,22 @@ class Material(object):
                 else:
                     x0 *= 0.5
             x1 = x0
-            while self.calc_yf(x0 * su, epl=epl) >= 0. and x0 > 0.01:
+            while self.calc_yf(x0 * su, epl=epl,
+                               accumulated_strain=accumulated_strain,
+                               max_stress=max_stress, tex=tex) >= 0. and x0 > 0.01:
                 # find x0 with negative yield fct
                 x0 *= 0.98
-            while self.calc_yf(x1 * su, epl=epl) < 0. and x1 < 5. * sflow:
+            while self.calc_yf(x1 * su, epl=epl,
+                               accumulated_strain=accumulated_strain,
+                               max_stress=max_stress, tex=tex) < 0. and x1 < 5. * sflow:
                 # find x1 with positive yield fct
                 x1 *= 1.02
-            f0 = self.calc_yf(x0 * su, epl=epl)
-            f1 = self.calc_yf(x1 * su, epl=epl)
+            f0 = self.calc_yf(x0 * su, epl=epl,
+                              accumulated_strain=accumulated_strain,
+                              max_stress=max_stress, tex=tex)
+            f1 = self.calc_yf(x1 * su, epl=epl,
+                              accumulated_strain=accumulated_strain,
+                              max_stress=max_stress, tex=tex)
             if f0 * f1 > 0.:
                 warnings.warn('ML_full_yf: Could not bracket yield function: '
                               + 'sunit={}, x0={}, f0={}, x1={}, f1={}'
@@ -508,7 +518,8 @@ class Material(object):
                     print('*** optimization result (x1={},y1={},msg={}):'.format(xs, ys, res))
         return yf
 
-    def find_yloc(self, x, su, epl=None, tex=None):
+    def find_yloc(self, x, su, epl=None,
+                  accumulated_strain=0.0, max_stress=0.0, tex=None):
         """Function to expand unit stresses by factor and calculate yield
         function; used by search algorithm to find zeros of yield function.
 
@@ -530,10 +541,13 @@ class Material(object):
 
         if self.txdat and tex is None:
             raise ValueError("SVM is trained on texture data but no texture data was provided to this function.")
-        f = self.calc_yf(x[:, None] * su, epl=epl, tex=tex)
+        f = self.calc_yf(x[:, None] * su, epl=epl,
+                         accumulated_strain=accumulated_strain,
+                         max_stress=max_stress, tex=tex)
         return f
 
-    def find_yloc_scalar(self, x, su, epl=None, tex=None):
+    def find_yloc_scalar(self, x, su, epl=None,
+                         accumulated_strain=0.0, max_stress=0.0, tex=None):
         """Function to expand unit stresses by factor and calculate yield
         function; used by search algorithm to find zeros of yield function.
 
@@ -553,9 +567,11 @@ class Material(object):
             Yield function evaluated at sig=x.sp
         """
 
-        if self.txdat and not tex:
+        if self.txdat and tex is None:
             raise ValueError("SVM is trained on texture data but no texture data was provided to this function.")
-        f = self.calc_yf(x * su, epl=epl, tex=tex)
+        f = self.calc_yf(x * su, epl=epl,
+                         accumulated_strain=accumulated_strain,
+                         max_stress=max_stress, tex=tex)
         return f
 
     def calc_seq(self, sig):
@@ -683,9 +699,8 @@ class Material(object):
         seq = (0.25 * seq) ** (1. / a)
         return seq
 
-
-    def calc_fgrad(self, sig, tex=None, epl=None, seq=None,
-                   accumulated_strain=0.0, max_stress=0.0,
+    def calc_fgrad(self, sig, epl=None, seq=None,
+                   accumulated_strain=0.0, max_stress=0.0, tex=None,
                    ana=False):
         """Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield
         function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield
@@ -792,7 +807,6 @@ class Material(object):
                 else:
                     fgrad[i, 0:6] = dKdx[0:6] / self.scale_seq
                 if self.whdat:
-
                     hk -= dKdx[self.ind_wh:self.ind_wh + self.sdim] * self.scale_seq / self.scale_wh
             self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation ???
             if self.khard < 0.:
@@ -1004,7 +1018,7 @@ class Material(object):
         gvals: array
             Values for SVC parameter gamma in gridsearch (optional, default: None)
         verbose : int
-            Value for verbosity of grid search algorithm (optional, defult: 3)
+            Value for verbosity of grid search algorithm (optional, default: 3)
 
         Returns
         -------
@@ -1040,7 +1054,7 @@ class Material(object):
             X_train = np.zeros((N, self.Ndof))
             X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
             if self.whdat:
-                X_train[:, self.ind_wh:self.ind_wh + self.sdim] =\
+                X_train[:, self.ind_wh:self.ind_wh + self.sdim] = \
                     x[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
                 X_train[:, self.ind_wh + self.sdim] = x[:, self.ind_wh + self.sdim]
                 X_train[:, self.ind_wh + self.sdim + 1] = x[:, self.ind_wh + self.sdim + 1] / self.scale_seq
@@ -1463,7 +1477,7 @@ class Material(object):
             # JS : Retrain on full data set with best CV coefficients
             if C == 0 or gamma == 0:
                 warnings.warn(f"CV couldn't find better values for C and gamma. Best mean {metric} across the test"
-                              f"folds is {best_cv_score}" )
+                              f"folds is {best_cv_score}")
             train_sc, test_sc = self.train_SVC(C=C_cv, gamma=gamma_cv, Nlc=Nlc, Nseq=Nseq, extend=extend,
                                                mat_ref=mat_ref, sdata=sdata, plot=plot, fontsize=fontsize,
                                                gridsearch=False, Fe=Fe, Ce=Ce, scaler=scaler, pca=pca,
@@ -1529,7 +1543,7 @@ class Material(object):
                 x_test_list = []
                 y_test_list = []
                 for idx_ms in test_index:
-                    Nlc, N0, x_test, y_test= self._create_data_for_ms(Ce=Ce, Fe=Fe, Nseq=Nseq, extend=extend,
+                    Nlc, N0, x_test, y_test = self._create_data_for_ms(Ce=Ce, Fe=Fe, Nseq=Nseq, extend=extend,
                                                                        idx_ms=idx_ms)
                     x_test_list.append(x_test)
                     y_test_list.append(y_test)
@@ -1547,13 +1561,12 @@ class Material(object):
                                      plot=False, gridsearch=gridsearch,
                                      cvals=cvals, gvals=gvals)
         else:
-            train_sc, test_sc = self.setup_yf_SVM_6D(xt, yt, x_test=xtest, y_test=ytest, 
+            train_sc, test_sc = self.setup_yf_SVM_6D(xt, yt, x_test=xtest, y_test=ytest,
                                                      C=C, gamma=gamma,
                                                      gridsearch=gridsearch,
                                                      cvals=cvals, gvals=gvals,
                                                      verbose=verbose,
                                                      metric=metric, pca_dim=pca_dim)
-
 
         print(self.svm_yf)
         # print("Training set score: {} %".format(train_sc))  # JS: Commented out for grid
@@ -1707,9 +1720,11 @@ class Material(object):
 
     # just for having an easy way to get the score score from the data similar as we have the training data as Jan suggested. SHould be removed I guess later
     def test_data_generation(self, C=10, gamma=4, Nlc=36, Nseq=25, fs=0.3, extend=False,
-                  mat_ref=None, sdata=None, fontsize=16,
-                  gridsearch=False, cvals=None, gvals=None, Fe=0.1, Ce=0.99, reversal=False):
-        """A function to generate test data to get the scores, which is exactly as we are geenrating the training data but use those to test and get the score.
+                             mat_ref=None, sdata=None, fontsize=16,
+                             gridsearch=False, cvals=None, gvals=None, Fe=0.1, Ce=0.99,
+                             reversal=False):
+        """A function to generate test data to get the scores, which is exactly as we are generating
+        the training data but use those to test and get the score.
 
         Parameters
         ----------
@@ -1761,78 +1776,76 @@ class Material(object):
         # augment raw data and create result vector (yield function) for all
         # data on work hardening and textures
         if self.msparam is None:
-            Npl=1
-            Ntext=1
+            Npl = 1
+            Ntext = 1
             if sdata is None:
                 # create regular pattern of stresses in sdim-dimensional stress
                 # space based on reference material
                 if mat_ref is None:
                     raise ValueError(
                         'create_data_sig: Neither sdata nor mat_ref are provided, cannot generate training data')
-                # define material parameters otherwise defines in material.plasticity
+                # define material parameters otherwise defined in material.plasticity
                 if mat_ref.CV is None:
-                    self.elasticity(C11 = mat_ref.C11, C12 = mat_ref.C12, C44 = mat_ref.C44)
+                    self.elasticity(C11=mat_ref.C11, C12=mat_ref.C12, C44=mat_ref.C44)
                 else:
-                    self.elasticity(CV = mat_ref.CV)
-                self.plasticity(sy = mat_ref.sy, sdim = mat_ref.sdim)
-                xt, yt=self.create_sig_data(N = Nlc, mat_ref = mat_ref, Nseq = Nseq, extend = extend)
+                    self.elasticity(CV=mat_ref.CV)
+                self.plasticity(sy=mat_ref.sy, sdim=mat_ref.sdim)
+                xt, yt = self.create_sig_data(N=Nlc, mat_ref=mat_ref,
+                                              Nseq=Nseq, Fe=Fe, Ce=Ce,
+                                              extend=extend)
                 print('Training data created from reference material', mat_ref.name, ', with', Nlc, 'load cases.')
             else:
                 # based on given yield stresses
-                Nlc=len(sdata[:, 0])
-                seq=sig_eq_j2(sdata)
-                self.plasticity(sy = np.mean(seq), sdim = len(sdata[0, :]))
-                xt, yt=self.create_sig_data(sdata = sdata, Nseq = Nseq, extend = extend)
+                Nlc = len(sdata[:, 0])
+                seq = sig_eq_j2(sdata)
+                self.plasticity(sy=np.mean(seq), sdim=len(sdata[0, :]))
+                xt, yt = self.create_sig_data(sdata=sdata,
+                                              Nseq=Nseq, Fe=Fe, Ce=Ce,
+                                              extend=extend)
                 print('Training data created from {}-dimensional yield stresses with {} load cases.' \
                       .format(self.sdim, Nlc))
-            self.Ndof=2 if self.sdim == 3 else 6
+            self.Ndof = 2 if self.sdim == 3 else 6
         else:
             '''WARNING: There are no more hardening levels !!!'''
-            Nlc=self.msparam[0]['Nlc']
+            Nlc = self.msparam[0]['Nlc']
             if self.whdat:
-                Ndinp=len(self.msparam[0]['flow_stress'])
+                Ndinp = len(self.msparam[0]['flow_stress'])
             else:
-                Ndinp=len(self.msparam[0]['sig_ideal'])
-            Nsdata=2 * Nseq + 4 if extend else 2 * Nseq
-            N0=Nlc * Nsdata  # total number of training data points per Ppl for each microstructure
-            Nt=Ndinp * Nsdata
-            dtrain=self.Ndof  # dimension of training data (Ndof for sdim==6)
-            if self.whdat:
-                iwh=self.ind_wh
-            if self.txdat:
-                itx=self.ind_tx
-            xt=np.zeros((Nt, dtrain))
+                Ndinp = len(self.msparam[0]['sig_ideal'])
+            Nsdata = 2 * Nseq + 4 if extend else 2 * Nseq
+            N0 = Nlc * Nsdata  # total number of training data points per Ppl for each microstructure
+            Nt = Ndinp * Nsdata
+            dtrain = self.Ndof  # dimension of training data (Ndof for sdim==6)
+            xt = np.zeros((Nt, dtrain))
 
             if self.whdat:
                 # create training data in entire stress space from raw data
                 # training data generated here is unscaled
-                sig_train, yt=self.create_sig_data(sdata = self.msparam[0]['flow_stress'],
-                                                   Nseq = Nseq,
-                                                   extend = extend, Fe = Fe, Ce = Ce)
+                sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['flow_stress'],
+                                                     Nseq=Nseq,
+                                                     extend=extend, Fe=Fe, Ce=Ce)
             else:
-                sig_train, yt=self.create_sig_data(sdata = self.msparam[0]['sig_ideal'],
-                                                   Nseq = Nseq,
-                                                   extend = extend, Fe = Fe, Ce = Ce)
+                sig_train, yt = self.create_sig_data(sdata=self.msparam[0]['sig_ideal'],
+                                                     Nseq=Nseq,
+                                                     extend=extend, Fe=Fe, Ce=Ce)
 
-            xt[:, 0:self.sdim]=sig_train
-            #            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
+            xt[:, 0:self.sdim] = sig_train
+            # print('HERE: ', Ndinp, Nsdata, self.ind_wh, self.msparam[0]['plastic_strain'][0, :].shape)
             if self.whdat:
                 # Add DOF for work Plastic Strain
+                if 'normalized_accumulated_strain' in self.msparam[0].keys():
+                    reversal = True
                 for i in range(Ndinp):
                     for j in range(Nsdata):
-                        xt[i + j * Ndinp, self.sdim:self.sdim + iwh]= \
+                        xt[i + j * Ndinp, self.sdim:self.sdim + self.ind_wh] = \
                             self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
-            if reversal:
-                # Step 1: Expand `xt` to include 2 extra columns for `normalized_loop_indicator` and `normalized_accumulated_strain`
-                # xt=np.hstack((xt, np.zeros((xt.shape[0], 2))))  # Add two extra columns filled with zeros initially
-                # Step 2: Fill the new columns with `normalized_loop_indicator` and `normalized_accumulated_strain` values
-                for i in range(Ndinp):
-                    for j in range(Nsdata):
-                        # xt[i + j * Ndinp, self.sdim + iwh]=self.msparam[0]['normalized_loop_indicator'][i]
-                        # xt[i + j * Ndinp, self.sdim + iwh + 1]=self.msparam[0]['normalized_accumulated_strain'][i]
-                        # xt[i + j * Ndinp, self.sdim + iwh + 2]=self.msparam[0]['max_stress'][i]
-                        xt[i + j * Ndinp, self.sdim + iwh]=self.msparam[0]['normalized_accumulated_strain'][i]
-                        xt[i + j * Ndinp, self.sdim + iwh + 1]=self.msparam[0]['max_stress'][i]
+                        if reversal:
+                            # xt[i + j * Ndinp, self.sdim + self.ind_wh]=self.msparam[0]['normalized_loop_indicator'][i]
+                            # xt[i + j * Ndinp, self.sdim + self.ind_wh + 1]=self.msparam[0]['normalized_accumulated_strain'][i]
+                            # xt[i + j * Ndinp, self.sdim + self.ind_wh + 2]=self.msparam[0]['max_stress'][i]
+                            xt[i + j * Ndinp, self.sdim + self.ind_wh] = \
+                            self.msparam[0]['normalized_accumulated_strain'][i]
+                            xt[i + j * Ndinp, self.sdim + self.ind_wh + 1] = self.msparam[0]['max_stress'][i]
 
             print(
                 '%i test data sets created, with %i load cases' % (Nt, Nlc))
@@ -1909,7 +1922,7 @@ class Material(object):
                 su = load_cases(n3, n6)
                 if self.dev_only:
                     su = sig_dev(su)
-            x1 = fsolve(mat_ref.find_yloc, np.ones(N) * mat_ref.sy, args=(su, ), xtol=1.e-5)
+            x1 = fsolve(mat_ref.find_yloc, np.ones(N) * mat_ref.sy, args=(su,), xtol=1.e-5)
             sdata = su * x1[:, None]  # yield stress tensors representing ground truth
         else:
             # read stress data as seeding points for generation of further training stresses in entire 
@@ -2241,7 +2254,6 @@ class Material(object):
             self.C44 = (0.5 - nu) * hh
             self.E = E
             self.nu = nu
-            self.CV = None
         elif C11 is not None:
             if nu is not None:
                 raise ValueError(
@@ -2253,7 +2265,6 @@ class Material(object):
             self.C44 = C44
             self.nu = C12 / (C11 + C12)
             self.E = 2 * C44 * (1 + self.nu)  # only for isotropy, might be used for plane stress models
-            self.CV = None
             # warnings.warn('elasticity: E and nu calculated from anisotropic elastic parameters')
         elif CV is not None:
             self.CV = np.array(CV)
@@ -2750,7 +2761,7 @@ class Material(object):
                 ref_mat = False
                 axis1[j] = 0
             else:
-                warnings.warn('plot_yield_locus: axis1 not defined properly, set to sig_1:{} {}'\
+                warnings.warn('plot_yield_locus: axis1 not defined properly, set to sig_1:{} {}' \
                               .format(axis1, j))
                 s1 = xx.ravel()
                 title = r'$\sigma_1$'
@@ -2789,7 +2800,7 @@ class Material(object):
                     ylab = r'$\sigma_3$ (MPa)'
                 axis2[j] = 2
             else:
-                warnings.warn('plot_yield_locus: axis2 not defined properly, set to sig_2: {} {}'\
+                warnings.warn('plot_yield_locus: axis2 not defined properly, set to sig_2: {} {}' \
                               .format(axis2, j))
                 s2 = yy.ravel()
                 title += r'-$\sigma_2$ slice'
