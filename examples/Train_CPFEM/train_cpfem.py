@@ -27,7 +27,7 @@ def rgb_to_hex(rgb):
 # Import data from micromechanical simulations
 db = FE.Data("Data_Random_Texture.json",
              epl_crit=2.e-3, epl_start=1.e-3, epl_max=0.03,
-             depl=0, # 1.e-3,
+             depl=1.e-3,
              wh_data=True)
 mat_ref = FE.Material(name="reference")  # define reference material
 mat_ref.elasticity(CV=db.mat_data['elast_const'])
@@ -46,7 +46,6 @@ print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.supp
 sig_tot, epl_tot, yf_ref = FE.create_test_sig(file="Data_Random_Texture_Test.json")
 yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
 results = FE.training_score(yf_ref, yf_ml)
-print(results)
 
 # Plot Hardening levels over a meshed space
 save_fig = False
