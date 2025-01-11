@@ -888,7 +888,7 @@ class Material(object):
                 sflow += np.interp(peeq + self.epc, ms['work_hard'], ms['sy_av'][self.ms_index[i], :]) * wght[i]'''
         return sflow
 
-    def epl_dot(self, sig, epl, Cel, deps):
+    def epl_dot(self, sig, epl, Cel, deps, accumulated_strain=0.0, max_stress=0.0, tex=None, ):
         """Calculate plastic strain increment relaxing stress back to yield locus;
         Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
         Chapter 6, Eqs. (6.4), (6.8) and (6.17)
@@ -900,7 +900,7 @@ class Material(object):
         epl : (6,)-array
             Voigt plastic strain tensor
         Cel : (6,6) array
-            Elastic stiffnes tensor
+            Elastic stiffness tensor
         deps: Voigt tensor
             Strain increment from predictor step
 
@@ -925,9 +925,11 @@ class Material(object):
         else:
             if self.sdim == 3:
                 a = np.zeros(6)
-                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl)
+                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl,
+                                         accumulated_strain=accumulated_strain, max_stress=max_stress, tex=tex)
             else:
-                a = self.calc_fgrad(sig, epl=epl)
+                a = self.calc_fgrad(sig, epl=epl,
+                                    accumulated_strain=accumulated_strain, max_stress=max_stress, tex=tex)
             hh = a.T @ Cel @ a + self.khard
             lam_dot = a.T @ Cel @ deps / hh  # deps must not contain elastic strain components
             pdot = lam_dot * a
@@ -1844,7 +1846,7 @@ class Material(object):
                             # xt[i + j * Ndinp, self.sdim + self.ind_wh + 1]=self.msparam[0]['normalized_accumulated_strain'][i]
                             # xt[i + j * Ndinp, self.sdim + self.ind_wh + 2]=self.msparam[0]['max_stress'][i]
                             xt[i + j * Ndinp, self.sdim + self.ind_wh] = \
-                            self.msparam[0]['normalized_accumulated_strain'][i]
+                                self.msparam[0]['normalized_accumulated_strain'][i]
                             xt[i + j * Ndinp, self.sdim + self.ind_wh + 1] = self.msparam[0]['max_stress'][i]
 
             print(
