@@ -1,6 +1,9 @@
 import pytest
 import pylabfea as FE
 import numpy as np
+import urllib.request
+import os
+import time
 
 
 def test_ml_plasticity():
@@ -104,3 +107,23 @@ def test_ml_training():
     assert np.abs(mae < 16.)
     assert np.abs(mat_ml2.propJ2['et2']['ys'] - 60.57834343495059) < 1E-4
     assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008987491147924685) < 1E-7
+
+def test_ml_data():
+    urllib.request.urlretrieve("https://raw.githubusercontent.com/AHartmaier/pyLabFEA/master/examples/Train_CPFEM/Data_Random_Texture.json", "data.json")
+    time.sleep(20)
+    db = FE.Data("data.json",
+                 epl_crit=2.e-3, epl_start=1.e-3, epl_max=0.03,
+                 depl=1.e-3,
+                 wh_data=True)
+    os.remove("data.json")
+    mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
+    mat_ml.from_data(db.mat_data)  # data-based definition of material
+    mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, plot=False)  # Train SVC with data
+
+    assert 'Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd' in db.lc_data.keys()
+    assert np.isclose(db.mat_data['sy_av'], 48.8134575474978)
+    assert np.isclose(mat_ml.CV[0, 0], 204130.19078123)
+    assert len(mat_ml.svm_yf.support_vectors_) == 2091
+    assert np.isclose(mat_ml.svm_yf.intercept_[0], 4.264513559495708)
+    assert np.isclose(mat_ml.svm_yf.support_vectors_[0, 1], -0.17605845055024746)
+
