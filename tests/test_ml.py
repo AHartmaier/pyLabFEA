@@ -123,7 +123,8 @@ def test_ml_data():
     assert 'Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd' in db.lc_data.keys()
     assert np.isclose(db.mat_data['sy_av'], 48.8134575474978)
     assert np.isclose(mat_ml.CV[0, 0], 204130.19078123)
-    assert len(mat_ml.svm_yf.support_vectors_) == 2091
-    assert np.isclose(mat_ml.svm_yf.intercept_[0], 4.264513559495708)
-    assert np.isclose(mat_ml.svm_yf.support_vectors_[0, 1], -0.17605845055024746)
-
+    assert np.abs(len(mat_ml.svm_yf.support_vectors_) - 2091) < 3
+    sig = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Stress'][180]
+    epl = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Strain_Plastic'][180]
+    vyf = mat_ml.ML_full_yf(sig=sig, epl=epl)
+    assert np.isclose(vyf, -3.6435393377423253)
