@@ -109,7 +109,8 @@ def plot_sig_eps(mat, sig0, epl_max=0.02, depl=1.e-3):
         while peeq <= epl_max and nc < 300:
             peeq = FE.eps_eq(epl) + depl
             sig += sig0 * peeq * khard
-            epl_inc = mat.calc_fgrad(sig=sig, epl=epl) * depl
+            epl_inc = mat.calc_fgrad(sig=sig, epl=epl)
+            epl_inc = epl_inc * depl / FE.eps_eq(epl_inc)
             epl += epl_inc
             x1 = fsolve(mat.find_yloc_scalar, mat.sy, args=(sig0, epl), xtol=1.e-5)
             sig = sig0 * x1
@@ -136,7 +137,7 @@ def plot_lc(mat, ilc=1, epl_crit=0.002):
     # ilc: number of load case to be plotted
     # sig0: unit stress along which t reconstruct stress-strain curve
     if not isinstance(ilc, int):
-        raise ValueError('One of parameters "ilc" or "sig0" must be specified to select load case.')
+        raise ValueError('Parameter "ilc" must be an integer number specifying the load case.')
     istart = mat.msparam[0]['lc_indices'][ilc]
     istop = mat.msparam[0]['lc_indices'][ilc + 1]
     sig_dat = mat.msparam[0]['flow_stress'][istart:istop, :]  # filter below 0.02% strain
@@ -163,6 +164,7 @@ def plot_lc(mat, ilc=1, epl_crit=0.002):
     plt.xlabel(xlabel="Equivalent Plastic Strain (.)", fontsize=14)
     plt.ylabel(ylabel="Equivalent Stress (MPa)", fontsize=14)
     plt.legend()
+    plt.title(f'Training LC #{ilc}')
     plt.show()
     plt.close(fig)
 
@@ -185,8 +187,8 @@ mat_h.plasticity(sy=sy, rv=rv, khard=khard, sdim=6)
 C = 2.0
 gamma = 1.5
 Ce = 0.99
-Fe = 0.7
-Nseq = 10
+Fe = 0.1
+Nseq = 25
 nbase = 'ML_Hill_hardening'
 name = f'{nbase}_C{C:3.1f}_G{gamma:3.1f}'
 lc_dict = create_data(mat_h, Nlc=Nlc, epl_max=epl_max, depl=depl)  # generate dictionary with stress-strain data
@@ -204,7 +206,7 @@ print(f'Yield strength: Ref={mat_h.sy} MPa, ML={mat_mlh.sy} MPa')
 # train SVC with data generated Hill reference material
 mat_mlh.train_SVC(C=C, gamma=gamma,
                   Ce=Ce, Fe=Fe, Nseq=Nseq,
-                  gridsearch=False)
+                  gridsearch=False, gvals=[0.5, 1.0, 1.5, 2.0], cvals=[1, 2, 4, 6])
 # plot train yield locus with support vectors
 sv = mat_mlh.svm_yf.support_vectors_ * mat_mlh.scale_seq
 Nsv = len(sv)
@@ -261,6 +263,23 @@ ax.legend(handles=[handle1, handle2], loc='upper left', bbox_to_anchor=(1.05, 1)
 plt.show()
 plt.close(fig)
 
+# plot reconstructed stress strain curve for load case in training data
+plot_lc(mat_mlh, ilc=10)
+
+# plot reconstructed stress-strain curves for arbitrary load cases
+err = plot_sig_eps([mat_mlh, mat_h], sig0=[-1, 0, 0, 0, 0, 0])
+print(f'Maximum absolute error in yield function for x-compression: '
+      f'ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
+err = plot_sig_eps([mat_mlh, mat_h], sig0=[0, -1, 0, 0, 0, 0])
+print(f'Maximum absolute error in yield function for y-compression: '
+      f'ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
+err = plot_sig_eps([mat_mlh, mat_h], sig0=[-1, 1, 0, 0, 0, 0])
+print(f'Maximum absolute error in yield function for shear loading: '
+      f'ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
+err = plot_sig_eps([mat_mlh, mat_h], sig0=[1, 1, 0, 0, 0, 0])
+print(f'Maximum absolute error in yield function for biaxial loading:'
+      f' ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
+
 # calculate and plot stress strain curves
 print('Calculating stress-strain data ...')
 emax = 0.01
@@ -299,16 +318,3 @@ labels = [mat_mlh.name, mat_h.name, 'ML stress state', 'Reference stress state']
 plt.legend(handles, labels, loc='upper left')
 plt.show()
 plt.close('all')
-
-err = plot_sig_eps([mat_mlh, mat_h], sig0=[-1, 0, 0, 0, 0, 0])
-print(f'Maximum absolute error in yield function for x-compression: '
-      f'ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
-err = plot_sig_eps([mat_mlh, mat_h], sig0=[0, -1, 0, 0, 0, 0])
-print(f'Maximum absolute error in yield function for y-compression: '
-      f'ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
-err = plot_sig_eps([mat_mlh, mat_h], sig0=[-1, 1, 0, 0, 0, 0])
-print(f'Maximum absolute error in yield function for shear loading: '
-      f'ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
-err = plot_sig_eps([mat_mlh, mat_h], sig0=[1, 1, 0, 0, 0, 0])
-print(f'Maximum absolute error in yield function for biaxial loading:'
-      f' ML={max(np.abs(err[0]))}, REF={max(np.abs(err[1]))}')
