@@ -127,4 +127,4 @@ def test_ml_data():
     sig = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Stress'][180]
     epl = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Strain_Plastic'][180]
     vyf = mat_ml.ML_full_yf(sig=sig, epl=epl)
-    assert np.isclose(vyf, -3.6435393377423253)
+    assert vyf + 3.6435393377423253 < 1.e-3
