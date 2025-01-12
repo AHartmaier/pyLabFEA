@@ -147,6 +147,8 @@ class Material(object):
         self.scale_text = None
         self.scale_wh = None
         self.scale_seq = None
+        self.E = None  # Young's modulus
+        self.nu = None  # Poisson's ratio
         self.CV = None
         self.C11 = None
         self.C12 = None
@@ -1415,9 +1417,6 @@ class Material(object):
         """
         if reversal is not None:
             print('WARNING in "train_SVC": Parameter "reversal" is depracted and will be ignored.')
-        # print('\n---------------------------\n')  # JS: commented out for grid
-        # print('SVM classification training')
-        # print('---------------------------\n')
         # augment raw data and create result vector (yield function) for all
         # data on work hardening and textures
         if self.txdat and gridsearch:  # JS: In this case, grid search over the textures is done -> recursion
@@ -1504,10 +1503,7 @@ class Material(object):
                     raise ValueError(
                         'create_data_sig: Neither sdata nor mat_ref are provided, cannot generate training data')
                 # define material parameters otherwise defines in material.plasticity
-                if mat_ref.CV is None:
-                    self.elasticity(C11=mat_ref.C11, C12=mat_ref.C12, C44=mat_ref.C44)
-                else:
-                    self.elasticity(CV=mat_ref.CV)
+                self.elasticity(CV=mat_ref.CV)
                 self.plasticity(sy=mat_ref.sy, sdim=mat_ref.sdim)
                 xt, yt = self.create_sig_data(N=Nlc, mat_ref=mat_ref,
                                               Nseq=Nseq, Fe=Fe, Ce=Ce,
@@ -1571,7 +1567,8 @@ class Material(object):
                                                      metric=metric, pca_dim=pca_dim)
 
         print(self.svm_yf)
-        # print("Training set score: {} %".format(train_sc))  # JS: Commented out for grid
+        if not gridsearch:
+            print("Training completed with score: {train_sc} %")
 
         if plot:
             '''WARNING: untested for 6D structure of msparam !!!'''
@@ -3140,6 +3137,7 @@ class Material(object):
             plt.legend(loc=(.9, 0.95), fontsize=18)
             plt.savefig(file + '.pdf', format='pdf', dpi=300)
         if show:
+            plt.tight_layout()
             plt.legend(loc=(.9, 0.95), fontsize=18)
             plt.show()
         return ax

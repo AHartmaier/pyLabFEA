@@ -70,11 +70,12 @@ ax.tick_params(axis="x", labelsize=16)
 ax.tick_params(axis="y", labelsize=16)
 plt.legend([line, pts], ['ML yield locus', 'support vectors'], loc='lower right')
 plt.ylim(0., 2. * mat_ml.sy)
-# fig.savefig('SVM-yield-fct.pdf', format='pdf', dpi=300)
+plt.tight_layout()
 plt.show()
+plt.close(fig)
 
 # analyze training result
-loc = 40
+loc = sy
 scale = 10
 size = 200
 offset = 5
