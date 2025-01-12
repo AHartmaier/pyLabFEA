@@ -1568,7 +1568,7 @@ class Material(object):
 
         print(self.svm_yf)
         if not gridsearch:
-            print("Training completed with score: {train_sc} %")
+            print(f"Training completed with score: {train_sc}")
 
         if plot:
             '''WARNING: untested for 6D structure of msparam !!!'''
@@ -3137,7 +3137,6 @@ class Material(object):
             plt.legend(loc=(.9, 0.95), fontsize=18)
             plt.savefig(file + '.pdf', format='pdf', dpi=300)
         if show:
-            plt.tight_layout()
-            plt.legend(loc=(.9, 0.95), fontsize=18)
+            plt.legend(loc=(.78, 0.84), fontsize=18)
             plt.show()
         return ax
