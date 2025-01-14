@@ -244,18 +244,20 @@ x1 = fsolve(find_yloc, np.ones(nsamples_init) * mat_h.sy, args=(sunit, mat_h), x
 sig = sunit * x1[:, None]
 print('Calculated {} yield stresses.'.format(nsamples_init))
 # train SVC with yield stress data generated from Hill flow rules
-C = 6.0
-gamma = 2.0
-Fe = 0.5
-Ce = 0.99
-Nseq = 20
+C = 2.0
+gamma = 2.5
+Ce = 0.95
+Fe = 0.1
+Nseq = 25
 vlevel = 0
-cvals = [5., 6., 8.]
-gvals = [1., 2., 3.]
+cvals = [4, 6, 8, 10]  # [4, 6, 8, 10, 12, 15]
+gvals = [0.6, 1, 2, 2.5, 3]  # [0.6, 0.8, 1, 2, 2.5, 3]
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq, sdata=sig,
-                 gridsearch=True, cvals=[1., 2., 4.], gvals=[0.5, 1., 1.5], verbose=vlevel)
+mat_ml.dev_only = True
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq, sdata=sig, extend=False,
+                 gridsearch=True, cvals=cvals, gvals=gvals,
+                 al_legacy=True, verbose=vlevel)
 plot_yield_locus(mat_ml=mat_ml, mat_h=mat_h, niter=0)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
@@ -270,9 +272,11 @@ for i in range(nsamples_to_generate):
     for j in range(nmembers):
         idx = np.random.choice(np.arange(sig.shape[0]), int(sig.shape[0] * subset_percentage), replace=False)
         mat_ml = FE.Material(name='ML-Hill_{}'.format(j))
+        mat_ml.dev_only = True
         mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
-                         sdata=sig[idx, :],
-                         gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
+                         sdata=sig[idx, :], extend=False,
+                         gridsearch=True, cvals=cvals, gvals=gvals,
+                         al_legacy=True, verbose=vlevel)
         hyp_C_list.append(mat_ml.C_yf)
         hyp_g_list.append(mat_ml.gam_yf)
         committee.append(mat_ml)
@@ -294,9 +298,11 @@ for i in range(nsamples_to_generate):
     sunit = np.vstack([sunit, sunit_new])
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
+mat_ml.dev_only = True
 mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
-                 sdata=sig,
-                 gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
+                 sdata=sig, extend=False,
+                 gridsearch=True, cvals=cvals, gvals=gvals,
+                 al_legacy=True, verbose=vlevel)
 
 # Create ML model with conventional training approach
 Ntot = nsamples_init + nsamples_to_generate
