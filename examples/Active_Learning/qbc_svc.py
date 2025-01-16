@@ -13,21 +13,13 @@ July 2023
 
 Published as part of pyLabFEA package under GNU GPL v3 license
 """
-
-# import sys
-# import os
-# import matplotlib
+import time
 import matplotlib.pyplot as plt
 import numpy as np
 import pylabfea as FE
 from scipy.optimize import differential_evolution
 from scipy.optimize import fsolve
 from matplotlib.lines import Line2D
-
-
-# matplotlib.use('Agg')  # required???
-# sys.path.append('src/data-gen')  # required???
-# sys.path.append('src/verify')
 
 
 def spherical_to_cartesian(angles):
@@ -83,7 +75,7 @@ def creator_rnd(npoints, precision=8):
         points.append(point_rounded)
     return np.vstack(points)
 
-
+'''
 def find_yloc(x, sig, mat):
     """
     Function to expand unit stresses by factor and calculate yield function;
@@ -100,7 +92,7 @@ def find_yloc(x, sig, mat):
         Yield function evaluated at sig=x.sp
     """
     f = mat.calc_yf(sig * x[:, None])
-    return f
+    return f'''
 
 
 def eval_variance(angles, committee):
@@ -125,8 +117,8 @@ def eval_variance(angles, committee):
     x = spherical_to_cartesian(angles)
     y = np.zeros(len(committee))
     for i, member in enumerate(committee):
-        y[i] = member.calc_yf(x)
-    variance = np.sum(np.square(y - np.mean(y) * np.ones_like(y)))  # /len(committee) ???
+        y[i] = member.calc_yf(x * member.sy)
+    variance = np.var(y)
     return -variance
 
 
@@ -138,7 +130,6 @@ def plot_variances(var_list):
     plt.grid()
     plt.savefig('variances_vs_iterations_weight=999.png', dpi=300)
     plt.show()
-    # plt.close()
 
 
 def plot_yield_locus(mat_ml, mat_h, niter, mat3=None):
@@ -170,48 +161,10 @@ def plot_yield_locus(mat_ml, mat_h, niter, mat3=None):
     # plt.close('all')
 
 
-''' Unused subroutines
 def read_vectors(file_name):
     # Load the vectors from the file
     vectors = np.loadtxt(file_name)
     return vectors
-
-
-def save_hard_test_cases(a, b, num_tests=5):
-    test_arrays = [[] for _ in range(num_tests)]
-    for i in range(num_tests):
-        sig_test = hard_test_cases(a, b)
-        np.savetxt(f'sig_test_{i + 1}.txt', sig_test)
-        test_arrays[i] = sig_test
-    return test_arrays
-
-
-def hard_test_cases(a, b):
-    """
-    Generate hard test cases by creating random unit vectors, scaling them based on the
-    solutions from the function 'find_yloc', and then concatenating the results.
-    Parameters
-    ----------
-    npoints : int
-        Number of points to generate.
-    Returns
-    -------
-    sig : (2*N, 6) array
-        Array of concatenated test cases.
-    """
-    # Create random unit vectors and scale them by 0.99 times the solution from 'find_yloc'
-    sunit1 = FE.load_cases(number_3d=a, number_6d=b)
-    npoints = (a + b)
-    x1 = fsolve(find_yloc, np.ones(npoints) * mat_h.sy, args=(sunit1, mat_h), xtol=1.e-5)
-    sig1 = sunit1 * 0.99 * x1[:, None]
-    # Create another set of random unit vectors and scale them by 1.01 times the solution from 'find_yloc'
-    sunit2 = FE.load_cases(number_3d=a, number_6d=b)
-    x2 = fsolve(find_yloc, np.ones(npoints) * mat_h.sy, args=(sunit2, mat_h), xtol=1.e-5)
-    sig2 = sunit2 * 1.01 * x2[:, None]
-    sig = np.concatenate((sig1, sig2))
-    print(sig)
-    return sig
-    '''
 
 # Query by committee parameters
 # max disagreement for yf-predictions,
@@ -219,12 +172,13 @@ def hard_test_cases(a, b):
 # maximum_disagreement, cf. https://modal-python.readthedocs.io/en/latest/content/query_strategies/Disagreement-sampling.html#disagreement-sampling
 
 nmembers = 5  # Number of committee members
-nsamples_init = 100  # Number of initial samples
-nsamples_to_generate = 200  # Number of iterations, std. 30
-subset_percentage = 0.8
+nsamples_init = 80  # Number of initial samples
+nsamples_to_generate = 60  # Number of iterations
+subset_percentage = 0.8  # Percent of data used for each committee member
+init_rnd = False  # Train with random initial data points
+file_init = None  # 'DATA_sunit_iter_80.txt'
 
 # setup reference material with Hill-like anisotropy
-# path = os.path.dirname(__file__)
 sy = 50.
 E = 200000.
 nu = 0.3
@@ -232,32 +186,40 @@ hill = [1.4, 1.0, 0.7, 1.3, 0.8, 1.0]
 mat_h = FE.Material(name='Hill-reference')
 mat_h.elasticity(E=E, nu=nu)
 mat_h.plasticity(sy=sy, hill=hill)
-# mat_h.calc_properties(eps=0.0013, sigeps=True)
-# c = int(nsamples_init*2/3)
-# d = nsamples_init - c
-# sunit = FE.load_cases(number_3d=c, number_6d=d)
-sunit = creator_rnd(nsamples_init, 8)
+
+if isinstance(file_init, str):
+    sunit = read_vectors(file_init)
+elif init_rnd:
+    # alternative for training with random initial data points
+    sunit = creator_rnd(nsamples_init, 8)
+else:
+    # alternative for training with equally spaced initial data points
+    c = int(nsamples_init*2/3)
+    d = nsamples_init - c
+    sunit = FE.load_cases(number_3d=c, number_6d=d)
 np.savetxt('Test_Cases.txt', sunit)
-# create set of unit stresses and
+
+# create set of unit stresses
 print('Created {0} unit stresses (6d Voigt tensor).'.format(nsamples_init))
-x1 = fsolve(find_yloc, np.ones(nsamples_init) * mat_h.sy, args=(sunit, mat_h), xtol=1.e-5)
+x1 = fsolve(mat_h.find_yloc, np.ones(nsamples_init) * mat_h.sy, args=(sunit, ), xtol=1.e-5)
 sig = sunit * x1[:, None]
 print('Calculated {} yield stresses.'.format(nsamples_init))
-# train SVC with yield stress data generated from Hill flow rules
-C = 2.0
-gamma = 2.5
-Ce = 0.95
+
+# train SVC with yield stress data generated from Hill flow rule
+C = 4.0
+gamma = 2.0
+Ce = 0.99
 Fe = 0.1
 Nseq = 25
 vlevel = 0
-cvals = [4, 6, 8, 10]  # [4, 6, 8, 10, 12, 15]
-gvals = [0.6, 1, 2, 2.5, 3]  # [0.6, 0.8, 1, 2, 2.5, 3]
+gsearch = True
+cvals = [3, 4, 6, 8]
+gvals = [1.5, 2.0, 2.5, 3.0]
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.dev_only = True
 mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq, sdata=sig, extend=False,
-                 gridsearch=True, cvals=cvals, gvals=gvals,
-                 al_legacy=True, verbose=vlevel)
+                 gridsearch=gsearch, cvals=cvals, gvals=gvals,
+                 verbose=vlevel)
 plot_yield_locus(mat_ml=mat_ml, mat_h=mat_h, niter=0)
 np.savetxt('DATA_sig_iter_0.txt', sig)
 np.savetxt('DATA_sunit_iter_0.txt', sunit)
@@ -269,65 +231,75 @@ bounds = [(0, np.pi)] + [(0, 2 * np.pi)] * 4
 for i in range(nsamples_to_generate):
     # train SVC committee with yield stress data generated from Hill flow rule
     committee = []
+    tstart = time.time()
     for j in range(nmembers):
-        idx = np.random.choice(np.arange(sig.shape[0]), int(sig.shape[0] * subset_percentage), replace=False)
+        idx = np.random.choice(np.arange(sig.shape[0]), 
+                               int(sig.shape[0] * subset_percentage),
+                               replace=False)
         mat_ml = FE.Material(name='ML-Hill_{}'.format(j))
-        mat_ml.dev_only = True
         mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                          sdata=sig[idx, :], extend=False,
-                         gridsearch=True, cvals=cvals, gvals=gvals,
-                         al_legacy=True, verbose=vlevel)
+                         gridsearch=gsearch, cvals=cvals, gvals=gvals,
+                         verbose=vlevel)
         hyp_C_list.append(mat_ml.C_yf)
         hyp_g_list.append(mat_ml.gam_yf)
         committee.append(mat_ml)
+    tend = time.time()
+    print(f'***Iteration {i}:\n     Time for training committee: {tend-tstart}')
 
     # Search for next unit vector to query
-    res = differential_evolution(eval_variance, bounds, args=(committee,), popsize=90, polish=True,
+    tstart = time.time()
+    res = differential_evolution(eval_variance, bounds, args=(committee, ),
+                                 popsize=90, polish=True,
                                  updating='immediate')
+    tend = time.time()
+    print(f'     Time for differential evolution: {tend-tstart}')
     sunit_neww = res.x
     sunit_new = spherical_to_cartesian(sunit_neww)
     variance = res.fun
-
     var.append(-variance)
-    # print(-variance)
-    # print("number of iteration is:", i)
+
     # Calculate corresponding stress state and update data set
-    x1 = fsolve(find_yloc, mat_h.sy, args=(sunit_new, mat_h), xtol=1.e-5)
+    x1 = fsolve(mat_h.find_yloc, mat_h.sy, args=(sunit_new, ), xtol=1.e-5)
     sig_new = sunit_new * x1[:, None]
     sig = np.vstack([sig, sig_new])
     sunit = np.vstack([sunit, sunit_new])
 
+# Train final model with all data sets
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.dev_only = True
-mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.1, Ce=Ce, Nseq=Nseq,
                  sdata=sig, extend=False,
                  gridsearch=True, cvals=cvals, gvals=gvals,
-                 al_legacy=True, verbose=vlevel)
+                 verbose=vlevel)
 
 # Create ML model with conventional training approach
 Ntot = nsamples_init + nsamples_to_generate
 c = int(Ntot / 3)
 d = Ntot - c
 sunit_r = FE.load_cases(number_3d=c, number_6d=d)
-x1 = fsolve(find_yloc, np.ones(Ntot) * mat_h.sy, args=(sunit_r, mat_h), xtol=1.e-5)
+x1 = fsolve(mat_h.find_yloc, np.ones(Ntot) * mat_h.sy, args=(sunit_r, ), xtol=1.e-5)
 sig_r = sunit_r * x1[:, None]
 mat_ml_r = FE.Material(name='ML-Hill')  # define material
-mat_ml_r.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
+mat_ml_r.train_SVC(C=C, gamma=gamma, Fe=0.1, Ce=Ce, Nseq=Nseq,
                    sdata=sig_r,
                    gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
 
+# Plot results
 plot_yield_locus(mat_ml, mat_h, nsamples_to_generate, mat3=mat_ml_r)
 plot_variances(var)
 
-fig = plt.figure()
-plt.plot(hyp_g_list, 'b.', label='gamma')
-plt.plot(hyp_C_list, 'r.', label='C')
-plt.legend()
-plt.title('Evolution of hyperparameters')
-plt.xlabel('iteration * committee')
-plt.ylabel('C, gamma')
-plt.show()
+if gsearch:
+    fig = plt.figure()
+    plt.plot(hyp_g_list, 'b.', label='gamma')
+    plt.plot(hyp_C_list, 'r.', label='C')
+    plt.legend()
+    plt.title('Evolution of hyperparameters')
+    plt.xlabel('iteration * committee')
+    plt.ylabel('C, gamma')
+    plt.show()
 
+# Save data files
 np.savetxt('DATA_sig_iter_{}.txt'.format(i + 1), sig)
 np.savetxt('DATA_sunit_iter_{}.txt'.format(i + 1), sunit)
 np.savetxt('variance.txt', var)
+
