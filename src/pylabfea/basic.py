@@ -275,6 +275,30 @@ def sig_princ2cyl(sig: np.ndarray, mat=None) -> np.ndarray:
     return sc
 
 
+def sig_spherical_to_cartesian(angles, seq=1.0):
+    """
+    Convert a list of 5 spherical angles to a Voigt stress tensor.
+    Parameters
+    ----------
+    angles : (5,)-array
+        List of 5 angles in radians.
+    seq : float
+        Equivalent stress to be assigned to stress tensor (optional, default: 1)
+    Returns
+    -------
+    coordinates : (N,6) array
+        Cartesian coordinates computed from the input spherical angles.
+    """
+    assert len(angles) == 5
+    x1 = np.cos(angles[0])
+    x2 = np.sin(angles[0]) * np.cos(angles[1])
+    x3 = np.sin(angles[0]) * np.sin(angles[1]) * np.cos(angles[2])
+    x4 = np.sin(angles[0]) * np.sin(angles[1]) * np.sin(angles[2]) * np.cos(angles[3])
+    x5 = np.sin(angles[0]) * np.sin(angles[1]) * np.sin(angles[2]) * np.sin(angles[3]) * np.cos(angles[4])
+    x6 = np.sin(angles[0]) * np.sin(angles[1]) * np.sin(angles[2]) * np.sin(angles[3]) * np.sin(angles[4])
+    return seq * np.array([x1, x2, x3, x4, x5, x6])
+
+
 def sig_dev(sig: np.ndarray) -> np.ndarray:
     """Calculate deviatoric stress component from given stress tensor
 
@@ -575,4 +599,4 @@ def sdev(sig):
 
 
 def polar_ang(sig):
-    return sig_polar_ang(sig)     
+    return sig_polar_ang(sig)
