@@ -22,28 +22,6 @@ from scipy.optimize import fsolve
 from matplotlib.lines import Line2D
 
 
-def spherical_to_cartesian(angles):
-    """
-    Convert a list of 5 spherical angles to Cartesian coordinates.
-    Parameters
-    ----------
-    angles : (N,)-array
-        List of 5 angles in radians.
-    Returns
-    -------
-    coordinates : (N,6) array
-        Cartesian coordinates computed from the input spherical angles.
-    """
-    assert len(angles) == 5
-    x1 = np.cos(angles[0])
-    x2 = np.sin(angles[0]) * np.cos(angles[1])
-    x3 = np.sin(angles[0]) * np.sin(angles[1]) * np.cos(angles[2])
-    x4 = np.sin(angles[0]) * np.sin(angles[1]) * np.sin(angles[2]) * np.cos(angles[3])
-    x5 = np.sin(angles[0]) * np.sin(angles[1]) * np.sin(angles[2]) * np.sin(angles[3]) * np.cos(angles[4])
-    x6 = np.sin(angles[0]) * np.sin(angles[1]) * np.sin(angles[2]) * np.sin(angles[3]) * np.sin(angles[4])
-    return np.array([x1, x2, x3, x4, x5, x6])
-
-
 def creator_rnd(npoints, precision=8):
     """
     Generate random points in a 6D space, normalize them, and then round to the specified precision.
@@ -75,25 +53,6 @@ def creator_rnd(npoints, precision=8):
         points.append(point_rounded)
     return np.vstack(points)
 
-'''
-def find_yloc(x, sig, mat):
-    """
-    Function to expand unit stresses by factor and calculate yield function;
-    used by search algorithm to find zeros of yield function.
-    Parameters
-    ----------
-    x : (N,)-array
-        Multiplyer for stress
-    sig : (N,6) array
-        unit stress
-    Returns
-    -------
-    f : 1d-array
-        Yield function evaluated at sig=x.sp
-    """
-    f = mat.calc_yf(sig * x[:, None])
-    return f'''
-
 
 def eval_variance(angles, committee):
     """
@@ -114,12 +73,33 @@ def eval_variance(angles, committee):
         Negative variance of the yield function outputs for maximization purpose.
     """
     # Convert from spherical to Cartesian coordinates
-    x = spherical_to_cartesian(angles)
+    x = FE.sig_spherical_to_cartesian(angles)
     y = np.zeros(len(committee))
     for i, member in enumerate(committee):
-        y[i] = member.calc_yf(x * member.sy)
+        y[i] = member.calc_yf(x * member.sy * 0.5)
     variance = np.var(y)
     return -variance
+
+
+def comp_score(mat1, mat2, mat_ref, npoint=100, scale=10, offset=5):
+    # analyze training result
+    global nsamples_init, nsamples_to_generate
+    loc = mat_ref.sy
+    X1 = np.random.normal(loc=loc, scale=scale, size=int(npoint / 2))
+    X2 = np.random.normal(loc=(loc - offset), scale=scale, size=int(npoint / 4))
+    X3 = np.random.normal(loc=(loc + offset), scale=scale, size=int(npoint / 4))
+    X = np.concatenate((X1, X2, X3))
+    sunittest = FE.load_cases(number_3d=0, number_6d=len(X))
+    sig_test = sunittest * X[:, None]
+    yf_ml1 = mat1.calc_yf(sig_test)
+    yf_ml2 = mat2.calc_yf(sig_test)
+    yf_ref = mat_ref.calc_yf(sig_test)
+    print(f'\n*** Training scores of active learning model with {nsamples_init} initial '
+          f'and {nsamples_to_generate} training points:')
+    FE.training_score(yf_ref, yf_ml1)
+    print(f'\n*** Training scores of conventional learning model with {nsamples_init + nsamples_to_generate} '
+          f'training points:')
+    FE.training_score(yf_ref, yf_ml2)
 
 
 def plot_variances(var_list):
@@ -166,14 +146,15 @@ def read_vectors(file_name):
     vectors = np.loadtxt(file_name)
     return vectors
 
+
 # Query by committee parameters
 # max disagreement for yf-predictions,
 # for classifiers generally possible: vote_entropy, consensus_entropy or
 # maximum_disagreement, cf. https://modal-python.readthedocs.io/en/latest/content/query_strategies/Disagreement-sampling.html#disagreement-sampling
 
 nmembers = 5  # Number of committee members
-nsamples_init = 80  # Number of initial samples
-nsamples_to_generate = 60  # Number of iterations
+nsamples_init = 42  # Number of initial samples
+nsamples_to_generate = 30  # Number of iterations
 subset_percentage = 0.8  # Percent of data used for each committee member
 init_rnd = False  # Train with random initial data points
 file_init = None  # 'DATA_sunit_iter_80.txt'
@@ -194,27 +175,27 @@ elif init_rnd:
     sunit = creator_rnd(nsamples_init, 8)
 else:
     # alternative for training with equally spaced initial data points
-    c = int(nsamples_init*2/3)
+    c = int(nsamples_init / 3)
     d = nsamples_init - c
     sunit = FE.load_cases(number_3d=c, number_6d=d)
 np.savetxt('Test_Cases.txt', sunit)
 
 # create set of unit stresses
 print('Created {0} unit stresses (6d Voigt tensor).'.format(nsamples_init))
-x1 = fsolve(mat_h.find_yloc, np.ones(nsamples_init) * mat_h.sy, args=(sunit, ), xtol=1.e-5)
+x1 = fsolve(mat_h.find_yloc, np.ones(nsamples_init) * mat_h.sy, args=(sunit,), xtol=1.e-5)
 sig = sunit * x1[:, None]
 print('Calculated {} yield stresses.'.format(nsamples_init))
 
 # train SVC with yield stress data generated from Hill flow rule
-C = 4.0
-gamma = 2.0
+C = 3.0
+gamma = 0.5
 Ce = 0.99
 Fe = 0.1
 Nseq = 25
 vlevel = 0
 gsearch = True
-cvals = [3, 4, 6, 8]
-gvals = [1.5, 2.0, 2.5, 3.0]
+cvals = [1, 2, 3, 4, 5]
+gvals = [0.7, 1.0, 1.5, 2.0, 2.5]
 
 mat_ml = FE.Material(name='ML-Hill')  # define material
 mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq, sdata=sig, extend=False,
@@ -233,7 +214,7 @@ for i in range(nsamples_to_generate):
     committee = []
     tstart = time.time()
     for j in range(nmembers):
-        idx = np.random.choice(np.arange(sig.shape[0]), 
+        idx = np.random.choice(np.arange(sig.shape[0]),
                                int(sig.shape[0] * subset_percentage),
                                replace=False)
         mat_ml = FE.Material(name='ML-Hill_{}'.format(j))
@@ -245,29 +226,29 @@ for i in range(nsamples_to_generate):
         hyp_g_list.append(mat_ml.gam_yf)
         committee.append(mat_ml)
     tend = time.time()
-    print(f'***Iteration {i}:\n     Time for training committee: {tend-tstart}')
+    print(f'***Iteration {i}:\n     Time for training committee: {tend - tstart}')
 
     # Search for next unit vector to query
     tstart = time.time()
-    res = differential_evolution(eval_variance, bounds, args=(committee, ),
+    res = differential_evolution(eval_variance, bounds, args=(committee,),
                                  popsize=90, polish=True,
                                  updating='immediate')
     tend = time.time()
-    print(f'     Time for differential evolution: {tend-tstart}')
+    print(f'     Time for differential evolution: {tend - tstart}')
     sunit_neww = res.x
-    sunit_new = spherical_to_cartesian(sunit_neww)
+    sunit_new = FE.sig_spherical_to_cartesian(sunit_neww)
     variance = res.fun
     var.append(-variance)
 
     # Calculate corresponding stress state and update data set
-    x1 = fsolve(mat_h.find_yloc, mat_h.sy, args=(sunit_new, ), xtol=1.e-5)
+    x1 = fsolve(mat_h.find_yloc, mat_h.sy, args=(sunit_new,), xtol=1.e-5)
     sig_new = sunit_new * x1[:, None]
     sig = np.vstack([sig, sig_new])
     sunit = np.vstack([sunit, sunit_new])
 
 # Train final model with all data sets
 mat_ml = FE.Material(name='ML-Hill')  # define material
-mat_ml.train_SVC(C=C, gamma=gamma, Fe=0.1, Ce=Ce, Nseq=Nseq,
+mat_ml.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                  sdata=sig, extend=False,
                  gridsearch=True, cvals=cvals, gvals=gvals,
                  verbose=vlevel)
@@ -277,12 +258,15 @@ Ntot = nsamples_init + nsamples_to_generate
 c = int(Ntot / 3)
 d = Ntot - c
 sunit_r = FE.load_cases(number_3d=c, number_6d=d)
-x1 = fsolve(mat_h.find_yloc, np.ones(Ntot) * mat_h.sy, args=(sunit_r, ), xtol=1.e-5)
+x1 = fsolve(mat_h.find_yloc, np.ones(Ntot) * mat_h.sy, args=(sunit_r,), xtol=1.e-5)
 sig_r = sunit_r * x1[:, None]
 mat_ml_r = FE.Material(name='ML-Hill')  # define material
-mat_ml_r.train_SVC(C=C, gamma=gamma, Fe=0.1, Ce=Ce, Nseq=Nseq,
+mat_ml_r.train_SVC(C=C, gamma=gamma, Fe=Fe, Ce=Ce, Nseq=Nseq,
                    sdata=sig_r,
                    gridsearch=True, cvals=cvals, gvals=gvals, verbose=vlevel)
+
+# Evaluate results
+comp_score(mat_ml, mat_ml_r, mat_ref=mat_h, npoint=300)
 
 # Plot results
 plot_yield_locus(mat_ml, mat_h, nsamples_to_generate, mat3=mat_ml_r)
@@ -299,7 +283,6 @@ if gsearch:
     plt.show()
 
 # Save data files
-np.savetxt('DATA_sig_iter_{}.txt'.format(i + 1), sig)
-np.savetxt('DATA_sunit_iter_{}.txt'.format(i + 1), sunit)
+np.savetxt('DATA_sig_iter_{}.txt'.format(nsamples_to_generate), sig)
+np.savetxt('DATA_sunit_iter_{}.txt'.format(nsamples_to_generate), sunit)
 np.savetxt('variance.txt', var)
-
