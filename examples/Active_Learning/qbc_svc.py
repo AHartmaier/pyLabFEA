@@ -188,7 +188,7 @@ print('Calculated {} yield stresses.'.format(nsamples_init))
 
 # train SVC with yield stress data generated from Hill flow rule
 C = 3.0
-gamma = 0.5
+gamma = 1.0
 Ce = 0.99
 Fe = 0.1
 Nseq = 25
