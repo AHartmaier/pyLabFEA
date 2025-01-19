@@ -52,7 +52,6 @@ def create_data(mat, Nlc=300, epl_max=0.03, depl=1.e-3):
             sig_list.append(sig)
             epl_list.append(np.array(epl))
             etemp = np.dot(SV, sig)
-            # etemp[3:6] *= 0.5
             etot_list.append(etemp)
         while peeq < epl_max:
             peeq = FE.eps_eq(epl) + depl
@@ -60,7 +59,6 @@ def create_data(mat, Nlc=300, epl_max=0.03, depl=1.e-3):
             epl_inc = mat.calc_fgrad(sig=sig, epl=epl) * depl
             epl += epl_inc
             etemp = np.dot(SV, sig)
-            # etemp[3:6] *= 0.5
             etot = epl + etemp
             sig_list.append(sig)
             epl_list.append(np.array(epl))
