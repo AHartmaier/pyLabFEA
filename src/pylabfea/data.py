@@ -26,6 +26,13 @@ from scipy.signal import savgol_filter
 from scipy.optimize import minimize
 
 
+def ln_strain(eng_strain):
+    return np.log(1 + eng_strain)
+
+
+def eng_strain(ln_strain):
+    return np.exp(ln_strain) - 1
+
 def find_transition_index(stress):
     """Calculates the index at which a significant transition in the total stress-strain relationship occurs.
     The function applies a Savitzky-Golay filter to smooth the stress data and to calculate the first
@@ -486,15 +493,15 @@ class Data(object):
         # JS TODO: Store CYL data correctly
         data = json.load(open(Data_File))
         Final_Data = dict()
-        if self.mat_data['epc'] is None:
-            epc = 0.0
-        else:
-            epc = self.mat_data['epc']
-
+        elstrain = []
+        elstress = []
+        E_Plastic = None
         for key, val in data.items():
             if 'cyl' in key:
                 # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
-                Final_Data[key] = {"Stress": res}
+                res = val['Results']
+                Final_Data[key] = {"Stress": [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]}
+                continue
             if key == 'Texture':
                 self.mat_data['tx_name'] = val['name']
                 try:
@@ -520,50 +527,77 @@ class Data(object):
                         raise NotImplementedError
                     self.mat_data['tdim'] = len(self.mat_data['texture'])
 
-            res = val['Results']
-            Sigma = [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]  # Order !!!
-            E_Total = [res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]
-            E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]
-            Len_Sigma = len(Sigma[0])
-            seq_full = np.zeros(Len_Sigma)
-            teeq_full = np.zeros(Len_Sigma)
-            peeq_plastic = np.zeros(Len_Sigma)
-            Original_Stresses = np.zeros((Len_Sigma, 6))
-            Original_Plastic_Strains = np.zeros((Len_Sigma, 6))
-            Original_Total_Strains = np.zeros((Len_Sigma, 6))
-            Plastic_Strains_Shifted = np.zeros((Len_Sigma, 6))
-            epl = []
-            for i in range(Len_Sigma):
-                Stress_6D = np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i], Sigma[3][i], Sigma[4][i], Sigma[5][i]])
+            if 'Results' in val.keys():
+                res = val['Results']
+                Sigma = [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]  # Order !!!
+                E_Total = [res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]
+                E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]
+            else:
+                Sigma = np.array(val["stress"]).T
+                E_Total = np.array(val["total_strain"]).T
+                if "plastic_strain" in val.keys():
+                    E_Plastic = np.array(val["plastic_strain"]).T
+
+            nlc = len(Sigma[0])
+            seq_full = np.zeros(nlc)
+            teeq_full = np.zeros(nlc)
+            peeq_plastic = np.zeros(nlc)
+            Original_Stresses = np.zeros((nlc, 6))
+            Original_Plastic_Strains = np.zeros((nlc, 6))
+            Original_Total_Strains = np.zeros((nlc, 6))
+            for i in range(nlc):
+                Stress_6D = np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i],
+                                      Sigma[3][i], Sigma[4][i], Sigma[5][i]])
                 Original_Stresses[i, :] = Stress_6D
                 seq_full[i] = FE.sig_eq_j2(Stress_6D)
-
-                E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
-                                         E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
-
-                peeq_plastic[i] = FE.eps_eq(E_Plastic_6D)
-                Original_Plastic_Strains[i, :] = E_Plastic_6D
-
                 E_Total_6D = np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
                                        E_Total[3][i], E_Total[4][i], E_Total[5][i]])
-
-                
                 teeq_full[i] = FE.eps_eq(E_Total_6D)
-                Original_Total_Strains[i] = E_Total_6D
-                # For having also the elastic data and shift the 0 plastic strain
-                # to 0.02% to match the micromechanical data.
-                # Can be used in Stress-Strain Reconstruction.
-                scale = np.maximum(peeq_plastic[i], 1.e-10)
-                Plastic_Strains_Shifted[i] = E_Plastic_6D * (1. - epc / scale)
+                Original_Total_Strains[i, :] = E_Total_6D
+                if E_Plastic is not None:
+                    E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
+                                             E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
+                    peeq_plastic[i] = FE.eps_eq(E_Plastic_6D)
+                    Original_Plastic_Strains[i, :] = E_Plastic_6D
+
+            if E_Plastic is None:
+                it = find_transition_index(seq_full)
+                if it < 10:
+                    continue
+                else:
+                    it = int(it*0.9)  # apply safety margin to ensure strains are purely elastic
+                elstrain.append(Original_Total_Strains[it, :])  # elastic strain tensor at end of elastic regime
+                elstress.append(Original_Stresses[it, :])  # stress tensor at transition
+                Original_Plastic_Strains = None
+                peeq_plastic = None
 
             Final_Data[key] = {"Stress": Original_Stresses,
                                "Eq_Stress": seq_full,
                                "Strain_Plastic": Original_Plastic_Strains,
-                               "Eq_Strain_Plastic": peeq_plastic,  # always shifted ???
-                               "Shifted_Strain_Plastic": Plastic_Strains_Shifted,  # required ???
+                               "Eq_Strain_Plastic": peeq_plastic,
                                "Strain_Total": Original_Total_Strains,
                                "Eq_Strain_Total": teeq_full,
                                }
+        if E_Plastic is None:
+            C = get_elastic_coefficients(elstrain, elstress, method='least_square')
+            SV = np.linalg.inv(C)
+            print(f'Calculated elastic coefficients:\n {C}')
+            print(f'Compliance matrix:\n {SV}')
+            for key, val in Final_Data.items():
+                stress = val['Stress']
+                strain_t = val['Strain_Total']
+                nval = len(stress)
+                peeq_plastic = np.zeros(nval)
+                Plastic_Strains = np.zeros_like(stress)
+                for i in range(nval):
+                    Elog_tot = ln_strain(strain_t[i, :])
+                    Elog_el = ln_strain(np.dot(SV, stress[i, :]))
+                    E_Plastic_6D = eng_strain(Elog_tot - Elog_el)
+                    peeq_plastic[i] = FE.eps_eq(E_Plastic_6D)
+                    Plastic_Strains[i, :] = E_Plastic_6D
+                Final_Data[key]["Strain_Plastic"] = Plastic_Strains
+                Final_Data[key]["Eq_Strain_Plastic"] = peeq_plastic
+            print('Plastic strains are reconstructed from linear part of stress strain data.')
         return Final_Data
 
     def parse_data(self, epl_crit, epl_start, epl_max, depl):
@@ -700,8 +734,8 @@ class Data(object):
     
                 # get texture name
                 ''' Warning: This should be read only once from metadata !!!'''
-                Key_Translated = self.key_parser(key)
-                self.mat_data['ms_type'] = Key_Translated["Texture_Type"]  # unimodal texture type
+                #Key_Translated = self.key_parser(key)
+                self.mat_data['ms_type'] = 'unknown'  #Key_Translated["Texture_Type"]  # unimodal texture type
                 ct += 1
 
         # initialize mat_data dictionary used to create material objects
@@ -725,7 +759,7 @@ class Data(object):
         self.mat_data['transition_ind'] = it_list  # list of indices identified at elastic/plastic transition
                                                    # by various methods
         print(f'\n###   Data set: {self.mat_data["Name"]}  ###')
-        print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
+        #print(f'Type of microstructure: {Key_Translated["Texture_Type"]}')
         print(f'Estimated elastic constants (in GPa): C={C * 1.E-3}')  # get units from metadata ???
         print(f'Estimated yield strength: {sy_av:5.2f} MPa at PEEQ = {(ep_s/Nlc):5.3f}')
 
