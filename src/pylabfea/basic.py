@@ -41,6 +41,8 @@ def sig_eq_j2(sig: np.ndarray):
     seq : float or (N,) array
         sj2 equivalent stresses
     """
+    if isinstance(sig, list):
+        sig = np.array(sig)
     nsc: int = len(sig)  # number of stress components
     sh = np.shape(sig)
     if sh == (3,):

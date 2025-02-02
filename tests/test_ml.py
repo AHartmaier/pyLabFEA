@@ -121,10 +121,10 @@ def test_ml_data():
     mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, plot=False)  # Train SVC with data
 
     assert 'Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd' in db.lc_data.keys()
-    assert np.isclose(db.mat_data['sy_av'], 48.8134575474978)
-    assert np.isclose(mat_ml.CV[0, 0], 204130.19078123)
-    assert np.abs(len(mat_ml.svm_yf.support_vectors_) - 2091) < 3
+    assert np.isclose(db.mat_data['sy_av'], 49.008502278682954)
+    assert np.isclose(mat_ml.CV[0, 0], 204130.19078123142)
+    assert np.abs(len(mat_ml.svm_yf.support_vectors_) - 2093) < 3
     sig = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Stress'][180]
     epl = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Strain_Plastic'][180]
     vyf = mat_ml.ML_full_yf(sig=sig, epl=epl)
-    assert vyf + 3.6435393377423253 < 1.e-3
+    assert vyf + 3.6322538456276874 < 1.e-3
