@@ -553,7 +553,7 @@ class Data(object):
                 E_Total = [res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]
                 E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]
             else:
-                Sigma = np.array(val["stress"]).T  # ??? Transpose is legacy for old data format, update!!!
+                Sigma = np.array(val["stress"]).T  # ??? update database!!!
                 E_Total = np.array(val["total_strain"]).T
                 if "plastic_strain" in val.keys():
                     E_Plastic = np.array(val["plastic_strain"]).T
@@ -858,7 +858,7 @@ class Data(object):
     def plot_stress_strain(self, plot_peeq=True, eps_max=0.1,
                            epc=None,
                            fontsize=14, cmap='viridis'):
-        cols = plt.colormaps.get_cmap(cmap)
+        cols = plt.get_cmap(cmap)
         smax = 0.0
         fig = plt.figure()
         for val in self.lc_data.values():
@@ -889,13 +889,13 @@ class Data(object):
 
     def plot_yield_stress(self, show_hist=True, test_data=None,
                           fontsize=14, cmap='viridis'):
-        cols = plt.colormaps.get_cmap(cmap)
+        cols = plt.get_cmap(cmap)
         fig = plt.figure()
         ang = FE.sig_polar_ang(self.mat_data['sig_ideal'])
         seq = FE.sig_eq_j2(self.mat_data['sig_ideal'])
         ind = np.argsort(ang)
         cval = ang[ind] / np.pi
-        plt.scatter(ang[ind], seq[ind], c=cval, label='yield strength data')
+        plt.scatter(ang[ind], seq[ind], c=cols(cval), label='yield strength data')
         plt.plot([-np.pi, np.pi], [self.mat_data['sy_av'], self.mat_data['sy_av']],
                  '--k', label='average yield strength')
         plt.legend(loc='upper left', fontsize=fontsize - 2)
