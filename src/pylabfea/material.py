@@ -2218,7 +2218,7 @@ class Material(object):
             'Ntext']  # JS: This parameter is not required any more. Each msparam just has one texture
         # self.txdat = False if Ntext == 1 else True  # JS:  The Ntext of each msparam is equal to 1 -> different criterion to check if txtdat.
 
-        self.txdat = False if self.Nset == 1 else True  # JS: Texture variations are expressed by Nset > 1.
+        # self.txdat = False if self.Nset == 1 else True  # JS: Texture variations are expressed by Nset > 1.
         if self.Nset > 1:
             # JS: In this case, there are more microstructures assigned to the material -> txdat should be True
             if not self.msparam[0]['tx_data']:
@@ -2226,7 +2226,7 @@ class Material(object):
             else:
                 self.txdat = True
         else:
-            self.txdat = False
+            self.txdat = self.msparam[0]['tx_data']
         if self.sdim is None:
             self.sdim = self.msparam[0]['sdim']
         elif self.sdim != self.msparam[0]['sdim']:
