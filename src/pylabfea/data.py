@@ -554,10 +554,10 @@ class Data(object):
                 Original_Total_Strains = \
                     np.array([res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]).T
                 teeq_full = FE.eps_eq(Original_Total_Strains)
-                if "plastic_strain" in val.keys():
+                if "Ep11" in res.keys():
                     Original_Plastic_Strains = \
                         np.array([res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]).T
-                    peeq_plastic = np.zeros(Original_Plastic_Strains)
+                    peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
                     E_Plastic = True
                 else:
                     # no plastic strains in data, store information to get elastic coefficients
@@ -584,7 +584,7 @@ class Data(object):
                         np.array([val['plastic_strain']["Ep11"], val['plastic_strain']["Ep22"],
                                   val['plastic_strain']["Ep33"], val['plastic_strain']["Ep23"],
                                   val['plastic_strain']["Ep13"], val['plastic_strain']["Ep12"]]).T
-                    peeq_plastic = np.zeros(Original_Plastic_Strains)
+                    peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
                     E_Plastic = True
                 else:
                     # no plastic strains in data, store information to get elastic coefficients
