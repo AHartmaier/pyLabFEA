@@ -867,7 +867,7 @@ class Data(object):
     def plot_stress_strain(self, plot_peeq=True, eps_max=0.1,
                            epc=None,
                            fontsize=14, cmap='viridis'):
-        cols = plt.colormaps.get_cmap(cmap)
+        cols = plt.get_cmap(cmap)
         smax = 0.0
         fig = plt.figure()
         for val in self.lc_data.values():
@@ -898,13 +898,13 @@ class Data(object):
 
     def plot_yield_stress(self, show_hist=True, test_data=None,
                           fontsize=14, cmap='viridis'):
-        cols = plt.colormaps.get_cmap(cmap)
+        cols = plt.get_cmap(cmap)
         fig = plt.figure()
         ang = FE.sig_polar_ang(self.mat_data['sig_ideal'])
         seq = FE.sig_eq_j2(self.mat_data['sig_ideal'])
         ind = np.argsort(ang)
         cval = ang[ind] / np.pi
-        plt.scatter(ang[ind], seq[ind], c=cval, label='yield strength data')
+        plt.scatter(ang[ind], seq[ind], c=cols(cval), label='yield strength data')
         plt.plot([-np.pi, np.pi], [self.mat_data['sy_av'], self.mat_data['sy_av']],
                  '--k', label='average yield strength')
         plt.legend(loc='upper left', fontsize=fontsize - 2)
