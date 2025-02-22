@@ -574,6 +574,18 @@ class Data(object):
             else:
                 Original_Stresses = np.array([val['stress']["S11"], val['stress']["S22"], val['stress']["S33"],
                                               val['stress']["S23"], val['stress']["S13"], val['stress']["S12"]]).T
+                if "units" in val.keys():
+                    if val['units']['Stress'] == 'MPa':
+                        sfct = 1.
+                    elif val['units']['Stress'] == 'GPa':
+                        sfct = 1000.
+                    else:
+                        raise ValueError(f"Cannot convert stress unit {val['units']['Stress']}. "
+                                         f"Data must be provided either im MPa or in GPa.")
+                else:
+                    sfct = 1.
+                    print('Warning: No units for stresses are given. Assuming MPa.')
+                Original_Stresses *= sfct
                 seq_full = FE.sig_eq_j2(Original_Stresses)
                 Original_Total_Strains = \
                     np.array([val['total_strain']["E11"], val['total_strain']["E22"], val['total_strain']["E33"],
@@ -879,7 +891,7 @@ class Data(object):
             ind = np.nonzero(eeq <= eps_max)[0]
             idx = np.argmax(seq[ind])
             smax = max(smax, seq[idx])
-            col = FE.sig_polar_ang(val['Stress'][idx]) / np.pi
+            col = (FE.sig_polar_ang(val['Stress'][idx]) + np.pi) / (2 * np.pi)
             plt.plot(eeq[ind], seq[ind], color=cols(col))
         if epc is not None:
             plt.plot([epc, epc], [0, smax], '--r')
@@ -903,7 +915,7 @@ class Data(object):
         ang = FE.sig_polar_ang(self.mat_data['sig_ideal'])
         seq = FE.sig_eq_j2(self.mat_data['sig_ideal'])
         ind = np.argsort(ang)
-        cval = ang[ind] / np.pi
+        cval = (ang[ind] + np.pi) / (2 * np.pi)
         plt.scatter(ang[ind], seq[ind], c=cols(cval), label='yield strength data')
         plt.plot([-np.pi, np.pi], [self.mat_data['sy_av'], self.mat_data['sy_av']],
                  '--k', label='average yield strength')
@@ -939,7 +951,7 @@ class Data(object):
             peeq = FE.eps_eq(val['Strain_Plastic'])
             seq = FE.sig_eq_j2(val['Stress'])
             idx = np.nonzero(peeq <= self.mat_data['ep_max'])[0][-1]
-            col = FE.sig_polar_ang(val['Stress'][idx]) / np.pi
+            col = 0.5 * (FE.sig_polar_ang(val['Stress'][idx]) / np.pi + 1)
             plt.plot(peeq[0:idx] * 100, seq[0:idx], color=cmap(col))
         plt.xlabel(r'$\epsilon_{eq}^\mathrm{pl}$ (%)', fontsize=fontsize)
         plt.ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=fontsize)

@@ -744,10 +744,23 @@ class Material(object):
         fgrad = np.zeros((N, self.sdim))
         if self.ML_grad and not ana:
             # use SVR fitted to gradient
-            sig = sig / self.sy
-            fgrad[:, 0] = self.svm_grad0.predict(sig) * self.gscale[0]
-            fgrad[:, 1] = self.svm_grad1.predict(sig) * self.gscale[1]
-            fgrad[:, 2] = self.svm_grad2.predict(sig) * self.gscale[2]
+            xf = np.zeros(12)
+            if N > 1:
+                raise ValueError('"sig" must be single stress tensor.')
+            np.concatenate((sig[0, :], epl), out=xf)
+            xsc = self.sc_feat.transform([xf])
+            dp = np.array([self.svm_grad0.predict(xsc)[0], self.svm_grad1.predict(xsc)[0],
+                           self.svm_grad2.predict(xsc)[0], self.svm_grad3.predict(xsc)[0],
+                           self.svm_grad4.predict(xsc)[0], self.svm_grad5.predict(xsc)[0]])
+            fgrad = self.sc_lab.inverse_transform([dp])
+            peeq = eps_eq(fgrad)
+            if peeq > 1.e-10:
+                fgrad /= peeq
+            epl_new = epl + fgrad*1.e-3  # increase plastic strain by 0.1% in direction of gradient
+            seq = sig_eq_j2(sig[0, :])
+            sig0 = sig[0, :] / seq
+            x1 = fsolve(self.find_yloc_scalar, sig[0, :], args=(sig0, epl_new), xtol=1.e-5)
+            self.khard = (x1 - seq)*1.e3
             self.msg['gradient'] = 'SVR gradient'
         elif self.ML_yf and not ana:
             # use gradient of SVC yield fct. in stress space
@@ -1959,7 +1972,7 @@ class Material(object):
             yt[j0:j1] = -1. if i < Nseq else +1.
         return st, yt
 
-    def setup_fgrad_SVM(self, X_grad_train, y_grad_train, C=10., gamma=0.1):
+    def setup_fgrad_SVM(self):
         """Inititalize and train SVM regression for gradient evaluation
 
         Parameters
@@ -1972,24 +1985,42 @@ class Material(object):
             Parameter for kernel of SVR (optional, default: 0.1)
         """
         # define support vector regressor parameters
+        C = self.C_yf
+        gamma = self.gam_yf
         self.svm_grad0 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
                                  kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
         self.svm_grad1 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
                                  kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
         self.svm_grad2 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
                                  kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
+        self.svm_grad3 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
+                                 kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
+        self.svm_grad4 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
+                                 kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
+        self.svm_grad5 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
+                                 kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
 
         # fit SVM to training data
-        X_grad_train = X_grad_train / self.sy
-        gmax = np.amax(y_grad_train, axis=0)
-        gmin = np.amin(y_grad_train, axis=0)
-        self.gscale = gmax - gmin
-        y_grad_train0 = y_grad_train[:, 0] / self.gscale[0]
-        y_grad_train1 = y_grad_train[:, 1] / self.gscale[1]
-        y_grad_train2 = y_grad_train[:, 2] / self.gscale[2]
-        self.svm_grad0.fit(X_grad_train, y_grad_train0)
-        self.svm_grad1.fit(X_grad_train, y_grad_train1)
-        self.svm_grad2.fit(X_grad_train, y_grad_train2)
+        eps = self.msparam[0]['plastic_strain']
+        peeq = eps_eq(self.msparam[0]['plastic_strain'])
+        ind = np.nonzero(peeq < 1.e-10)[0]
+        peeq[ind] = 1.
+        ndata = len(eps)
+        X_gt = np.zeros((ndata, 12))
+        np.concatenate((self.msparam[0]['flow_stress'], eps), axis=1, out=X_gt)
+        y_gt = eps / peeq[:, None]
+        self.sc_feat = StandardScaler()
+        self.sc_lab = StandardScaler()
+        self.sc_feat.fit(X_gt)
+        self.sc_lab.fit(y_gt)
+        x_sc = self.sc_feat.transform(X_gt)
+        y_sc = self.sc_lab.transform(y_gt)
+        self.svm_grad0.fit(x_sc, y_sc[:, 0])
+        self.svm_grad1.fit(x_sc, y_sc[:, 1])
+        self.svm_grad2.fit(x_sc, y_sc[:, 2])
+        self.svm_grad3.fit(x_sc, y_sc[:, 3])
+        self.svm_grad4.fit(x_sc, y_sc[:, 4])
+        self.svm_grad5.fit(x_sc, y_sc[:, 5])
         self.ML_grad = True
 
     def export_MLparam(self, sname, source=None, file=None, path='../../models/',
