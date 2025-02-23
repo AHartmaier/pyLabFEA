@@ -729,38 +729,34 @@ class Material(object):
         fgrad : (sdim,), (N,sdim) array
             Gradient to yield surface at given position in stress space, same dimension as sdim
         """
-        if epl is None:
-            epl = np.zeros(self.sdim)
         N = len(sig)
         sh = np.shape(sig)
         sh_tex = np.shape(tex)
+        if epl is None:
+            epl = np.zeros_like(sig)
+        elif np.shape(epl) != sh:
+            raise ValueError('Parameter sig and epl must have the same shape.')
         if sh == (3,) or sh == (6,):
             N = 1  # sig is vector of principal stresses
             sig = np.array([sig])
+            epl = np.array([epl])
         elif sh != (N, self.sdim):
             raise ValueError('Unknown format of stress in calc_fgrad')
         if len(sh_tex) == 1:
             tex = np.array([tex])
-        fgrad = np.zeros((N, self.sdim))
+        fgrad = np.zeros_like(sig)
         if self.ML_grad and not ana:
-            # use SVR fitted to gradient
+            # Evaluate SVR trained to plastic strain increments
             xf = np.zeros(12)
-            if N > 1:
-                raise ValueError('"sig" must be single stress tensor.')
-            np.concatenate((sig[0, :], epl), out=xf)
-            xsc = self.sc_feat.transform([xf])
-            dp = np.array([self.svm_grad0.predict(xsc)[0], self.svm_grad1.predict(xsc)[0],
-                           self.svm_grad2.predict(xsc)[0], self.svm_grad3.predict(xsc)[0],
-                           self.svm_grad4.predict(xsc)[0], self.svm_grad5.predict(xsc)[0]])
-            fgrad = self.sc_lab.inverse_transform([dp])
-            peeq = eps_eq(fgrad)
-            if peeq > 1.e-10:
-                fgrad /= peeq
-            epl_new = epl + fgrad*1.e-3  # increase plastic strain by 0.1% in direction of gradient
-            seq = sig_eq_j2(sig[0, :])
-            sig0 = sig[0, :] / seq
-            x1 = fsolve(self.find_yloc_scalar, sig[0, :], args=(sig0, epl_new), xtol=1.e-5)
-            self.khard = (x1 - seq)*1.e3
+            for i, sv in enumerate(sig):
+                np.concatenate((sig[i, :], epl[i, :]), out=xf)
+                xsc = self.sc_feat.transform([xf])
+                dp = np.array([self.svm_grad0.predict(xsc)[0], self.svm_grad1.predict(xsc)[0],
+                               self.svm_grad2.predict(xsc)[0], self.svm_grad3.predict(xsc)[0],
+                               self.svm_grad4.predict(xsc)[0], self.svm_grad5.predict(xsc)[0]])
+                fgrad[i, :] = self.sc_grad.inverse_transform([dp])
+            # Global strain hardening rate will be set according to last value
+            self.khard = self.sc_khard.inverse_transform([self.svm_khard.predict(xsc)])[0]
             self.msg['gradient'] = 'SVR gradient'
         elif self.ML_yf and not ana:
             # use gradient of SVC yield fct. in stress space
@@ -940,7 +936,7 @@ class Material(object):
         else:
             if self.sdim == 3:
                 a = np.zeros(6)
-                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl,
+                a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl[0:3],
                                          accumulated_strain=accumulated_strain, max_stress=max_stress, tex=tex)
             else:
                 a = self.calc_fgrad(sig, epl=epl,
@@ -973,7 +969,7 @@ class Material(object):
             epl = np.zeros(self.sdim)
         if self.sdim == 3:
             a = np.zeros(6)
-            a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl)
+            a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl[0:3])
         else:
             a = self.calc_fgrad(sig, epl=epl)
         hh = a.T @ Cel @ a + self.khard
@@ -1973,7 +1969,8 @@ class Material(object):
         return st, yt
 
     def setup_fgrad_SVM(self):
-        """Inititalize and train SVM regression for gradient evaluation
+        """Inititalize and train SVM regression on plastic strain increments in data
+        to represent the gardients of the yield function.
 
         Parameters
         ----------
@@ -1984,6 +1981,8 @@ class Material(object):
         gamma : float
             Parameter for kernel of SVR (optional, default: 0.1)
         """
+        if not self.whdat:
+            raise ValueError('No strain hardening data available.')
         # define support vector regressor parameters
         C = self.C_yf
         gamma = self.gam_yf
@@ -1999,28 +1998,49 @@ class Material(object):
                                  kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
         self.svm_grad5 = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
                                  kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
+        self.svm_khard = svm.SVR(C=C, cache_size=3000, coef0=0.0, degree=3, epsilon=0.01, gamma=gamma,
+                                 kernel='rbf', max_iter=-1, shrinking=True, tol=0.0001, verbose=False)
 
         # fit SVM to training data
         eps = self.msparam[0]['plastic_strain']
-        peeq = eps_eq(self.msparam[0]['plastic_strain'])
-        ind = np.nonzero(peeq < 1.e-10)[0]
-        peeq[ind] = 1.
-        ndata = len(eps)
+        sig = self.msparam[0]['flow_stress']
+        peeq = eps_eq(eps)
+        seq = sig_eq_j2(sig)
+        ndata = len(seq)
         X_gt = np.zeros((ndata, 12))
-        np.concatenate((self.msparam[0]['flow_stress'], eps), axis=1, out=X_gt)
-        y_gt = eps / peeq[:, None]
+        y_gt = np.zeros((ndata, 6))
+        y_kh = np.zeros(ndata)
+        np.concatenate((sig, eps), axis=1, out=X_gt)
+        for i in range(ndata):
+            if peeq[i] > 1.e-12:
+                y_gt[i, :] = eps[i, :] / peeq[i, None]
+            else:
+                y_gt[i, :] = np.zeros(6)
+            if i < ndata - 1:
+                hh = peeq[i+1] - peeq[i]
+                if np.abs(hh) > 1.e-12:
+                    y_kh[i] = (seq[i+1] - seq[i]) / hh
+                else:
+                    y_kh[i] = 0.0
+            else:
+                y_kh[i] = 0.0
+
         self.sc_feat = StandardScaler()
-        self.sc_lab = StandardScaler()
+        self.sc_grad = StandardScaler()
+        self.sc_khard = StandardScaler()
         self.sc_feat.fit(X_gt)
-        self.sc_lab.fit(y_gt)
+        self.sc_grad.fit(y_gt)
+        self.sc_khard.fit(y_kh.reshape(-1, 1))
         x_sc = self.sc_feat.transform(X_gt)
-        y_sc = self.sc_lab.transform(y_gt)
+        y_sc = self.sc_grad.transform(y_gt)
+        y_kh_sc = self.sc_khard.transform(y_kh.reshape(-1, 1))
         self.svm_grad0.fit(x_sc, y_sc[:, 0])
         self.svm_grad1.fit(x_sc, y_sc[:, 1])
         self.svm_grad2.fit(x_sc, y_sc[:, 2])
         self.svm_grad3.fit(x_sc, y_sc[:, 3])
         self.svm_grad4.fit(x_sc, y_sc[:, 4])
         self.svm_grad5.fit(x_sc, y_sc[:, 5])
+        self.svm_khard.fit(x_sc, y_kh_sc.flatten())
         self.ML_grad = True
 
     def export_MLparam(self, sname, source=None, file=None, path='../../models/',
