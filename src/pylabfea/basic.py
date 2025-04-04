@@ -52,7 +52,7 @@ def sig_eq_j2(sig: np.ndarray):
     elif sh == (nsc, 3):
         sp = np.array(sig)
     else:
-        raise TypeError('Error: Unknown format of stress in sig_eq_j2: nsc={nsc}, sh={sh}')
+        raise TypeError(f'Unknown format of stress in sig_eq_j2: nsc={nsc}, sh={sh}')
     d12 = sp[:, 0] - sp[:, 1]
     d23 = sp[:, 1] - sp[:, 2]
     d31 = sp[:, 2] - sp[:, 0]
@@ -88,7 +88,7 @@ def sig_polar_ang(sig: np.ndarray):
     elif sh == (nsc, 3):
         sp = np.array(sig)
     else:
-        raise TypeError(f'Error: Unknown format of stress in polar_angle: : nsc={nsc}, sh={sh}')
+        raise TypeError(f'Unknown format of stress in polar_angle: : nsc={nsc}, sh={sh}')
     hyd = np.sum(sp, axis=1) / 3.  # hydrostatic component
     dev = sp - hyd[:, None]  # deviatoric princ. stress
     vn = np.linalg.norm(dev, axis=1)  # norms of princ. stress vectors
@@ -143,7 +143,7 @@ def sig_princ(sig: np.ndarray):
             st[i, 2, 0] = st[i, 0, 2] = sig[i, 4]
             st[i, 1, 0] = st[i, 0, 1] = sig[i, 5]
     else:
-        raise TypeError('Error: Unknown format of stress in sig_princ: nsc={nsc}, sh={sh}')
+        raise TypeError(f'Unknown format of stress in sig_princ: nsc={nsc}, sh={sh}')
 
     # calculate principal stresses and eigen vectors
     spa = np.zeros((nsc, 3))
@@ -262,7 +262,7 @@ def sig_princ2cyl(sig: np.ndarray, mat=None) -> np.ndarray:
     elif sh == (nsc, 6):
         sp = sig_princ(sig)[0]
     else:
-        raise TypeError(f'Error in s_cyl: Format not supported (N={nsc}, sh={sh})')
+        raise TypeError(f's_cyl: Format not supported (N={nsc}, sh={sh})')
     sc = np.zeros((nsc, 3))
     if mat is None:
         sc[:, 0] = sig_eq_j2(sp)
@@ -327,7 +327,7 @@ def eps_eq(eps: np.ndarray):
     elif sh == (3,) or sh == (nsc, 3):
         eeq = np.sqrt(2. * np.sum(eps[:, 0:3] * eps[:, 0:3], axis=1) / 3.)
     else:
-        raise ValueError(f'Error in eps_eq: Format not supported: nsc={nsc},sh={sh}')
+        raise TypeError(f'eps_eq: Format not supported: nsc={nsc},sh={sh}')
 
     if sh == (6,) or sh == (3,):
         eeq = eeq[0]

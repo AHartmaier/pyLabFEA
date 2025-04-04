@@ -1,0 +1,7 @@
+Data\_6D module
+===============
+
+.. automodule:: Data_6D
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,7 @@
+Train\-Goss\_Barlat\-v1 module
+==============================
+
+.. automodule:: Train-Goss_Barlat-v1
+   :members:
+   :undoc-members:
+   :show-inheritance:

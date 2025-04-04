@@ -1,0 +1,7 @@
+test\_shear module
+==================
+
+.. automodule:: test_shear
+   :members:
+   :undoc-members:
+   :show-inheritance:
