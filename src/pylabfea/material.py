@@ -369,8 +369,9 @@ class Material(object):
             epl = np.zeros(self.sdim)
         if type(epl) in (float, np.float64):
             # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
-            epl = epl * np.array([1., -0.5, -0.5, 0., 0., 0.])
-
+            # JS: Take stress tensor, scale down and up by peeq
+            epl = epl * sig/sig_eq_j2(sig)[:, np.newaxis]
+            print(epl)
         if self.ML_yf and not ana:
             if sh == (3,) or sh == (6,):
                 sig = np.array([sig])
@@ -551,7 +552,7 @@ class Material(object):
             Yield function evaluated at sig=x.sp
         """
 
-        if self.txdat and not tex:
+        if self.txdat and tex is None:
             raise ValueError("SVM is trained on texture data but no texture data was provided to this function.")
         f = self.calc_yf(x * su, epl=epl, tex=tex)
         return f
@@ -712,6 +713,10 @@ class Material(object):
         """
         if epl is None:
             epl = np.zeros(self.sdim)
+        if type(epl) in (float, np.float64):
+            # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
+            # JS: Take stress tensor, scale down and up by peeq
+            epl = epl * sig/sig_eq_j2(sig)[:, np.newaxis]
         N = len(sig)
         sh = np.shape(sig)
         sh_tex = np.shape(tex)
@@ -1114,6 +1119,7 @@ class Material(object):
             start = time.time()
             self.svm_yf.fit(X_train, y_train)
             stop = time.time()
+            # print(f'Training time: {stop-start} s.')
         self.ML_yf = True
 
         # calculate scores
@@ -1123,7 +1129,7 @@ class Material(object):
             train_sc = matthews_corrcoef(y_train, self.svm_yf.predict(X_train))
         else:
             raise ValueError(f"{metric} must be acc or mcc")
-
+        # print(f'Train Score: {train_sc}')
         if x_test is None:
             test_sc = None
         else:
@@ -1133,6 +1139,7 @@ class Material(object):
                 test_sc = matthews_corrcoef(y_test, self.svm_yf.predict(X_test))
             else:
                 raise ValueError(f"{metric} must be acc or mcc")
+            # print(f'Test Score: {train_sc}')
         # create plot if requested
         if plot:
             print('Plot of extended training data for SVM classification in 2D cylindrical stress space')
@@ -1151,7 +1158,7 @@ class Material(object):
             ax.set_xlabel(r'$\theta/\pi$')
             ax.set_ylabel(r'$\sigma_{eq}/\sigma_y$')
             plt.show()
-        return train_sc, test_sc
+        return train_sc
 
     def setup_yf_SVM_3D(self, x, y_train, x_test=None, y_test=None, C=10.,
                         gamma=1., fs=0.1, plot=False, cyl=False,
@@ -1538,7 +1545,7 @@ class Material(object):
                                      plot=False, gridsearch=gridsearch,
                                      cvals=cvals, gvals=gvals)
         else:
-            train_sc, test_sc = self.setup_yf_SVM_6D(xt, yt, x_test=xtest, y_test=ytest, 
+            train_sc = self.setup_yf_SVM_6D(xt, yt, x_test=xtest, y_test=ytest,
                                                      C=C, gamma=gamma,
                                                      gridsearch=gridsearch,
                                                      cvals=cvals, gvals=gvals,
