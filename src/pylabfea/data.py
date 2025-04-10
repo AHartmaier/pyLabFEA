@@ -444,7 +444,7 @@ class Data(object):
             raw_data = np.array(source)
             self.convert_data(raw_data)  # add data to mat_data
         if plot:
-            self.plot_training_data()
+            self.plot_training_data(emax=self.mat_data['ep_max']+0.01)
 
     def key_parser(self, key):
         # JS: Modified to teture version
@@ -471,9 +471,6 @@ class Data(object):
             epc = self.mat_data['epc']
 
         for key, val in data.items():
-            if 'cyl' in key:
-                # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
-                Final_Data[key] = {"Stress": res}
             if key == 'Texture':
                 self.mat_data['tx_name'] = val['name']
                 try:
@@ -499,50 +496,61 @@ class Data(object):
                         raise NotImplementedError
                     self.mat_data['tdim'] = len(self.mat_data['texture'])
 
-            res = val['Results']
-            Sigma = [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]  # Order !!!
-            E_Total = [res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]
-            E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]
-            Len_Sigma = len(Sigma[0])
-            seq_full = np.zeros(Len_Sigma)
-            teeq_full = np.zeros(Len_Sigma)
-            peeq_plastic = np.zeros(Len_Sigma)
-            Original_Stresses = np.zeros((Len_Sigma, 6))
-            Original_Plastic_Strains = np.zeros((Len_Sigma, 6))
-            Original_Total_Strains = np.zeros((Len_Sigma, 6))
-            Plastic_Strains_Shifted = np.zeros((Len_Sigma, 6))
-            epl = []
-            for i in range(Len_Sigma):
-                Stress_6D = np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i], Sigma[3][i], Sigma[4][i], Sigma[5][i]])
-                Original_Stresses[i, :] = Stress_6D
-                seq_full[i] = FE.sig_eq_j2(Stress_6D)
+            else:
+                res = val['Results']
+                if 'cyl' in key:
+                    # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
+                    Final_Data[key] = {"Stress": res}
+                else:
+                    if self.mode == 'JS':
+                        Sigma = [res["S11"], res["S22"], res["S33"], res["S32"], res["S13"], res["S12"]]
+                        E_Total = [res["E11"], res["E22"], res["E33"], res["E32"], res["E13"], res["E12"]]
+                        E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep32"], res["Ep13"], res["Ep12"]]
+                    else:
+                        Sigma = [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]  # Order !!!
+                        E_Total = [res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]
+                        E_Plastic = [res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]
 
-                E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
-                                         E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
+                    Len_Sigma = len(Sigma[0])
+                    seq_full = np.zeros(Len_Sigma)
+                    teeq_full = np.zeros(Len_Sigma)
+                    peeq_plastic = np.zeros(Len_Sigma)
+                    Original_Stresses = np.zeros((Len_Sigma, 6))
+                    Original_Plastic_Strains = np.zeros((Len_Sigma, 6))
+                    Original_Total_Strains = np.zeros((Len_Sigma, 6))
+                    Plastic_Strains_Shifted = np.zeros((Len_Sigma, 6))
+                    epl = []
+                    for i in range(Len_Sigma):
+                        Stress_6D = np.array([Sigma[0][i], Sigma[1][i], Sigma[2][i], Sigma[3][i], Sigma[4][i], Sigma[5][i]])
+                        Original_Stresses[i, :] = Stress_6D
+                        seq_full[i] = FE.sig_eq_j2(Stress_6D)
 
-                peeq_plastic[i] = FE.eps_eq(E_Plastic_6D)
-                Original_Plastic_Strains[i, :] = E_Plastic_6D
+                        E_Plastic_6D = np.array([E_Plastic[0][i], E_Plastic[1][i], E_Plastic[2][i],
+                                                 E_Plastic[3][i], E_Plastic[4][i], E_Plastic[5][i]])
 
-                E_Total_6D = np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
-                                       E_Total[3][i], E_Total[4][i], E_Total[5][i]])
+                        peeq_plastic[i] = FE.eps_eq(E_Plastic_6D)
+                        Original_Plastic_Strains[i, :] = E_Plastic_6D
 
-                
-                teeq_full[i] = FE.eps_eq(E_Total_6D)
-                Original_Total_Strains[i] = E_Total_6D
-                # For having also the elastic data and shift the 0 plastic strain
-                # to 0.02% to match the micromechanical data.
-                # Can be used in Stress-Strain Reconstruction.
-                scale = np.maximum(peeq_plastic[i], 1.e-10)
-                Plastic_Strains_Shifted[i] = E_Plastic_6D * (1. - epc / scale)
+                        E_Total_6D = np.array([E_Total[0][i], E_Total[1][i], E_Total[2][i],
+                                               E_Total[3][i], E_Total[4][i], E_Total[5][i]])
 
-            Final_Data[key] = {"Stress": Original_Stresses,
-                               "Eq_Stress": seq_full,
-                               "Strain_Plastic": Original_Plastic_Strains,
-                               "Eq_Strain_Plastic": peeq_plastic,  # always shifted ???
-                               "Shifted_Strain_Plastic": Plastic_Strains_Shifted,  # required ???
-                               "Strain_Total": Original_Total_Strains,
-                               "Eq_Strain_Total": teeq_full,
-                               }
+
+                        teeq_full[i] = FE.eps_eq(E_Total_6D)
+                        Original_Total_Strains[i] = E_Total_6D
+                        # For having also the elastic data and shift the 0 plastic strain
+                        # to 0.02% to match the micromechanical data.
+                        # Can be used in Stress-Strain Reconstruction.
+                        scale = np.maximum(peeq_plastic[i], 1.e-10)
+                        Plastic_Strains_Shifted[i] = E_Plastic_6D * (1. - epc / scale)
+
+                    Final_Data[key] = {"Stress": Original_Stresses,
+                                       "Eq_Stress": seq_full,
+                                       "Strain_Plastic": Original_Plastic_Strains,
+                                       "Eq_Strain_Plastic": peeq_plastic,  # always shifted ???
+                                       "Shifted_Strain_Plastic": Plastic_Strains_Shifted,  # required ???
+                                       "Strain_Total": Original_Total_Strains,
+                                       "Eq_Strain_Total": teeq_full,
+                                       }
         return Final_Data
 
     def parse_data(self, epl_crit, epl_start, epl_max, depl):
@@ -739,7 +747,9 @@ class Data(object):
 
     def plot_data(self, data, xlabel, ylabel, emax=None):
         for key, val in data.items():
-            plt.scatter(val["Strain_Total"], val["Stress"], s=1)
+            if 'cyl' in key:
+                continue
+            plt.scatter(val["Eq_Strain_Total"], val["Eq_Stress"], s=1)
             plt.tick_params(axis='both', which='major', labelsize=12)
             if emax is not None:
                 plt.xlim(0, emax)
