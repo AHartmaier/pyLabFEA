@@ -341,12 +341,15 @@ class Material(object):
         return fy1, sig, depl, grad_stiff
 
     def calc_yf(self, sig, epl=None,
-                accumulated_strain=0.0, max_stress=0.0, tex=None,
+                accumulated_strain=0.0, max_stress=0.0, flag=0.0,
+                tex=None,
                 ana=False, pred=False):
         """Calculate yield function
 
         Parameters
         ----------
+        flag : float
+            Indicator
         sig  : (sdim,) or (N, sdim) array
             Stresses (arrays of Voigt or principal stresses)
         epl : (sdim, ) array
@@ -371,7 +374,7 @@ class Material(object):
         sh_tex = np.shape(tex)
         if epl is None:
             epl = np.zeros(self.sdim)
-        if type(epl) in (float, np.float64):
+        elif type(epl) in (float, np.float64):
             # if only PEEQ is provided convert it into an arbitrary plastic strain tensor
             epl = epl * np.array([1., -0.5, -0.5, 0., 0., 0.])
 
@@ -393,11 +396,13 @@ class Material(object):
                     x[:, 0:6] = sig[:, 0:6] / self.scale_seq
                 else:
                     x[:, 0:3] = sig[:, 0:3] / self.scale_seq
-            # Add plastic strain + 2 extra dof for load reversals
+            # Add plastic strain + 3 extra dof for load reversals
             if self.whdat:
                 x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
                 x[:, self.ind_wh + self.sdim] = accumulated_strain
                 x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
+                x[:, self.ind_wh + self.sdim + 2] = flag
+
             if self.txdat:
                 if tex is None:
                     raise ValueError("SVM is trained on texture data but no texture data is given to evaluate yf!")
@@ -422,13 +427,14 @@ class Material(object):
         return f
 
     def ML_full_yf(self, sig, epl=None, ld=None,
-                   accumulated_strain=0.0, max_stress=0.0, tex=None,
-                   verb=True):
+                   accumulated_strain=0.0, max_stress=0.0, flag=0.0,
+                   tex=None, verb=True):
         """Calculate full ML yield function as distance of a single given stress
         tensor to the yield locus in loading direction.
         
         Parameters
         ----------
+        flag : float
         sig : (sdim,) array
             Voigt stress tensor
         epl : (sdim,) array
@@ -483,20 +489,24 @@ class Material(object):
             x1 = x0
             while self.calc_yf(x0 * su, epl=epl,
                                accumulated_strain=accumulated_strain,
-                               max_stress=max_stress, tex=tex) >= 0. and x0 > 0.01:
+                               max_stress=max_stress, flag=flag,
+                               tex=tex) >= 0. and x0 > 0.01:
                 # find x0 with negative yield fct
                 x0 *= 0.98
             while self.calc_yf(x1 * su, epl=epl,
                                accumulated_strain=accumulated_strain,
-                               max_stress=max_stress, tex=tex) < 0. and x1 < 5. * sflow:
+                               max_stress=max_stress, flag=flag,
+                               tex=tex) < 0. and x1 < 5. * sflow:
                 # find x1 with positive yield fct
                 x1 *= 1.02
             f0 = self.calc_yf(x0 * su, epl=epl,
                               accumulated_strain=accumulated_strain,
-                              max_stress=max_stress, tex=tex)
+                              max_stress=max_stress, flag=flag,
+                              tex=tex)
             f1 = self.calc_yf(x1 * su, epl=epl,
                               accumulated_strain=accumulated_strain,
-                              max_stress=max_stress, tex=tex)
+                              max_stress=max_stress, flag=flag,
+                              tex=tex)
             if f0 * f1 > 0.:
                 warnings.warn('ML_full_yf: Could not bracket yield function: '
                               + 'sunit={}, x0={}, f0={}, x1={}, f1={}'
@@ -521,7 +531,8 @@ class Material(object):
         return yf
 
     def find_yloc(self, x, su, epl=None,
-                  accumulated_strain=0.0, max_stress=0.0, tex=None):
+                  accumulated_strain=0.0, max_stress=0.0, flag=0.0,
+                  tex=None):
         """Function to expand unit stresses by factor and calculate yield
         function; used by search algorithm to find zeros of yield function.
 
@@ -545,11 +556,12 @@ class Material(object):
             raise ValueError("SVM is trained on texture data but no texture data was provided to this function.")
         f = self.calc_yf(x[:, None] * su, epl=epl,
                          accumulated_strain=accumulated_strain,
-                         max_stress=max_stress, tex=tex)
+                         max_stress=max_stress, flag=flag, tex=tex)
         return f
 
     def find_yloc_scalar(self, x, su, epl=None,
-                         accumulated_strain=0.0, max_stress=0.0, tex=None):
+                         accumulated_strain=0.0, max_stress=0.0, flag=0.0,
+                         tex=None):
         """Function to expand unit stresses by factor and calculate yield
         function; used by search algorithm to find zeros of yield function.
 
@@ -573,7 +585,7 @@ class Material(object):
             raise ValueError("SVM is trained on texture data but no texture data was provided to this function.")
         f = self.calc_yf(x * su, epl=epl,
                          accumulated_strain=accumulated_strain,
-                         max_stress=max_stress, tex=tex)
+                         max_stress=max_stress, flag=flag, tex=tex)
         return f
 
     def calc_seq(self, sig):
@@ -702,8 +714,8 @@ class Material(object):
         return seq
 
     def calc_fgrad(self, sig, epl=None, seq=None,
-                   accumulated_strain=0.0, max_stress=0.0, tex=None,
-                   ana=False):
+                   accumulated_strain=0.0, max_stress=0.0, flag=0.0,
+                   tex=None, ana=False):
         """Calculate gradient to yield surface. Three different methods can be used: (i) analytical gradient to Hill-like yield
         function (default if no ML yield function exists - ML_yf=False), (ii) gradient to ML yield function (default if ML yield
         function exists - ML_yf=True; can be overwritten if ana=True), (iii) ML gradient fitted seperately from ML yield function
@@ -803,6 +815,7 @@ class Material(object):
                 x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
                 x[:, self.ind_wh + self.sdim] = accumulated_strain
                 x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
+                x[:, self.ind_wh + self.sdim + 2] = flag
             if self.txdat:
                 ih = self.ind_tx
                 x[:, ih:] = tex[:, :]
@@ -899,7 +912,8 @@ class Material(object):
                 sflow += np.interp(peeq + self.epc, ms['work_hard'], ms['sy_av'][self.ms_index[i], :]) * wght[i]'''
         return sflow
 
-    def epl_dot(self, sig, epl, Cel, deps, accumulated_strain=0.0, max_stress=0.0, tex=None, ):
+    def epl_dot(self, sig, epl, Cel, deps, accumulated_strain=0.0,
+                max_stress=0.0, flag=0.0, tex=None, ):
         """Calculate plastic strain increment relaxing stress back to yield locus;
         Reference: M.A. Crisfield, Non-linear finite element analysis of solids and structures,
         Chapter 6, Eqs. (6.4), (6.8) and (6.17)
@@ -939,8 +953,8 @@ class Material(object):
                 a[0:3] = self.calc_fgrad(sig_princ(sig)[0], epl=epl[0:3],
                                          accumulated_strain=accumulated_strain, max_stress=max_stress, tex=tex)
             else:
-                a = self.calc_fgrad(sig, epl=epl,
-                                    accumulated_strain=accumulated_strain, max_stress=max_stress, tex=tex)
+                a = self.calc_fgrad(sig, epl=epl, accumulated_strain=accumulated_strain,
+                                    max_stress=max_stress, flag=flag, tex=tex)
             hh = a.T @ Cel @ a + self.khard
             lam_dot = a.T @ Cel @ deps / hh  # deps must not contain elastic strain components
             pdot = lam_dot * a
@@ -981,7 +995,8 @@ class Material(object):
     # subroutines for ML flow rule, training
     # ==============================================================
     def setup_yf_SVM(self, x, y_train, x_test=None, y_test=None, C=15., gamma=2.5,
-                     fs=0.1, plot=False, cyl=False, gridsearch=False, cvals=None, gvals=None, verbose=3):
+                     fs=0.1, plot=False, cyl=False, gridsearch=False, cvals=None,
+                     gvals=None, verbose=3):
         """
         Generic function call to setup and train the SVM yield function, for details see the specific functions
         setup_yf_SVM_6D and setup_yf_SVM_3D.
@@ -1071,6 +1086,7 @@ class Material(object):
                     x[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
                 X_train[:, self.ind_wh + self.sdim] = x[:, self.ind_wh + self.sdim]
                 X_train[:, self.ind_wh + self.sdim + 1] = x[:, self.ind_wh + self.sdim + 1] / self.scale_seq
+                X_train[:, self.ind_wh + self.sdim + 2] = x[:, self.ind_wh + self.sdim + 2]
                 print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
                       % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
             if self.txdat:
@@ -1092,6 +1108,7 @@ class Material(object):
                         x_test[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
                     X_test[:, self.ind_wh + self.sdim] = x_test[:, self.ind_wh + self.sdim]
                     X_test[:, self.ind_wh + self.sdim + 1] = x_test[:, self.ind_wh + self.sdim + 1] / self.scale_seq
+                    X_test[:, self.ind_wh + self.sdim + 2] = x_test[:, self.ind_wh + self.sdim + 2]
                 if self.txdat:
                     ih = self.ind_tx
                     for i in range(self.Nset):
@@ -1793,10 +1810,7 @@ class Material(object):
                     raise ValueError(
                         'create_data_sig: Neither sdata nor mat_ref are provided, cannot generate training data')
                 # define material parameters otherwise defined in material.plasticity
-                if mat_ref.CV is None:
-                    self.elasticity(C11=mat_ref.C11, C12=mat_ref.C12, C44=mat_ref.C44)
-                else:
-                    self.elasticity(CV=mat_ref.CV)
+                self.elasticity(CV=mat_ref.CV)
                 self.plasticity(sy=mat_ref.sy, sdim=mat_ref.sdim)
                 xt, yt = self.create_sig_data(N=Nlc, mat_ref=mat_ref,
                                               Nseq=Nseq, Fe=Fe, Ce=Ce,
@@ -1848,13 +1862,10 @@ class Material(object):
                         xt[i + j * Ndinp, self.sdim:self.sdim + self.ind_wh] = \
                             self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
                         if reversal:
-                            # xt[i + j * Ndinp, self.sdim + self.ind_wh]=self.msparam[0]['normalized_loop_indicator'][i]
-                            # xt[i + j * Ndinp, self.sdim + self.ind_wh + 1]=self.msparam[0]['normalized_accumulated_strain'][i]
-                            # xt[i + j * Ndinp, self.sdim + self.ind_wh + 2]=self.msparam[0]['max_stress'][i]
                             xt[i + j * Ndinp, self.sdim + self.ind_wh] = \
                                 self.msparam[0]['normalized_accumulated_strain'][i]
                             xt[i + j * Ndinp, self.sdim + self.ind_wh + 1] = self.msparam[0]['max_stress'][i]
-
+                            xt[i + j * Ndinp, self.sdim + self.ind_wh + 2] = self.msparam[0]['flag'][i]
             print(
                 '%i test data sets created, with %i load cases' % (Nt, Nlc))
 
@@ -2529,7 +2540,7 @@ class Material(object):
         self.Ndof = 2 if self.sdim == 3 else 6
         if self.whdat:
             self.ind_wh = self.Ndof  # starting index for dof associated with work hardening
-            self.Ndof += self.sdim + 2  # add dof's for work hardening parameter if data exists
+            self.Ndof += self.sdim + 3  # add dof's for work hardening parameter if data exists
         if self.txdat:
             self.ind_tx = self.Ndof  # starting index for dof associated with textures
             # self.Ndof += self.Nset  # add dof's for textures # JS: Makes no sense for new nd texture descriptor.
