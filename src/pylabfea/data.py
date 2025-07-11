@@ -27,11 +27,15 @@ from scipy.optimize import minimize
 
 
 def ln_strain(eng_strain):
-    return np.log(1 + eng_strain)
+    h1 = np.ones_like(eng_strain)
+    h2 = h1 + eng_strain
+    ind = np.nonzero(h2 < 1.e-10)
+    h2[ind] = 1.e-10
+    return np.log(h2)
 
 
 def eng_strain(ln_strain):
-    return np.exp(ln_strain) - 1
+    return np.exp(ln_strain) - np.ones_like(ln_strain)
 
 
 def interpolate_stress(s0, s1, e0, e1, et):
@@ -572,8 +576,21 @@ class Data(object):
                     Original_Plastic_Strains = None
                     peeq_plastic = None
             else:
-                Original_Stresses = np.array([val['stress']["S11"], val['stress']["S22"], val['stress']["S33"],
-                                              val['stress']["S23"], val['stress']["S13"], val['stress']["S12"]]).T
+                tens = [1]*6
+                for ind, vals in val['stress'].items():
+                    if '11' in ind:
+                        tens[0] = vals
+                    elif '22' in ind:
+                        tens[1] = vals
+                    elif '33' in ind:
+                        tens[2] = vals
+                    elif '23' in ind:
+                        tens[3] = vals
+                    elif '13' in ind:
+                        tens[4] = vals
+                    elif '12' in ind:
+                        tens[5] = vals
+                Original_Stresses = np.array(tens).T
                 if "units" in val.keys():
                     if val['units']['Stress'] == 'MPa':
                         sfct = 1.
@@ -587,15 +604,37 @@ class Data(object):
                     print('Warning: No units for stresses are given. Assuming MPa.')
                 Original_Stresses *= sfct
                 seq_full = FE.sig_eq_j2(Original_Stresses)
-                Original_Total_Strains = \
-                    np.array([val['total_strain']["E11"], val['total_strain']["E22"], val['total_strain']["E33"],
-                              val['total_strain']["E23"], val['total_strain']["E13"], val['total_strain']["E12"]]).T
+                tens = [1]*6
+                for ind, vals in val['total_strain'].items():
+                    if '11' in ind:
+                        tens[0] = vals
+                    elif '22' in ind:
+                        tens[1] = vals
+                    elif '33' in ind:
+                        tens[2] = vals
+                    elif '23' in ind:
+                        tens[3] = vals
+                    elif '13' in ind:
+                        tens[4] = vals
+                    elif '12' in ind:
+                        tens[5] = vals
+                Original_Total_Strains = np.array(tens).T
                 teeq_full = FE.eps_eq(Original_Total_Strains)
                 if "plastic_strain" in val.keys():
-                    Original_Plastic_Strains = \
-                        np.array([val['plastic_strain']["Ep11"], val['plastic_strain']["Ep22"],
-                                  val['plastic_strain']["Ep33"], val['plastic_strain']["Ep23"],
-                                  val['plastic_strain']["Ep13"], val['plastic_strain']["Ep12"]]).T
+                    for ind, vals in val['plastic_strain'].items():
+                        if '11' in ind:
+                            tens[0] = vals
+                        elif '22' in ind:
+                            tens[1] = vals
+                        elif '33' in ind:
+                            tens[2] = vals
+                        elif '23' in ind:
+                            tens[3] = vals
+                        elif '13' in ind:
+                            tens[4] = vals
+                        elif '12' in ind:
+                            tens[5] = vals
+                    Original_Plastic_Strains = np.array(tens).T
                     peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
                     E_Plastic = True
                 else:
