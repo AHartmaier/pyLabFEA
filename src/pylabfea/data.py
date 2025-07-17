@@ -412,8 +412,7 @@ class Data(object):
                  tx_data=False,
                  texture_name='Random',
                  tx_descriptor='GSH_3',
-                 mode='RS',
-                 red_wh_data=False):
+                 mode='RS'):
         if sdim!=3 and sdim!=6:
             raise ValueError('Value of sdim must be either 3 or 6')
         self.lc_data = None
@@ -435,7 +434,6 @@ class Data(object):
         self.mat_data['tx_descriptor'] = tx_descriptor
         self.mat_data['tx_key'] = None
         self.mode = mode
-        self.red_wh_data = red_wh_data
 
         if isinstance(source, str):
             self.lc_data = self.read_data(os.path.join(path_data, source))
@@ -669,8 +667,13 @@ class Data(object):
                         epl.append(val['Strain_Plastic'][i] * sc_epl)
                         eps = hh
                         nv += 1
-                lc_ind_list[ct] = nv + lc_ind_list[ct - 1]  # store end index for values of this load case
-    
+                # lc_ind_list[ct] = nv + lc_ind_list[ct - 1]  # store end index for values of this load case
+                nonzero_idcs = np.nonzero(lc_ind_list)[0] # JS: continues counting if cyl loadcases are inbetween "normal" ones
+                if nonzero_idcs.size > 0:
+                    prev_idx = lc_ind_list[nonzero_idcs[-1]]
+                else:
+                    prev_idx = 0
+                lc_ind_list[ct] = nv + prev_idx
                 # get texture name
                 ''' Warning: This should be read only once from metadata !!!'''
                 Key_Translated = self.key_parser(key)
@@ -683,10 +686,10 @@ class Data(object):
         self.mat_data['flow_stress'] = np.array(sig)  # list of stress tensors for all load cases; JS: Contain no CYL Data
         self.mat_data['plastic_strain'] = np.array(epl)  # list of plastic strain tensors for all load cases
         self.mat_data['lc_indices'] = lc_ind_list  # list of starting indices of data sets for different load cases
-        self.mat_data['epc'] = ep_c / Nlc  # critical value of plastic strain for yield onset definition
-        self.mat_data['ep_start'] = ep_s / Nlc  # start value of plastic strain for training data
-        self.mat_data['ep_max'] = ep_m / Nlc  # nominal maximum plastic strain to be considered
-        self.mat_data['peeq_max'] = peeq_max - ep_c / Nlc  # maximum plastic strain occuring in training data
+        self.mat_data['epc'] = ep_c / (Nlc-Ncyl)  # critical value of plastic strain for yield onset definition
+        self.mat_data['ep_start'] = ep_s / (Nlc-Ncyl)  # start value of plastic strain for training data
+        self.mat_data['ep_max'] = ep_m / (Nlc-Ncyl)  # nominal maximum plastic strain to be considered
+        self.mat_data['peeq_max'] = peeq_max - ep_c / (Nlc-Ncyl)  # maximum plastic strain occuring in training data
         self.mat_data['elast_const'] = C  # anisotropic elastic coefficients obtained from data
         self.mat_data['sy_av'] = sy_av  # equiv. stress at epc averaged over all load cases
         self.mat_data['Nlc'] = Nlc  # number of load cases; JS: Contains also cyl load cases
