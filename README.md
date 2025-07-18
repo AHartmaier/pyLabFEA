@@ -7,7 +7,7 @@
 
 ### Python Laboratory for Finite Element Analysis
 
-  - Authors: Alexander Hartmaier, Ronak Shoghi
+  - Authors: Alexander Hartmaier, Ronak Shoghi, Jan Schmidt
   - Organization: ICAMS, Ruhr University Bochum, Germany
   - Contact: <alexander.hartmaier@rub.de>
 
@@ -20,10 +20,10 @@ constitutive modeling of materials makes it a useful research tool.
 
 ## Installation
 
-The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/individual) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) environment with a recent Python version. It can be installed directly from its GitHub repository with the following command
+The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/individual) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) environment with a recent Python version. It can be installed via pip
 
 ```
-$ python -m pip install git+https://github.com/AHartmaier/pyLabFEA.git
+$ pip install pylabfea
 ```
 
 Alternatively, the complete repository, including the source code, documentation and examples, can be cloned and installed locally. It is recommended to create a conda environment before installation. This can be done by the following the command line instructions
@@ -33,7 +33,7 @@ $ git clone https://github.com/AHartmaier/pyLabFEA.git ./pyLabFEA
 $ cd pyLabFEA
 $ conda env create -f environment.yml
 $ conda activate pylabfea
-$ python -m pip install . --user
+$ python -m pip install .
 ```
 
 The correct implementation can be tested with
