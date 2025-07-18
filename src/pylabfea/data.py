@@ -519,11 +519,6 @@ class Data(object):
         elstress = []
         E_Plastic = False
         for num, (key, val) in enumerate(data.items()):
-            if 'cyl' in key:
-                # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
-                res = val['Results']
-                Final_Data[key] = {"Stress": res}
-                continue
             if key == 'Texture':
                 self.mat_data['tx_name'] = val['name']
                 try:
@@ -549,90 +544,53 @@ class Data(object):
                         raise NotImplementedError
                     self.mat_data['tdim'] = len(self.mat_data['texture'])
 
-            if 'Results' in val.keys():
-                res = val['Results']  # legacy format
-                if self.mode == 'JS':
-                    Original_Stresses = np.array(
-                        [res["S11"], res["S22"], res["S33"], res["S32"], res["S13"], res["S12"]]).T
-                else:
-                    Original_Stresses = np.array(
-                        [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]).T
-                seq_full = FE.sig_eq_j2(Original_Stresses)
-                if self.mode == 'JS':
-                    Original_Total_Strains = \
-                        np.array([res["E11"], res["E22"], res["E33"], res["E32"], res["E13"], res["E12"]]).T
-                else:
-                    Original_Total_Strains = \
-                        np.array([res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]).T
-                teeq_full = FE.eps_eq(Original_Total_Strains)
-                if "Ep11" in res.keys():
-                    if self.mode == 'JS':
-                        Original_Plastic_Strains = \
-                            np.array([res["Ep11"], res["Ep22"], res["Ep33"], res["Ep32"], res["Ep13"], res["Ep12"]]).T
-                    else:
-                        Original_Plastic_Strains = \
-                            np.array([res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]).T
-                    peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
-                    E_Plastic = True
-                else:
-                    # no plastic strains in data, store information to get elastic coefficients
-                    # and calculate plastic strains later
-                    it = find_transition_index(seq_full)
-                    if it < 10:
+            else:  #JS: if not Texture, the data is stress-strain data of some format
+                if 'Results' in val.keys():  # JS: if Results in the keys of that dict -> legacy format
+                    if 'cyl' in key:
+                        # JS: The dict fields with 'cyl' in their key only have 'Stress' sig_ideal = db_dict[key][Results]
+                        res = val['Results']
+                        Final_Data[key] = {"Stress": res}
                         continue
                     else:
-                        it = int(it * 0.9)  # apply safety margin to ensure strains are purely elastic
-                    elstrain.append(Original_Total_Strains[it, :])  # elastic strain tensor at end of elastic regime
-                    elstress.append(Original_Stresses[it, :])  # stress tensor at transition
-                    Original_Plastic_Strains = None
-                    peeq_plastic = None
-            else:
-                tens = [1]*6
-                for ind, vals in val['stress'].items():
-                    if '11' in ind:
-                        tens[0] = vals
-                    elif '22' in ind:
-                        tens[1] = vals
-                    elif '33' in ind:
-                        tens[2] = vals
-                    elif '23' in ind:
-                        tens[3] = vals
-                    elif '13' in ind:
-                        tens[4] = vals
-                    elif '12' in ind:
-                        tens[5] = vals
-                Original_Stresses = np.array(tens).T
-                if "units" in val.keys():
-                    if val['units']['Stress'] == 'MPa':
-                        sfct = 1.
-                    elif val['units']['Stress'] == 'GPa':
-                        sfct = 1000.
-                    else:
-                        raise ValueError(f"Cannot convert stress unit {val['units']['Stress']}. "
-                                         f"Data must be provided either im MPa or in GPa.")
-                else:
-                    sfct = 1.
-                    print('Warning: No units for stresses are given. Assuming MPa.')
-                Original_Stresses *= sfct
-                seq_full = FE.sig_eq_j2(Original_Stresses)
-                tens = [1]*6
-                for ind, vals in val['total_strain'].items():
-                    if '11' in ind:
-                        tens[0] = vals
-                    elif '22' in ind:
-                        tens[1] = vals
-                    elif '33' in ind:
-                        tens[2] = vals
-                    elif '23' in ind:
-                        tens[3] = vals
-                    elif '13' in ind:
-                        tens[4] = vals
-                    elif '12' in ind:
-                        tens[5] = vals
-                Original_Total_Strains = np.array(tens).T
-                teeq_full = FE.eps_eq(Original_Total_Strains)
-                if "plastic_strain" in val.keys():
-                    for ind, vals in val['plastic_strain'].items():
+                        res = val['Results']  # legacy format
+                        if self.mode == 'JS':
+                            Original_Stresses = np.array(
+                                [res["S11"], res["S22"], res["S33"], res["S32"], res["S13"], res["S12"]]).T
+                        else:
+                            Original_Stresses = np.array(
+                                [res["S11"], res["S22"], res["S33"], res["S23"], res["S13"], res["S12"]]).T
+                        seq_full = FE.sig_eq_j2(Original_Stresses)
+                        if self.mode == 'JS':
+                            Original_Total_Strains = \
+                                np.array([res["E11"], res["E22"], res["E33"], res["E32"], res["E13"], res["E12"]]).T
+                        else:
+                            Original_Total_Strains = \
+                                np.array([res["E11"], res["E22"], res["E33"], res["E23"], res["E13"], res["E12"]]).T
+                        teeq_full = FE.eps_eq(Original_Total_Strains)
+                        if "Ep11" in res.keys():
+                            if self.mode == 'JS':
+                                Original_Plastic_Strains = \
+                                    np.array([res["Ep11"], res["Ep22"], res["Ep33"], res["Ep32"], res["Ep13"], res["Ep12"]]).T
+                            else:
+                                Original_Plastic_Strains = \
+                                    np.array([res["Ep11"], res["Ep22"], res["Ep33"], res["Ep23"], res["Ep13"], res["Ep12"]]).T
+                            peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
+                            E_Plastic = True
+                        else:
+                            # no plastic strains in data, store information to get elastic coefficients
+                            # and calculate plastic strains later
+                            it = find_transition_index(seq_full)
+                            if it < 10:
+                                continue
+                            else:
+                                it = int(it * 0.9)  # apply safety margin to ensure strains are purely elastic
+                            elstrain.append(Original_Total_Strains[it, :])  # elastic strain tensor at end of elastic regime
+                            elstress.append(Original_Stresses[it, :])  # stress tensor at transition
+                            Original_Plastic_Strains = None
+                            peeq_plastic = None
+                else:  # JS: If not 'Results' in keys, this dict contains data in new format.
+                    tens = [1]*6
+                    for ind, vals in val['stress'].items():
                         if '11' in ind:
                             tens[0] = vals
                         elif '22' in ind:
@@ -645,30 +603,74 @@ class Data(object):
                             tens[4] = vals
                         elif '12' in ind:
                             tens[5] = vals
-                    Original_Plastic_Strains = np.array(tens).T
-                    peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
-                    E_Plastic = True
-                else:
-                    # no plastic strains in data, store information to get elastic coefficients
-                    # and calculate plastic strains later
-                    it = find_transition_index(seq_full)
-                    if it < 10:
-                        continue
+                    Original_Stresses = np.array(tens).T
+                    if "units" in val.keys():
+                        if val['units']['Stress'] == 'MPa':
+                            sfct = 1.
+                        elif val['units']['Stress'] == 'GPa':
+                            sfct = 1000.
+                        else:
+                            raise ValueError(f"Cannot convert stress unit {val['units']['Stress']}. "
+                                             f"Data must be provided either im MPa or in GPa.")
                     else:
-                        it = int(it * 0.9)  # apply safety margin to ensure strains are purely elastic
-                    elstrain.append(Original_Total_Strains[it, :])  # elastic strain tensor at end of elastic regime
-                    elstress.append(Original_Stresses[it, :])  # stress tensor at transition
-                    Original_Plastic_Strains = None
-                    peeq_plastic = None
+                        sfct = 1.
+                        print('Warning: No units for stresses are given. Assuming MPa.')
+                    Original_Stresses *= sfct
+                    seq_full = FE.sig_eq_j2(Original_Stresses)
+                    tens = [1]*6
+                    for ind, vals in val['total_strain'].items():
+                        if '11' in ind:
+                            tens[0] = vals
+                        elif '22' in ind:
+                            tens[1] = vals
+                        elif '33' in ind:
+                            tens[2] = vals
+                        elif '23' in ind:
+                            tens[3] = vals
+                        elif '13' in ind:
+                            tens[4] = vals
+                        elif '12' in ind:
+                            tens[5] = vals
+                    Original_Total_Strains = np.array(tens).T
+                    teeq_full = FE.eps_eq(Original_Total_Strains)
+                    if "plastic_strain" in val.keys():
+                        for ind, vals in val['plastic_strain'].items():
+                            if '11' in ind:
+                                tens[0] = vals
+                            elif '22' in ind:
+                                tens[1] = vals
+                            elif '33' in ind:
+                                tens[2] = vals
+                            elif '23' in ind:
+                                tens[3] = vals
+                            elif '13' in ind:
+                                tens[4] = vals
+                            elif '12' in ind:
+                                tens[5] = vals
+                        Original_Plastic_Strains = np.array(tens).T
+                        peeq_plastic = FE.eps_eq(Original_Plastic_Strains)
+                        E_Plastic = True
+                    else:
+                        # no plastic strains in data, store information to get elastic coefficients
+                        # and calculate plastic strains later
+                        it = find_transition_index(seq_full)
+                        if it < 10:
+                            continue
+                        else:
+                            it = int(it * 0.9)  # apply safety margin to ensure strains are purely elastic
+                        elstrain.append(Original_Total_Strains[it, :])  # elastic strain tensor at end of elastic regime
+                        elstress.append(Original_Stresses[it, :])  # stress tensor at transition
+                        Original_Plastic_Strains = None
+                        peeq_plastic = None
 
-            Final_Data[key] = {"Stress": Original_Stresses,
-                               "Eq_Stress": seq_full,
-                               "Strain_Plastic": Original_Plastic_Strains,
-                               "Eq_Strain_Plastic": peeq_plastic,
-                               "Strain_Total": Original_Total_Strains,
-                               "Eq_Strain_Total": teeq_full,
-                               "Index": num,
-                               }
+                Final_Data[key] = {"Stress": Original_Stresses,
+                                   "Eq_Stress": seq_full,
+                                   "Strain_Plastic": Original_Plastic_Strains,
+                                   "Eq_Strain_Plastic": peeq_plastic,
+                                   "Strain_Total": Original_Total_Strains,
+                                   "Eq_Strain_Total": teeq_full,
+                                   "Index": num,
+                                   }
             if "identifier" in val.keys():
                 # data set should be consistent with schema
                 Final_Data[key]["identifier"] = val["identifier"]
