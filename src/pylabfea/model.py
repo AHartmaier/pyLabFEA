@@ -1,14 +1,15 @@
 # Module pylabfea.mod
-'''Module pylabefea.model introduces global functions for mechanical quantities
+"""Module pylabefea.model introduces global functions for mechanical quantities
 and class ``Model`` that contains that attributes and methods needed in FEA. 
 Materials are defined in module pylabfea.material
 
 uses NumPy, SciPy, MatPlotLib
 
-Version: 4.1 (2022-02-22)
+Last Update: 2025-01-25
 Author: Alexander Hartmaier, ICAMS/Ruhr University Bochum, Germany
 Email: alexander.hartmaier@rub.de
-distributed under GNU General Public License (GPLv3)'''
+
+distributed under GNU General Public License (GPLv3)"""
 import numpy as np
 import matplotlib.pyplot as plt
 import warnings
@@ -21,7 +22,7 @@ from matplotlib import colors, colorbar
 # =========================
 
 class Model(object):
-    '''Class for finite element model. Defines necessary attributes and methods
+    """Class for finite element model. Defines necessary attributes and methods
     for pre-processing (defining geometry, material assignments, mesh and 
     boundary conditions);
     solution (invokes numerical solver for non-linear problems);
@@ -151,7 +152,7 @@ class Model(object):
         tensors homogenized 
         from element solutions (type: Voigt tensor)
         (defined in ``calc_global``)
-    '''
+    """
 
     def __init__(self, dim=1, planestress=False):
         # set dimensions and type of model
@@ -199,7 +200,7 @@ class Model(object):
     # Sub-Class for elements
     # ----------------------
     class Element(object):
-        '''Class for isoparametric elements; supports
+        """Class for isoparametric elements; supports
         1-d elements with linear or quadratic shape function and full integration;
         2-d quadrilateral elements with linear shape function and full integration
         
@@ -256,7 +257,7 @@ class Model(object):
             average element stress (defined in ``Model.solve``)
         epl   : Voigt tensor
             average plastic element strain (defined in ``Model.solve``)
-        '''
+        """
 
         def __init__(self, model, nodes, lx, ly, mat):
             self.Model = model
@@ -288,7 +289,18 @@ class Model(object):
                                         [0., 0., 0., 0., C44, 0.],
                                         [0., 0., 0., 0., 0., C44]])
             else:
-                self.CV = mat.CV
+                if (model.planestress):
+                    hh = mat.E / (1 - mat.nu * mat.nu)
+                    C12 = mat.nu * hh
+                    C11 = hh
+                    self.CV = np.array([[C11, C12, 0., 0., 0., 0.],
+                                        [C12, C11, 0., 0., 0., 0.],
+                                        [0., 0., 0., 0., 0., 0.],
+                                        [0., 0., 0., 0., 0., 0.],
+                                        [0., 0., 0., 0., 0., 0.],
+                                        [0., 0., 0., 0., 0., mat.C44]])
+                else:
+                    self.CV = mat.CV
             self.elstiff = self.CV
 
             # initialize element quantities
@@ -358,13 +370,13 @@ class Model(object):
             self.Kel = self.Jac * self.wght * sum(K0)
 
         def node_num(self):
-            '''Calculate indices of DOF associated with element
+            """Calculate indices of DOF associated with element
             
             Returns
             -------
             ind : list of int
                 List of indices
-            '''
+            """
             ind = []
             for j in self.nodes:
                 ind.append(j * self.Model.dim)
@@ -373,50 +385,50 @@ class Model(object):
             return ind
 
         def deps(self):
-            '''Calculate strain increment in element
+            """Calculate strain increment in element
             
             Returns
             -------
             deps : Voigt tensor
                 Strain increment
-            '''
+            """
             deps = 0.
             for B in self.Bmat:
                 deps += self.wght * B @ self.Model.du[self.node_num()]
             return deps
 
         def eps_t(self):
-            '''Calculate total strain in element
+            """Calculate total strain in element
             
             Returns
             -------
             eps_t : Voigt tensor
                 Total strain
-            '''
+            """
             eps_t = 0.
             for B in self.Bmat:
                 eps_t += self.wght * B @ self.Model.u[self.node_num()]
             return eps_t
 
         def dsig(self):
-            '''Calculate stress increment
+            """Calculate stress increment
             
             Returns
             -------
             dsig : Voigt tensor
                 Stress increment
-            '''
+            """
             dsig = self.elstiff @ self.deps()
             return dsig
 
         def depl(self):
-            '''Calculate plastic strain increment
+            """Calculate plastic strain increment
             
             Returns
             -------
             depl : Voigt tensor
                 Plastic strain increment
-            '''
+            """
             if (self.Mat.sy == None):
                 depl = np.zeros(6)
             else:
@@ -425,7 +437,7 @@ class Model(object):
             return depl
 
         def calc_Bmat(self, x=0., y=0.):
-            '''Calculate B matrix at position x in element
+            """Calculate B matrix at position x in element
             
             Parameters
             ----------
@@ -438,7 +450,7 @@ class Model(object):
             -------
             B : 6xN array
                 matrix (N=dim^2*(SF+1))
-            '''
+            """
             # (B_aj = L_ak N_kj k=1,...,dim a=1,...,6 j=DOF_el)
             # 1-d, linear: 
             # N11 = 1 - x/Lelx N12 = x/Lelx
@@ -500,7 +512,7 @@ class Model(object):
             return B
 
     def geom(self, sect=1, LX=None, LY=1., LZ=1.):
-        '''Specify geometry of FE model with dimensions ``LX``, ``LY`` and ``LZ`` and 
+        """Specify geometry of FE model with dimensions ``LX``, ``LY`` and ``LZ`` and
         its subdivision into a number of sections;
         for 2-d model a laminate structure normal to x-direction can be created easily 
         with the in-built option to pass a list with the absolute lengths of each section
@@ -519,7 +531,7 @@ class Model(object):
             Length in y direction (optional, default: 1)
         LZ : float
             Thickness of model in z-direction (optional, default: 1)
-        '''
+        """
         if type(sect) == list:
             self.Nsec = len(sect)  # number of sections
             self.LS = np.array(sect)
@@ -540,7 +552,7 @@ class Model(object):
         self.thick = LZ
 
     def assign(self, mats):
-        '''Assigns an object of class ``Material`` to each section.
+        """Assigns an object of class ``Material`` to each section.
         
         Parameters
         ----------
@@ -554,7 +566,7 @@ class Model(object):
             geometry
         material.nonlin : bool
             Indicate if material non-linearity must be considered
-        '''
+        """
         if len(mats) != self.Nsec:
             raise ValueError('Numer of materials ({}) does not match number of sections ({})' \
                              .format(len(mats), self.Nsec))
@@ -566,7 +578,7 @@ class Model(object):
 
     # subroutines to define boundary conditions, top/bottom only needed for 2-d models
     def bcleft(self, val=0., bctype='disp', bcdir='x'):
-        '''Define boundary conditions on lhs nodes, either force or
+        """Define boundary conditions on lhs nodes, either force or
         displacement type; static boundary conditions are assumed for lhs boundary. The 
         default is freezing all x-displacements to zero.
         
@@ -579,7 +591,7 @@ class Model(object):
             (optional, default: 'disp')
         bcdir : str or int
             Direction of boundary load (optional, default: 'x')
-        '''
+        """
         if bcdir.lower() == 'x' or bcdir == 0:
             self.bcl[0] = val
             j = 0
@@ -600,7 +612,7 @@ class Model(object):
             raise ValueError('bcleft: Unknown BC: %s' % bctype)
 
     def bcright(self, val, bctype, bcdir='x'):
-        '''Define boundary conditions on rhs nodes, either force or
+        """Define boundary conditions on rhs nodes, either force or
         displacement type.
         If non-zero, the boundary loads will be incremented step-wise until the given 
         boundary conditions are fulfilled.
@@ -613,7 +625,7 @@ class Model(object):
             Type of boundary condition ('disp' or 'force')
         bcdir : str or int
             Direction of boundary load (optional, default: 'x')
-        '''
+        """
         if bcdir.lower() == 'x' or bcdir == 0:
             self.bcr[0] = val
             j = 0
@@ -632,7 +644,7 @@ class Model(object):
             raise TypeError('bcright: Unknown BC: {}'.format(bctype))
 
     def bcbot(self, val=0., bctype='disp', bcdir='y'):
-        '''Define boundary conditions on bottom nodes, either force or
+        """Define boundary conditions on bottom nodes, either force or
         displacement type; static boundary conditions are assumed for bottom boundary. 
         The default is freezing all y-displacements to zero.
         
@@ -645,7 +657,7 @@ class Model(object):
             (optional, default: 'disp')
         bcdir : str or int
             Direction of boundary load (optional, default: 'y')
-        '''
+        """
         if self.dim != 2:
             warnings.warn('BC on bottom nodes will be ignoresd for 2D model')
         if bcdir.lower() == 'x' or bcdir == 0:
@@ -668,7 +680,7 @@ class Model(object):
             raise ValueError('bcbot: Unknown BC: {}'.format(bctype))
 
     def bctop(self, val, bctype, bcdir='y'):
-        '''Define boundary conditions on top nodes, either force or displacement type. 
+        """Define boundary conditions on top nodes, either force or displacement type.
         If non-zero, the boundary loads will be incremented step-wise until the given 
         boundary conditions are fulfilled.
         
@@ -680,7 +692,7 @@ class Model(object):
             Type of boundary condition ('disp' or 'force')
         bcdir : str or int
             Direction of boundary load (optional, default: 'y')
-        '''
+        """
         if self.dim != 2:
             warnings.warn('BC on top nodes will be ignored for 2D model')
         if bcdir.lower() == 'x' or bcdir == 0:
@@ -701,7 +713,7 @@ class Model(object):
             raise TypeError('bctop: Unknown BC: {}'.format(bctype))
 
     def bcnode(self, node, val, bctype, bcdir):
-        '''Define boundary conditions on a set of nodes defined in ``node``, 
+        """Define boundary conditions on a set of nodes defined in ``node``,
         either force or displacement type in x or y-direction are accepted. 
         If non.zero, the boundary loads will be incremented step-wise until the given 
         boundary conditions are fulfilled.
@@ -719,7 +731,7 @@ class Model(object):
             Type of boundary condition ('disp' or 'force')
         bcdir : str or int
             Direction of boundary load ('x' or 'y'; 0 or 1)
-        '''
+        """
         if self.dim != 2:
             warnings.warn('BC on chosen nodes will be ignored for 2D model')
         if type(node) == list:
@@ -744,7 +756,7 @@ class Model(object):
             raise TypeError('bcnode: Unknown BC: {}'.format(bctype))
 
     def mesh(self, elmts=None, nodes=None, NX=10, NY=1, SF=1):
-        '''
+        """
         Import mesh or
         generate structured mesh with quadrilateral elements (2d models). 
         First, nodal positions ``Model.npos`` are defined such that nodes lie
@@ -768,7 +780,7 @@ class Model(object):
         SF : int
             Degree of shape functions: 1=linear, 2=quadratic
             (optional, default: 1)
-        '''
+        """
         self.shapefact = SF
         DIM = self.dim
         if elmts is not None:
@@ -940,13 +952,13 @@ class Model(object):
                         self.element[ih] = self.Element(self, hh, dx, dy, self.mat[i])
 
     def setupK(self):
-        '''Calculate and assemble system stiffness matrix based on element stiffness matrices.
+        """Calculate and assemble system stiffness matrix based on element stiffness matrices.
         
         Returns
         -------
         K  : 2d-array
             System stiffness matrix
-        '''
+        """
         DIM = self.dim
         K = np.zeros((self.Ndof, self.Ndof))  # initialize system stiffness matrix
         for el in self.element:
@@ -965,7 +977,7 @@ class Model(object):
         return K
 
     def solve(self, min_step=None, verb=False):
-        '''Solve linear system of equations K.u = f with respect to u, to obtain distortions
+        """Solve linear system of equations K.u = f with respect to u, to obtain distortions
         of the system under the applied boundary conditions for mechanical equilibrium, i.e.,
         when the total force on internal nodes is zero. In the first step, the stiffness 
         matrix K, the nodal displacements u and the nodal forces f are modified to conform
@@ -1007,7 +1019,7 @@ class Model(object):
             Element solution for total strain tensor
         Element.epl : (6,) array
             Element solution for plastic strain tensor
-        '''
+        """
         # test if meshing has been performed
         if self.Nnode is None:
             raise AttributeError('Attributes for mesh not set, but required by solver.')
@@ -1056,7 +1068,7 @@ class Model(object):
 
         # define BC: modify stiffness matrix for displacement BC, calculate consistent force BC
         def calc_BC(K, bcl0, bcb0, dbcr, dbct, dbcn):
-            '''BC on lhs and bottom nodes nodes is always static.  
+            """BC on lhs and bottom nodes nodes is always static.
             Displacement type BC are applied by adding known boundary forces to solution vector
             to reduce rank of system of equations by 1 (one row eliminated)
             
@@ -1080,7 +1092,7 @@ class Model(object):
             ind : list
                 List of all nodal DOF for which solution must be calculated, 
                 i.e. for which no displacement-type BC are given.
-            '''
+            """
             du = np.zeros(self.Ndof)
             df = np.zeros(self.Ndof)
             ind = list(range(self.Ndof))  # list of all nodal DOF, will be shortened according to BC
@@ -1438,13 +1450,13 @@ class Model(object):
         self.co_nconv = co_nconv
 
     def bcval(self, nodes):
-        '''Calculate average displacement and total force at (boundary) nodes
+        """Calculate average displacement and total force at (boundary) nodes
         
         Parameters
         ----------
         nodes : list
             List of nodes
-        '''
+        """
         hux = 0.
         huy = 0.
         hfx = 0.
@@ -1459,7 +1471,7 @@ class Model(object):
         return hux / n, huy / n, hfx, hfy
 
     def calc_global(self):
-        '''Calculate global quantities and store in Model.glob;
+        """Calculate global quantities and store in Model.glob;
         homogenization done by averaging residual forces (sbc1/2) and displacements (ebc1/2) at boundary nodes 
         or by averaging element quantities (sig, eps, epl)
         
@@ -1470,7 +1482,7 @@ class Model(object):
             as homogenized element solutions (Voigt tensors); values for (11)- and 
             (22)-components of stress ('sbc1','scb2') and total strain ('ebc1', 'ebc2')
             as homogenized values of boundary nodes.
-        '''
+        """
         # calculate global values from BC
         uxl, uyl, fxl, fyl = self.bcval(self.noleft)
         uxr, uyr, fxr, fyr = self.bcval(self.noright)
@@ -1501,7 +1513,7 @@ class Model(object):
     def plot(self, fsel, mag=10, colormap='viridis', cdepth=20, showmesh=True, shownodes=True,
              vmin=None, vmax=None, annot=True, file=None, showfig=True, pos_bar=0.83,
              fig=None, ax=None, showbar=True):
-        '''Produce graphical output: draw elements in deformed shape with color 
+        """Produce graphical output: draw elements in deformed shape with color
         according to field variable 'fsel'; uses matplotlib
         
         Parameters
@@ -1568,7 +1580,7 @@ class Model(object):
             vertical displacement
         mat     :
             materials and sections of model
-        '''
+        """
         if fig is None:
             fig, ax = plt.subplots(1)
         else:
