@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Train ML flow rules to data sets for random and Goss textures
+"""Train ML flow rules to reference material with isotropic J2 plasticity
 
-Created on Tue Jan  5 16:07:44 2021
+Author: Alexander Hartmaier
+ICAMS / Ruhr University Bochum, Germany
+January 2025
 
-@author: Alexander Hartmaier
+Published as part of pyLabFEA package under GNU GPL v3 license
 """
 
 import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 print('pyLabFEA version', FE.__version__)
 
@@ -23,13 +26,19 @@ mat_J2.plasticity(sy=sy, sdim=6)
 mat_J2.calc_properties(eps=0.01, min_step=10, sigeps=True)
 
 # define material as basis for ML flow rule
-C = 15.
-gamma = 2.5
+C = 1.
+gamma = 1.
+Ce = 0.95
+Fe = 0.7
+Nseq = 10
+Nlc = 200
 nbase = 'ML-J2'
-name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
+name = f'{nbase}_C{C:3.1f}_G{gamma:3.1f}'
 mat_ml = FE.Material(name)  # define material
 mat_ml.dev_only = True
-mat_ml.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150)
+mat_ml.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=Nlc,
+                 gridsearch=False,
+                 Ce=Ce, Fe=Fe, Nseq=Nseq)
 mat_ml.export_MLparam(__file__, path='./')
 
 # analyze support vectors to plot them in stress space
@@ -52,19 +61,21 @@ hh = np.c_[yy.ravel(), xx.ravel()]
 st = FE.sig_cyl2princ(hh)
 Z = mat_ml.calc_yf(st)  # value of yield function for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
-line = mat_ml.plot_data(Z, ax, xx, yy, c='black')
+cont = mat_ml.plot_data(Z, ax, xx, yy, c='black')
+line = Line2D([0], [0], color=cont.colors, lw=2)
 pts = ax.scatter(sc[:, 1], sc[:, 0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k')  # plot support vectors
 ax.set_xlabel(r'$\theta$ (rad)', fontsize=20)
 ax.set_ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=20)
 ax.tick_params(axis="x", labelsize=16)
 ax.tick_params(axis="y", labelsize=16)
-plt.legend([line[0], pts], ['ML yield locus', 'support vectors'], loc='lower right')
+plt.legend([line, pts], ['ML yield locus', 'support vectors'], loc='lower right')
 plt.ylim(0., 2. * mat_ml.sy)
-# fig.savefig('SVM-yield-fct.pdf', format='pdf', dpi=300)
+plt.tight_layout()
 plt.show()
+plt.close(fig)
 
 # analyze training result
-loc = 40
+loc = sy
 scale = 10
 size = 200
 offset = 5

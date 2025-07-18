@@ -10,25 +10,19 @@ January 2024
 
 Published as part of pyLabFEA package under GNU GPL v3 license
 """
+# import matplotlib
+# matplotlib.use('TkAgg')
 import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
-import pylabfea.training as CTD
-import matplotlib
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 from scipy.optimize import fsolve
-from matplotlib.gridspec import GridSpec
-import random
+
 
 def rgb_to_hex(rgb):
-    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0] * 255), int(rgb[1] * 255), 
+    return '#{:02x}{:02x}{:02x}'.format(int(rgb[0] * 255), int(rgb[1] * 255),
                                         int(rgb[2] * 255))
 
-def find_yloc(x, sunit, epl, mat):
-    # Expand unit stresses 'sig' by factor 'x' and calculate yield function
-    return mat.calc_yf(sunit * x, epl=epl)
 
 # Import data from micromechanical simulations
 db = FE.Data("Data_Random_Texture.json",
@@ -49,12 +43,11 @@ mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, gridsearch=False, plot=
 print(f'Training successful.\nNumber of support vectors: {len(mat_ml.svm_yf.support_vectors_)}')
 
 # Testing
-sig_tot, epl_tot, yf_ref = CTD.Create_Test_Sig(Json="Data_Random_Texture_Test.json")
+sig_tot, epl_tot, yf_ref = FE.create_test_sig(file="Data_Random_Texture_Test.json")
 yf_ml = mat_ml.calc_yf(sig_tot, epl_tot, pred=False)
-Results = CTD.training_score(yf_ref, yf_ml)
-print(Results)
+results = FE.training_score(yf_ref, yf_ml)
 
-#Plot Hardening levels over a meshed space
+# Plot Hardening levels over a meshed space
 save_fig = False
 ngrid = 100
 scale_seq, pi_factor = mat_ml.scale_seq, np.pi
@@ -68,13 +61,13 @@ Cart_hh_6D = np.hstack((Cart_hh, np.zeros((ngrid * ngrid, 3))))
 grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
 normalized_grad_hh = grad_hh / FE.eps_eq(grad_hh)[:, None]
 fig = plt.figure(figsize=(6.7, 4))
-fig.set_constrained_layout(True)
 ax = fig.add_subplot(111, projection='polar')
 for strain, color in zip(plastic_strains, colors_hex):
     Z = mat_ml.calc_yf(sig=Cart_hh_6D, epl=normalized_grad_hh * strain, pred=False)
     mat_ml.plot_data(Z, ax, xx, yy, c=color)
     handles.append(Line2D([], [], color=color, label=f'Equivalent Plastic Strain : {strain * 100:.1f}%'))
 ax.legend(handles=handles, loc='upper left', bbox_to_anchor=(1.05, 1))
+plt.tight_layout()
 if save_fig:
     fig.savefig('Hardening_Levels.png', dpi=300)
 plt.show()
@@ -99,16 +92,16 @@ plt.show()
 
 # Plot initial and final hardening level of trained ML yield function together with data points
 peeq_dat = FE.eps_eq(db.mat_data['plastic_strain'])
-ind0 =np.nonzero(np.logical_and(peeq_dat > 0.00019, peeq_dat < 0.00021))[0]
+ind0 = np.nonzero(np.logical_and(peeq_dat > 0.00019, peeq_dat < 0.00021))[0]
 sig_d0 = FE.s_cyl(db.mat_data['flow_stress'][ind0, :], mat_ml)
-ind1 = np.nonzero(np.logical_and(peeq_dat > 0.0249, peeq_dat < 0.0251))[0] #0.0248, 0.0252
+ind1 = np.nonzero(np.logical_and(peeq_dat > 0.0249, peeq_dat < 0.0251))[0]  # 0.0248, 0.0252
 sig_d1 = FE.s_cyl(db.mat_data['flow_stress'][ind1, :], mat_ml)
 ngrid = 100
 scale_seq, pi_factor = mat_ml.scale_seq, np.pi
 xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
 yy, xx = yy * scale_seq, xx * pi_factor
 Cart_hh = FE.sp_cart(np.c_[yy.ravel(), xx.ravel()])
-Cart_hh_6D = np.hstack((Cart_hh, np.zeros((ngrid**2, 3))))
+Cart_hh_6D = np.hstack((Cart_hh, np.zeros((ngrid ** 2, 3))))
 grad_hh = mat_ml.calc_fgrad(Cart_hh_6D)
 normalized_grad_hh = grad_hh / FE.eps_eq(grad_hh)[:, None]
 fig = plt.figure(figsize=(6.7, 4))
@@ -129,11 +122,11 @@ plt.show()
 
 # Reconstruct Stress-Strain Curve
 ilc = 0  # number of load case to be plotted keep this section.
-offs = 0 if ilc==0 else 1
+offs = 0 if ilc == 0 else 1
 istart = db.mat_data['lc_indices'][ilc - 1] + offs
 istop = db.mat_data['lc_indices'][ilc]
-sig_dat = db.mat_data['flow_stress'][istart:istop, :] # filter below 0.02% strain
-epl_dat = db.mat_data['plastic_strain'][istart:istop, :] # filter below 0.02% strain
+sig_dat = db.mat_data['flow_stress'][istart:istop, :]  # filter below 0.02% strain
+epl_dat = db.mat_data['plastic_strain'][istart:istop, :]  # filter below 0.02% strain
 epl_plt = FE.eps_eq(epl_dat)
 valid_indices = epl_plt >= 0.002
 # Update epl_dat and sig_dat based on the filter
@@ -145,7 +138,7 @@ sig0 = sig_dat_filtered[-1, :] / FE.sig_eq_j2(sig_dat_filtered[-1, :])
 Nlc = len(epl_dat_filtered)
 sig_ml = []
 for i in range(Nlc):
-    x1 = fsolve(find_yloc, mat_ml.sy, args=(sig0, epl_dat_filtered[i, :], mat_ml),
+    x1 = fsolve(mat_ml.find_yloc, mat_ml.sy, args=(sig0, epl_dat_filtered[i, :]),
                 xtol=1.e-5)
     sig_ml.append(sig0 * x1)
 sig_ml = np.array(sig_ml)
@@ -158,8 +151,6 @@ plt.xlabel(xlabel="Equivalent Plastic Strain (.)", fontsize=14)
 plt.ylabel(ylabel="Equivalent Stress (MPa)", fontsize=14)
 legend_font_size = 12
 legend = plt.legend(fontsize=legend_font_size)
-legend.legend_handles[0]._sizes = [50]
-legend.legend_handles[1]._sizes = [50]
 plt.tight_layout()
 if save_fig:
     fig.savefig('Reconstructed_Stress_Strain_Curve.png', dpi=300)

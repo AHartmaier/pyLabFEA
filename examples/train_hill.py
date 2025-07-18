@@ -6,12 +6,15 @@ application of trained ML flow rule in FEA
 
 Authors: Ronak Shoghi, Alexander Hartmaier
 ICAMS/Ruhr University Bochum, Germany
-June 2023
+January 2025
+
+Published as part of pyLabFEA package under GNU GPL v3 license
 """
 
 import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 print('pyLabFEA version', FE.__version__)
 
@@ -32,12 +35,18 @@ mat_h.calc_properties(eps=0.01, sigeps=True)
 
 # define material as basis for ML flow rule
 C = 2.0
-gamma = 0.5
+gamma = 1.0
+Ce = 0.99
+Fe = 0.1
+Nseq = 25
+Nlc = 300
 nbase = 'ML-Hill-p1'
-name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
+name = name = f'{nbase}_C{C:3.1f}_G{gamma:3.1f}'
 mat_mlh = FE.Material(name, num=2)  # define ML material
 # train ML flow rule from reference material
-mat_mlh.train_SVC(C=C, gamma=gamma, mat_ref=mat_h, Nseq=4, Nlc=300, Fe=0.7, Ce=0.95)
+mat_mlh.train_SVC(C=C, gamma=gamma, mat_ref=mat_h,
+                  Nseq=Nseq, Nlc=Nlc, Fe=Fe, Ce=Ce,
+                  gridsearch=False)
 
 # analyze support vectors to plot them in stress space
 sv = mat_mlh.svm_yf.support_vectors_ * mat_mlh.scale_seq
@@ -59,13 +68,14 @@ xx *= np.pi
 hh = np.c_[yy.ravel(), xx.ravel()]
 Z = mat_mlh.calc_yf(FE.sig_cyl2princ(hh))  # value of yield function for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
-line = mat_mlh.plot_data(Z, ax, xx, yy, c='black')
+cont = mat_mlh.plot_data(Z, ax, xx, yy, c='black')
+line = Line2D([0], [0], color=cont.colors, lw=2)
 pts = ax.scatter(sc[:, 1], sc[:, 0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k')  # plot support vectors
 ax.set_xlabel(r'$\theta$ (rad)', fontsize=20)
 ax.set_ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=20)
 ax.tick_params(axis="x", labelsize=16)
 ax.tick_params(axis="y", labelsize=16)
-plt.legend([line[0], pts], ['ML yield locus', 'support vectors'], loc='lower right')
+plt.legend([line, pts], ['ML yield locus', 'support vectors'], loc='lower right')
 plt.ylim(0., 2. * mat_mlh.sy)
 plt.show()
 
@@ -113,6 +123,7 @@ ax.scatter(sty[1:, 0], sty[1:, 1], s=s, c='y', edgecolors='#0000cc')
 ax.scatter(et2[1:, 0], et2[1:, 1], s=s, c='y', edgecolors='k')
 ax.scatter(ect[1:, 0], ect[1:, 1], s=s, c='y', edgecolors='#cc00cc')
 plt.show()
+plt.close('all')
 
 print('===================================================')
 print('=== Combined FEA with reference and ML material ===')

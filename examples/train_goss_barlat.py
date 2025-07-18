@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Train ML flow rule to reference material with Goss texture
-reference material described by parameters for Barlat Yld2004-18p model
-application of trained ML flow rule in FEA
+"""Train ML flow rule to reference material with Goss texture.
+Reference material is described by parameters for Barlat Yld2004-18p model.
+Application of trained ML flow rule in FEA
 
 Authors: Ronak Shoghi, Alexander Hartmaier
 ICAMS/Ruhr University Bochum, Germany
-January 2022
+January 2025
+
+Published as part of pyLabFEA package under GNU GPL v3 license
 """
 
 import pylabfea as FE
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from scipy.optimize import fsolve
 
 print('pyLabFEA version', FE.__version__)
@@ -27,7 +30,7 @@ def find_yloc(x, sig, mat):
 
 
 # define Barlat material for Goss texture
-# fitted to micromechanical data
+# anisotropic Barlat parameters have been fitted to micromechanical data
 bp = [0.81766901, -0.36431565, 0.31238124, 0.84321164, -0.01812166, 0.8320893, 0.35952332,
       0.08127502, 1.29314957, 1.0956107, 0.90916744, 0.27655112, 1.090482, 1.18282173,
       -0.01897814, 0.90539357, 1.88256105, 0.0127306]
@@ -48,28 +51,34 @@ sunit[1, 1] = 1.
 sunit[2, 2] = 1.
 sunit[3, 0] = 1.
 sunit[3, 1] = 1.
-sunit[4, 0] = 1. / np.sqrt(3.)
-sunit[4, 1] = -1. / np.sqrt(3.)
+sunit[4, 0] = -1. / np.sqrt(3.)
+sunit[4, 1] = 1. / np.sqrt(3.)
 x1 = fsolve(find_yloc, np.ones(5) * mat_GB.sy, args=(sunit, mat_GB), xtol=1.e-5)
 sy_ref = sunit * x1[:, None]
 seq_ref = FE.sig_eq_j2(sy_ref)
 
 # define material as basis for ML flow rule
-C = 15.
-gamma = 2.5
+C = 3.0
+gamma = 1.5
+Ce = 0.99
+Fe = 0.1
+Nseq = 25
 nbase = 'ML-Goss-Barlat'
-name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
+name = name = f'{nbase}_C{C:3.1f}_G{gamma:3.1f}'
 data_GS = FE.Data(sig, mat_name="Goss-Barlat", wh_data=False)
 mat_mlGB = FE.Material(name, num=1)  # define material
 mat_mlGB.from_data(data_GS.mat_data)  # data-based definition of material
+mat_mlGB.elasticity(C11=mat_GB.C11, C12=mat_GB.C12, C44=mat_GB.C44)  # elastic properties from reference material
 
 print('\nComparison of basic material parameters:')
-print('Youngs modulus: Ref={}MPa, ML={}MPa'.format(mat_GB.E, mat_mlGB.E))
-print('Poisson ratio: ref={}, ML={}'.format(mat_GB.nu, mat_mlGB.nu))
+print("Young's modulus: Ref={}MPa, ML={}MPa".format(mat_GB.E, mat_mlGB.E))
+print("Poisson's ratio: ref={}, ML={}".format(mat_GB.nu, mat_mlGB.nu))
 print('Yield strength: Ref={}MPa, ML={}MPa'.format(mat_GB.sy, mat_mlGB.sy))
 
 # train SVC with data generated from Barlat model for material with Goss texture
-mat_mlGB.train_SVC(C=C, gamma=gamma)
+mat_mlGB.train_SVC(C=C, gamma=gamma,
+                   Ce=Ce, Fe=Fe, Nseq=Nseq,
+                   gridsearch=False)
 sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_ideal'])
 mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True)
 # export ML parameters for use in UMAT
@@ -93,13 +102,14 @@ xx *= np.pi
 hh = np.c_[yy.ravel(), xx.ravel()]
 Z = mat_mlGB.calc_yf(FE.sig_cyl2princ(hh))  # value of yield function for every grid point
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 8))
-line = mat_mlGB.plot_data(Z, ax, xx, yy, c='black')
+cont = mat_mlGB.plot_data(Z, ax, xx, yy, c='black')
+line = Line2D([0], [0], color=cont.colors, lw=2)
 pts = ax.scatter(sc[:, 1], sc[:, 0], s=20, c=yf, cmap=plt.cm.Paired, edgecolors='k')  # plot support vectors
 ax.set_xlabel(r'$\theta$ (rad)', fontsize=20)
 ax.set_ylabel(r'$\sigma_{eq}$ (MPa)', fontsize=20)
 ax.tick_params(axis="x", labelsize=16)
 ax.tick_params(axis="y", labelsize=16)
-plt.legend([line[0], pts], ['ML yield locus', 'support vectors'], loc='lower right')
+plt.legend([line, pts], ['ML yield locus', 'support vectors'], loc='lower right')
 plt.ylim(0., 2. * mat_mlGB.sy)
 plt.show()
 
@@ -134,7 +144,13 @@ ax.scatter(stx[1:, 0], stx[1:, 1], s=s, c='r', edgecolors='#cc0000')
 ax.scatter(sty[1:, 0], sty[1:, 1], s=s, c='b', edgecolors='#0000cc')
 ax.scatter(et2[1:, 0], et2[1:, 1], s=s, c='#808080', edgecolors='k')
 ax.scatter(ect[1:, 0], ect[1:, 1], s=s, c='m', edgecolors='#cc00cc')
+syr_sc = sy_ref / mat_mlGB.sy
+ax.scatter(syr_sc[0, 0], syr_sc[0, 1], s=s, c='c', edgecolors='k')
+ax.scatter(syr_sc[1, 0], syr_sc[1, 1], s=s, c='c', edgecolors='k')
+ax.scatter(syr_sc[3, 0], syr_sc[3, 1], s=s, c='c', edgecolors='k')
+ax.scatter(syr_sc[4, 0], syr_sc[4, 1], s=s, c='c', edgecolors='k')
 plt.show()
+plt.close('all')
 
 # setup material definition for soft elastic square-shaped inclusion embedded
 # in elastic-plastic material with trained ML flow rule
