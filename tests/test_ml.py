@@ -1,6 +1,9 @@
 import pytest
 import pylabfea as FE
 import numpy as np
+import urllib.request
+import os
+import time
 
 
 def test_ml_plasticity():
@@ -59,9 +62,9 @@ def test_ml_shear():
     fem.solve()
     fem.calc_global()
 
-    assert np.abs(fem.glob['sig'][5] - 79.6435732946163) < 1E-5
-    assert np.abs(fem.element[3].epl[5] - 0.003800884140613953) < 1E-7
-    assert np.abs(fem.element[3].sig[1] - 43.846140704269885) < 1E-5
+    assert np.abs(fem.glob['sig'][5] - 77.53778881971542) < 1E-5
+    assert np.abs(fem.element[3].epl[5] - 0.003942707316048245) < 1E-7
+    assert np.abs(fem.element[3].sig[1] - 43.90605524724592) < 1E-5
 
 
 def test_ml_training():
@@ -81,7 +84,8 @@ def test_ml_training():
     name = '{0}_C{1}_G{2}'.format(nbase, int(C), int(gamma * 10))
     mat_ml2 = FE.Material(name)  # define material
     mat_ml2.dev_only = False
-    mat_ml2.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150)
+    mat_ml2.train_SVC(C=C, gamma=gamma, mat_ref=mat_J2, Nlc=150,
+                      Nseq=25, Fe=0.1, Ce=0.99)
     mat_ml2.calc_properties(verb=False, eps=0.01, sigeps=True)
 
     # analyze training result
@@ -103,3 +107,24 @@ def test_ml_training():
     assert np.abs(mae < 16.)
     assert np.abs(mat_ml2.propJ2['et2']['ys'] - 60.57834343495059) < 1E-4
     assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008987491147924685) < 1E-7
+
+def test_ml_data():
+    urllib.request.urlretrieve("https://raw.githubusercontent.com/AHartmaier/pyLabFEA/master/examples/Train_CPFEM/Data_Random_Texture.json", "data.json")
+    time.sleep(20)
+    db = FE.Data("data.json",
+                 epl_crit=2.e-3, epl_start=1.e-3, epl_max=0.03,
+                 depl=1.e-3,
+                 wh_data=True)
+    os.remove("data.json")
+    mat_ml = FE.Material(db.mat_data['Name'], num=1)  # define material
+    mat_ml.from_data(db.mat_data)  # data-based definition of material
+    mat_ml.train_SVC(C=4, gamma=0.5, Fe=0.7, Ce=0.9, Nseq=2, plot=False)  # Train SVC with data
+
+    assert 'Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd' in db.lc_data.keys()
+    assert np.isclose(db.mat_data['sy_av'], 49.008502278682954)
+    assert np.isclose(mat_ml.CV[0, 0], 204130.19078123142)
+    assert np.abs(len(mat_ml.svm_yf.support_vectors_) - 2093) < 3
+    sig = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Stress'][180]
+    epl = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Strain_Plastic'][180]
+    vyf = mat_ml.ML_full_yf(sig=sig, epl=epl)
+    assert vyf + 3.6322538456276874 < 1.e-3
