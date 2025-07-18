@@ -401,6 +401,7 @@ class Material(object):
                 x[:, self.ind_wh:self.ind_wh + self.sdim] = epl / self.scale_wh
                 x[:, self.ind_wh + self.sdim] = accumulated_strain
                 x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
+                x[:, self.ind_wh + self.sdim + 2] = flag
             if self.std_scaler:    # JS: Added this to check if scaling causes difference
                 if self.txdat:
                     if tex is None:
