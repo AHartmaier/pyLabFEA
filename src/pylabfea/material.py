@@ -816,10 +816,15 @@ class Material(object):
                 x[:, self.ind_wh + self.sdim] = accumulated_strain
                 x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
                 x[:, self.ind_wh + self.sdim + 2] = flag
-            if self.txdat:
-                ih = self.ind_tx
-                x[:, ih:] = tex[:, :]
-                x = self.transform_input(x)
+            if self.std_scaler:    # JS: Added this to check if scaling causes difference
+                if self.txdat:
+                    if tex is None:
+                        raise ValueError("SVM is trained on texture data but no texture data is given to evaluate yf!")
+                    if len(sh_tex) == 1:
+                        tex = np.array([tex])
+                    ih = self.ind_tx
+                    x[:, ih:] = tex[:, :]
+                x = self.transform_input(x)  # JS: Note: The sig part of the feature vector is scaled above!
             dc = self.svm_yf.dual_coef_[0, :]
             sv = self.svm_yf.support_vectors_
             hk = np.zeros(self.sdim)
@@ -942,10 +947,15 @@ class Material(object):
                 x[:, self.ind_wh + self.sdim] = accumulated_strain
                 x[:, self.ind_wh + self.sdim + 1] = max_stress / self.scale_seq
                 x[:, self.ind_wh + self.sdim + 2] = flag
-            if self.txdat:
-                ih = self.ind_tx
-                x[:, ih:] = tex[:, :]
-                x = self.transform_input(x)
+            if self.std_scaler:  # JS: Added this to check if scaling causes difference
+                if self.txdat:
+                    if tex is None:
+                        raise ValueError("SVM is trained on texture data but no texture data is given to evaluate yf!")
+                    if len(sh_tex) == 1:
+                        tex = np.array([tex])
+                    ih = self.ind_tx
+                    x[:, ih:] = tex[:, :]
+                x = self.transform_input(x)  # JS: Note: The sig part of the feature vector is scaled above!
 
             # Expand dimensions for broadcasting
             # x: (N, 1, d), sv: (1, n_sv, d)
@@ -1191,62 +1201,63 @@ class Material(object):
         self.gam_yf = gamma
         self.C_yf = C
         # JS: Scaling of training data
-        if not self.txdat:
-            # JS: In case of no texture data, use the classic scaling
-            if self.msparam is None:
-                self.scale_seq = self.sy
-            else:
-                # calculate scaling factors needed for SVC training from microstructure parameters
-                self.scale_seq = 0.
-                self.scale_wh = 0.
-                self.scale_text = np.zeros(self.Nset)  # JS: Old way of texture scaling
-                for i in range(self.Nset):
-                    self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
-                    self.scale_wh += self.msparam[i]['peeq_max'] / self.Nset
-                    self.scale_text[i] = np.average(self.msparam[i]['texture'])
-                if not self.whdat:
-                    self.scale_wh = 1.
-            N = len(x)
-            X_train = np.zeros((N, self.Ndof))
-            X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
-            if self.whdat:
-                X_train[:, self.ind_wh:self.ind_wh + self.sdim] = \
-                    x[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
-                X_train[:, self.ind_wh + self.sdim] = x[:, self.ind_wh + self.sdim]
-                X_train[:, self.ind_wh + self.sdim + 1] = x[:, self.ind_wh + self.sdim + 1] / self.scale_seq
-                X_train[:, self.ind_wh + self.sdim + 2] = x[:, self.ind_wh + self.sdim + 2]
-                print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
-                      % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
-
-            # coordinate transformation for test data
-            if x_test is not None:
-                Ntest = len(x_test)
-                X_test = np.zeros((Ntest, self.Ndof))
-                X_test[:, 0:self.sdim] = x_test[:, 0:self.sdim] / self.scale_seq
-                if self.whdat:
-                    X_test[:, self.ind_wh:self.ind_wh + self.sdim] = \
-                        x_test[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
-                    X_test[:, self.ind_wh + self.sdim] = x_test[:, self.ind_wh + self.sdim]
-                    X_test[:, self.ind_wh + self.sdim + 1] = x_test[:, self.ind_wh + self.sdim + 1] / self.scale_seq
-                    X_test[:, self.ind_wh + self.sdim + 2] = x_test[:, self.ind_wh + self.sdim + 2]
-
-        else:
-            # JS: This is the scaling part if texture data is present -> Use the standard scaler on full feature vector
-            # JS: In the current state, standardization is performed on complete training set before any CV!
-            self.scale_seq = 1  # JS: Note: They are all set to 1 here to avoid conflicts with old scaling routines
-            self.scale_text = 1
-            self.scale_wh = 1
+        # if not self.txdat:
+        #     # JS: In case of no texture data, use the classic scaling
+        #     if self.msparam is None:
+        #         self.scale_seq = self.sy
+        #     else:
+        #         # calculate scaling factors needed for SVC training from microstructure parameters
+        #         self.scale_seq = 0.
+        #         self.scale_wh = 0.
+        #         self.scale_text = np.zeros(self.Nset)  # JS: Old way of texture scaling
+        #         for i in range(self.Nset):
+        #             self.scale_seq += self.msparam[i]['sy_av'] / self.Nset
+        #             self.scale_wh += self.msparam[i]['peeq_max'] / self.Nset
+        #             self.scale_text[i] = np.average(self.msparam[i]['texture'])
+        #         if not self.whdat:
+        #             self.scale_wh = 1.
+        #     N = len(x)
+        #     X_train = np.zeros((N, self.Ndof))
+        #     X_train[:, 0:6] = x[:, 0:6] / self.scale_seq
+        #     if self.whdat:
+        #         X_train[:, self.ind_wh:self.ind_wh + self.sdim] = \
+        #             x[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
+        #         X_train[:, self.ind_wh + self.sdim] = x[:, self.ind_wh + self.sdim]
+        #         X_train[:, self.ind_wh + self.sdim + 1] = x[:, self.ind_wh + self.sdim + 1] / self.scale_seq
+        #         X_train[:, self.ind_wh + self.sdim + 2] = x[:, self.ind_wh + self.sdim + 2]
+        #         print('Using work hardening data "%s" for training up to PEEQ=%6.3f'
+        #               % (self.msparam[0]['ms_type'], self.msparam[0]['peeq_max']))
+        #
+        #     # coordinate transformation for test data
+        #     if x_test is not None:
+        #         Ntest = len(x_test)
+        #         X_test = np.zeros((Ntest, self.Ndof))
+        #         X_test[:, 0:self.sdim] = x_test[:, 0:self.sdim] / self.scale_seq
+        #         if self.whdat:
+        #             X_test[:, self.ind_wh:self.ind_wh + self.sdim] = \
+        #                 x_test[:, self.ind_wh:self.ind_wh + self.sdim] / self.scale_wh
+        #             X_test[:, self.ind_wh + self.sdim] = x_test[:, self.ind_wh + self.sdim]
+        #             X_test[:, self.ind_wh + self.sdim + 1] = x_test[:, self.ind_wh + self.sdim + 1] / self.scale_seq
+        #             X_test[:, self.ind_wh + self.sdim + 2] = x_test[:, self.ind_wh + self.sdim + 2]
+        #
+        # else:
+        # JS: This is the scaling part if texture data is present -> Use the standard scaler on full feature vector
+        # JS: In the current state, standardization is performed on complete training set before any CV!
+        self.scale_seq = 1  # JS: Note: They are all set to 1 here to avoid conflicts with old scaling routines
+        self.scale_text = 1
+        self.scale_wh = 1
+        if self.txdat:  # JS: If not txdat, the field self.msparam[0]['tx_descriptor'] is None.
             if 'ADV' in self.msparam[0]['tx_descriptor']:
                 pca = PCA(n_components=pca_dim, whiten=True)  # JS: Whitening causes component-wise unit variance.
                 pca.fit(x[:, self.ind_tx:])  # JS: Fit PCA to descriptors
                 print(f"Explained variance in ADV texture descriptor with reduced PCA: {pca.explained_variance_ratio_}")
                 self.pca = pca
-            scaler = StandardScaler().fit(x)
-            self.std_scaler = scaler  # JS : UMAT needs to read mean and var later!
-            X_train = self.transform_input(x)
+        scaler = StandardScaler().fit(x)
+        self.std_scaler = scaler  # JS : UMAT needs to read mean and var later!
+        X_train = self.transform_input(x)
 
-            if x_test is not None:
-                X_test = self.transform_input(x_test)
+        if x_test is not None:
+            X_test = self.transform_input(x_test)
 
         # define and fit SVC
         if gridsearch:
@@ -2239,6 +2250,7 @@ class Material(object):
         props[7] = self.epc
         props[8] = self.scale_seq
         props[9] = self.scale_wh
+        # TODO: JS: Additional probs for the self.std_scaler.scale_[:6], self.std_scaler.mean_[:6] to get the feature-wise scaling factors. Indices follow feature logic.
         if self.CV is None:
             props[10:16] = -1
         else:
@@ -2348,21 +2360,24 @@ class Material(object):
          For StandardScaler: This is a linear transformation that was fit to the full feature vector.
          Parameters
          ----------
-         x : array(N, dof_sig+dof_tex)
+         x : array(N, self.Ndof)
              Array of training data. Features are expected to be 6-D stress + tdim-D texture descriptor.
 
          Returns
          -------
-         x_final : array (N, dof_sig+dof_tex)
+         x_final : array (N, self.Ndof)
              Transformed data
          """
         x_scaled = self.std_scaler.transform(x)
-        if self.pca and 'ADV' in self.msparam[0]['tx_descriptor']:
-            print('PCA is performed on ADV as texture descriptor.')
-            x_texture_transform = self.pca.transform(x[:, self.ind_tx:])
-            x_final = np.hstack((x_scaled[:, :self.sdim], x_texture_transform))
-        elif not self.pca and 'ADV' in self.msparam[0]['tx_descriptor']:
-            raise Warning("No PCA object in material but address vector texture descriptor used !!!")
+        if self.txdat:
+            if self.pca and 'ADV' in self.msparam[0]['tx_descriptor']:
+                print('PCA is performed on ADV as texture descriptor.')
+                x_texture_transform = self.pca.transform(x[:, self.ind_tx:])
+                x_final = np.hstack((x_scaled[:, :self.ind_tx], x_texture_transform))
+            elif not self.pca and 'ADV' in self.msparam[0]['tx_descriptor']:
+                raise Warning("No PCA object in material but address vector texture descriptor used !!!")
+            else:
+                x_final = x_scaled
         else:
             x_final = x_scaled
         return x_final
