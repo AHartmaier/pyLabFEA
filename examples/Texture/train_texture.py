@@ -15,9 +15,12 @@ Date: 05.11.2024
 import numpy as np
 import glob
 import os
-from sklearnex import patch_sklearn
 
-patch_sklearn()
+try: 
+    from sklearnex import patch_sklearn
+    patch_sklearn()
+except:
+    pass
 import pylabfea as FE
 import csv
 from joblib import Parallel, delayed
