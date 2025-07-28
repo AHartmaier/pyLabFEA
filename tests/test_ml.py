@@ -4,6 +4,7 @@ import numpy as np
 import urllib.request
 import os
 import time
+import glob
 
 
 def test_ml_plasticity():
@@ -62,9 +63,12 @@ def test_ml_shear():
     fem.solve()
     fem.calc_global()
 
-    assert np.abs(fem.glob['sig'][5] - 77.53778881971542) < 1E-5
-    assert np.abs(fem.element[3].epl[5] - 0.003942707316048245) < 1E-7
-    assert np.abs(fem.element[3].sig[1] - 43.90605524724592) < 1E-5
+    assert np.abs(fem.glob['sig'][
+                      5] - 74.38535097648187) < 1E-5  # JS: With new std_scaler 74.38535097648187. Old: 77.53778881971542
+    assert np.abs(fem.element[3].epl[
+                      5] - 0.0041247904340417935) < 1E-7  # JS: With new std_scaler 0.0041247904340417935. Old: 0.003942707316048245
+    assert np.abs(fem.element[3].sig[
+                      1] - 50.50339744958535) < 1E-5  # JS: With new std_scaler 50.50339744958535 . Old: 43.90605524724592
 
 
 def test_ml_training():
@@ -104,12 +108,17 @@ def test_ml_training():
     mae, precision, Accuracy, Recall, F1Score, mcc = \
         FE.training_score(yf_J2, yf_ml, plot=False)
 
-    assert np.abs(mae < 16.)
-    assert np.abs(mat_ml2.propJ2['et2']['ys'] - 60.57834343495059) < 1E-4
-    assert np.abs(mat_ml2.propJ2['ect']['peeq'][-1] - 0.008987491147924685) < 1E-7
+    assert np.abs(mae < 25.)  # JS: With new std_scaler 20.925518005042182. Old 16.
+    assert np.abs(mat_ml2.propJ2['et2'][
+                      'ys'] - 62.52063945502065) < 1E-4  # JS: With new std_scaler 62.52063945502065. Old: 60.57834343495059
+    assert np.abs(mat_ml2.propJ2['ect']['peeq'][
+                      -1] - 0.009230788835495616) < 1E-7  # JS: With new std_scaler 0.009230788835495616. Old: 0.008987491147924685
+
 
 def test_ml_data():
-    urllib.request.urlretrieve("https://raw.githubusercontent.com/AHartmaier/pyLabFEA/master/examples/Train_CPFEM/Data_Random_Texture.json", "data.json")
+    urllib.request.urlretrieve(
+        "https://raw.githubusercontent.com/AHartmaier/pyLabFEA/master/examples/Train_CPFEM/Data_Random_Texture.json",
+        "data.json")
     time.sleep(20)
     db = FE.Data("data.json",
                  epl_crit=2.e-3, epl_start=1.e-3, epl_max=0.03,
@@ -123,8 +132,37 @@ def test_ml_data():
     assert 'Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd' in db.lc_data.keys()
     assert np.isclose(db.mat_data['sy_av'], 49.008502278682954)
     assert np.isclose(mat_ml.CV[0, 0], 204130.19078123142)
-    assert np.abs(len(mat_ml.svm_yf.support_vectors_) - 2093) < 3
+    assert np.abs(len(mat_ml.svm_yf.support_vectors_) - 3764) < 3  # JS: with new std_scaler 3764 SVs. Old: 2093
     sig = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Stress'][180]
     epl = db.lc_data['Us_A2B2C2D2E2F2_36e6f_5e411_Tx_Rnd']['Strain_Plastic'][180]
     vyf = mat_ml.ML_full_yf(sig=sig, epl=epl)
-    assert vyf + 3.6322538456276874 < 1.e-3
+    assert vyf + (-2.8355836068514293) < 1.e-3  # JS: with new std_scaler -2.8355836068514293. Old: 3.6322538456276874
+
+
+def test_texture():
+    # 0) Set variables
+    path_db = "../examples/Texture/Data_CPFFT"
+    wh_data = False
+
+    # 1) Import Data from Micromechanical Simulations
+    res_dirs_list = glob.glob(os.path.join(path_db, "*"))
+
+    # 1.2) Create FE Data objects in a loop
+    db_dict = {}
+    for res_dir in res_dirs_list:
+        try:
+            db = FE.Data("Data_Base.json", path_data=res_dir, wh_data=wh_data, mode='JS', tx_data=True)
+            db_dict[db.mat_data['tx_key']] = db
+        except FileNotFoundError:
+            print(f"{res_dir} contains no Data_Base.json")
+
+    # 2) Create Material from the list of DB
+    db_list = list(db_dict.values())
+    mat_ml = FE.Material(db_list[0].mat_data['tx_name'], num=1)
+    mat_ml.from_data([data_obj.mat_data for data_obj in db_list])
+
+    # 3) Train SVC
+    train_sc, test_sc = mat_ml.train_SVC(C=10, gamma=1, Fe=0.8, Ce=0.95, Nseq=2, gridsearch=False, plot=False)
+
+    # 4) Check train score
+    assert np.abs(train_sc - 99.93506493506493) < 1e-5
