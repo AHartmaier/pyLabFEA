@@ -217,13 +217,25 @@ def training_score(yf_ref, yf_ml, plot=False):
     print('True Negatives:', TN)
     print('False Positives:', FP)
     print('False Negatives:', FN)
-    precision = (TP) / (TP + FP)
+    if TP + FP > 0:
+        precision = (TP) / (TP + FP)
+    else:
+        precision = 0.0
     print('Precision:', precision)
-    Accuracy = (TP + TN) / (TP + FP + FN + TN)
+    if TP + FP + FN + TN > 0:
+        Accuracy = (TP + TN) / (TP + FP + FN + TN)
+    else:
+        Accuracy = 0.0
     print('Accuracy:', Accuracy)
-    Recall = (TP) / (TP + FN)
+    if TP + FN > 0:
+        Recall = (TP) / (TP + FN)
+    else:
+        Recall = 0.0
     print('Recall:', Recall)
-    F1Score = 2 * (Recall * precision) / (Recall + precision)
+    if Recall + precision > 1.0e-4:
+        F1Score = 2 * (Recall * precision) / (Recall + precision)
+    else:
+        F1Score = 0.0
     print('F1score:', F1Score)
     print('MCC score:', MCC)
     return mae, precision, Accuracy, Recall, F1Score, MCC
