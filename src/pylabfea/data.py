@@ -854,9 +854,13 @@ class Data(object):
                 lc_ind_list[ct] = nv + prev_idx
                 # get texture name
                 ''' Warning: This should be read only once from metadata !!!'''
-                # Key_Translated = self.key_parser(key)
-                self.mat_data['ms_type'] = 'unknown'  # Key_Translated["Texture_Type"]  # unimodal texture type
-                # self.mat_data['tx_key'] = Key_Translated["Hash_Orientation"]
+                if self.mode == 'JS':
+                    Key_Translated = self.key_parser(key)
+                    self.mat_data['tx_key'] = Key_Translated["Hash_Orientation"]
+                else:
+                    self.mat_data['ms_type'] = 'unknown'  # Key_Translated["Texture_Type"]  # unimodal texture type
+                    self.mat_data['tx_key'] = 'unknown'
+                #
                 ct += 1
 
         # initialize mat_data dictionary used to create material objects
