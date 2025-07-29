@@ -14,6 +14,6 @@ from pylabfea.data import Data, find_transition_index, get_elastic_coefficients
 from pylabfea.training import load_cases, training_score, create_test_sig
 from importlib.metadata import version
 
-__author__ = """Alexander Hartmaier, Ronak Shoghi"""
+__author__ = """Alexander Hartmaier, Ronak Shoghi, Jan Schmidt"""
 __email__ = 'alexander.hartmaier@rub.de'
 __version__ = version('pylabfea')

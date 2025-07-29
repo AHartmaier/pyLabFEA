@@ -99,6 +99,7 @@ pyLabFEA requires the following packages as imports:
  - v2: Introduction of machine learning (ML) yield function
  - v3: Generalization of finite element solver and training of ML yield function to full stress tensors
  - v4: Import and analysis of microstructure-sensitive data on mechanical behavior for training and testing of ML yield function
+ - v4.4: Support of data with crystallographic texture information and use of standard-scaler 
 
 ## License
 
