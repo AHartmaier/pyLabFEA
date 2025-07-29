@@ -19,7 +19,7 @@ import os
 try: 
     from sklearnex import patch_sklearn
     patch_sklearn()
-except:
+except ModuleNotFoundError:
     pass
 import pylabfea as FE
 import csv

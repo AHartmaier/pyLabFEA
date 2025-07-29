@@ -26,9 +26,10 @@ from scipy.spatial import distance
 
 try:
     from sklearnex import patch_sklearn  # JS: This is patching scikit-learn on intel hardware
-    # patch_sklearn()
+    # patch_sklearn()  """Why is this commented???"""
+    print("The scikit-learn intel acceleration is used.")
 except ModuleNotFoundError:
-    print("The scikit-learn intel acceleration is not installed on your system")
+    pass
 from sklearn import svm
 from matplotlib.lines import Line2D
 from sklearn.preprocessing import StandardScaler
@@ -838,7 +839,7 @@ class Material(object):
                 if self.whdat:
                     hk -= dKdx[self.ind_wh:self.ind_wh + self.sdim] * self.scale_seq / self.scale_wh
                 if self.std_scaler:  # JS: Checks if scaler is there NOT if texture is there
-                    fgrad[i, :] /= self.std_scaler.scale_[:6] # JS: fgrad only contains stress derivatives here
+                    fgrad[i, :] /= self.std_scaler.scale_[:6]  # JS: fgrad only contains stress derivatives here
             self.khard = np.sum(hk) / N  # multiply with matrix (d_eps_eq/d_eps)^-1 instead of summation ???
             if self.khard < 0.:
                 self.khard = 0.  # strain softening not supported
