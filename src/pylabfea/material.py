@@ -1254,6 +1254,9 @@ class Material(object):
                 print(f"Explained variance in ADV texture descriptor with reduced PCA: {pca.explained_variance_ratio_}")
                 self.pca = pca
         scaler = StandardScaler().fit(x)
+        scaler.scale_[0:6] = self.sy
+        scaler.mean_[0:6] = 0.0
+        scaler.var_ = scaler.scale_**2
         self.std_scaler = scaler  # JS : UMAT needs to read mean and var later!
         X_train = self.transform_input(x)
 
