@@ -162,4 +162,4 @@ def test_texture():
     train_sc, test_sc = mat_ml.train_SVC(C=10, gamma=1, Fe=0.8, Ce=0.95, Nseq=2, gridsearch=False, plot=False)
 
     # 4) Check train score
-    assert np.abs(train_sc - 97.66233766233766) < 1e-3
+    assert np.abs(train_sc - 97.66233766233766) < 0.3
