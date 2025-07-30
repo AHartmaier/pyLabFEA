@@ -11,6 +11,8 @@ January 2025
 
 Published as part of pyLabFEA package under GNU GPL v3 license
 """
+import matplotlib
+matplotlib.use('TkAgg')
 
 import pylabfea as FE
 import numpy as np

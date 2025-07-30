@@ -13,6 +13,8 @@ July 2023
 
 Published as part of pyLabFEA package under GNU GPL v3 license
 """
+import matplotlib
+matplotlib.use('TkAgg')
 import time
 import matplotlib.pyplot as plt
 import numpy as np

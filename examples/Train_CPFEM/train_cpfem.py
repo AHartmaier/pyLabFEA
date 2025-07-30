@@ -50,7 +50,7 @@ results = FE.training_score(yf_ref, yf_ml)
 # Plot Hardening levels over a meshed space
 save_fig = False
 ngrid = 100
-scale_seq, pi_factor = mat_ml.scale_seq, np.pi
+scale_seq, pi_factor = mat_ml.sy, np.pi
 colors_hex = ['#550000', '#990000', '#bb0000', '#cc3333', '#ee3333', '#ff5050']
 plastic_strains = [0, 0.005, 0.01, 0.015, 0.018, 0.025]
 handles = []
@@ -97,7 +97,7 @@ sig_d0 = FE.s_cyl(db.mat_data['flow_stress'][ind0, :], mat_ml)
 ind1 = np.nonzero(np.logical_and(peeq_dat > 0.0249, peeq_dat < 0.0251))[0]  # 0.0248, 0.0252
 sig_d1 = FE.s_cyl(db.mat_data['flow_stress'][ind1, :], mat_ml)
 ngrid = 100
-scale_seq, pi_factor = mat_ml.scale_seq, np.pi
+scale_seq, pi_factor = mat_ml.sy, np.pi
 xx, yy = np.meshgrid(np.linspace(-1, 1, ngrid), np.linspace(0, 2, ngrid))
 yy, xx = yy * scale_seq, xx * pi_factor
 Cart_hh = FE.sp_cart(np.c_[yy.ravel(), xx.ravel()])

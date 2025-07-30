@@ -11,27 +11,24 @@ Author: Jan Schmidt
 Email: jan.schmidt-p2d@rub.de
 Date: 05.11.2024
 """
+import matplotlib
+matplotlib.use('TkAgg')
 
-import numpy as np
-import glob
 import os
+import glob
+import time
+import logging
+import numpy as np
+import matplotlib.pyplot as plt
+import pylabfea as FE
+from joblib import Parallel, delayed
+from scipy.optimize import fsolve
 
 try: 
     from sklearnex import patch_sklearn
     patch_sklearn()
 except ModuleNotFoundError:
     pass
-import pylabfea as FE
-import csv
-from joblib import Parallel, delayed
-import logging
-import time
-from scipy.optimize import fsolve
-import matplotlib
-
-matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-
 
 # 0) Set variables
 path_db = "Data_CPFFT"  # JS: Steven has all data at "~/Desktop/scratch/KDEApproach5deg/KDEApproach5deg/"  #
