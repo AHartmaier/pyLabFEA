@@ -113,7 +113,7 @@ if testing:
     y_test = np.concatenate(y_test_list, axis=0)
 
     # 3.4) Transform feature vector
-    x_test = mat_ml.transform_input(x_test)
+    x_test = mat_ml.create_scaled_input(x_test[:, 0:6], tex=x_test[:, 6:])
 
     # 3.5) Evaluate Metrics
     test_sc = mat_ml.svm_yf.score(x_test, y_test)
@@ -205,13 +205,13 @@ if plot:
     drh = 0.08 * dr
     ax.arrow(0, 0, 0, dr, head_width=0.05, width=0.004,
              head_length=drh, color='r', length_includes_head=True)
-    ax.text(-0.12, dr * 0.89, '$\sigma_1$', color='r', fontsize=12)
+    ax.text(-0.12, dr * 0.89, r'$\sigma_1$', color='r', fontsize=12)
     ax.arrow(2.0944, 0, 0, dr, head_width=0.05,
              width=0.004, head_length=drh, color='r', length_includes_head=True)
-    ax.text(2.24, dr * 0.94, '$\sigma_2$', color='r', fontsize=12)
+    ax.text(2.24, dr * 0.94, r'$\sigma_2$', color='r', fontsize=12)
     ax.arrow(-2.0944, 0, 0, dr, head_width=0.05,
              width=0.004, head_length=drh, color='r', length_includes_head=True)
-    ax.text(-2.04, dr * 0.97, '$\sigma_3$', color='r', fontsize=12)
-    ax.set_title(f'Yield Loci on $\pi$-plane')
+    ax.text(-2.04, dr * 0.97, r'$\sigma_3$', color='r', fontsize=12)
+    ax.set_title(r'Yield Loci on $\pi$-plane')
     ax.legend(loc=(.53, 0.85), ncols=2)  # [plt_cut, plt_rem], ['cut-off textures', 'remaining textures'],
     plt.show()

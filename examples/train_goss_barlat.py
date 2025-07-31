@@ -10,6 +10,8 @@ January 2025
 
 Published as part of pyLabFEA package under GNU GPL v3 license
 """
+import matplotlib
+matplotlib.use('TkAgg')
 
 import pylabfea as FE
 import numpy as np
@@ -82,7 +84,7 @@ mat_mlGB.train_SVC(C=C, gamma=gamma,
 sc = FE.sig_princ2cyl(mat_mlGB.msparam[0]['sig_ideal'])
 mat_mlGB.polar_plot_yl(data=sc, dname='training data', cmat=[mat_GB], arrow=True)
 # export ML parameters for use in UMAT
-mat_mlGB.export_MLparam(__file__, path='./')
+# mat_mlGB.export_MLparam(__file__, path='./')
 
 # analyze support vectors to plot them in stress space
 sv = mat_mlGB.svm_yf.support_vectors_ * mat_mlGB.scale_seq
@@ -150,7 +152,7 @@ ax.scatter(syr_sc[1, 0], syr_sc[1, 1], s=s, c='c', edgecolors='k')
 ax.scatter(syr_sc[3, 0], syr_sc[3, 1], s=s, c='c', edgecolors='k')
 ax.scatter(syr_sc[4, 0], syr_sc[4, 1], s=s, c='c', edgecolors='k')
 plt.show()
-plt.close('all')
+# plt.close('all')
 
 # setup material definition for soft elastic square-shaped inclusion embedded
 # in elastic-plastic material with trained ML flow rule
