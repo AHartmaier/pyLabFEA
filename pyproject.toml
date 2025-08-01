@@ -17,7 +17,6 @@ license = "GPL-3.0-only"
 classifiers = [
   "Development Status :: 4 - Beta",
   "Intended Audience :: Science/Research",
-  "License-Expression :: GPL-3.0-only",
   "Natural Language :: English",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13"

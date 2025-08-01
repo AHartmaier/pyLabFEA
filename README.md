@@ -20,7 +20,7 @@ constitutive modeling of materials makes it a useful research tool for data-orie
 
 ## Installation
 
-The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/individual) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) environment with a recent Python version. It can be installed from conda-forge by
+The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/individual) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) environment with a recent Python version. It can be installed from [conda-forge](https://conda-forge.org) by
 
 ```
 $ conda install pylabfea
