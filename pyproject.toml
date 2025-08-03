@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pylabfea"
-version = '4.4.1'
+version = '4.4.2'
 description = "Python Laboratory for Finite Element Analysis"
 authors = [
   { name = "Alexander Hartmaier", email = "alexander.hartmaier@rub.de" },
