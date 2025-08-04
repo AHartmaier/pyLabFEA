@@ -8,25 +8,32 @@
 ### Python Laboratory for Finite Element Analysis
 
   - Authors: Alexander Hartmaier, Ronak Shoghi, Jan Schmidt
-  - Organization: ICAMS, Ruhr University Bochum, Germany
+  - Organization: [ICAMS](http://www.icams.de/content/) / [Ruhr-Universität Bochum](https://www.ruhr-uni-bochum.de/en), Germany 
   - Contact: <alexander.hartmaier@rub.de>
 
 Finite Element Analysis (FEA) is a numerical method for studying
 mechanical behavior of fluids and solids. The pyLabFEA package
-introduces a simple pure-python version of FEA for solid mechanics and
-elastic-plastic materials. pyLabFEA can import and analyse data sets on mechanical behavior of materials following the data schema published on [GitHub](https://github.com/Ronakshoghi/MetadataSchema.git) and described in this [article](https://doi.org/10.1002/adem.202401876). Based on such data, machine learning (ML) yield functions can be trained and used as constitutive models in elasto-plastic FEA. Due to
+introduces a lightweight pure-python version of FEA for solid mechanics and elastic-plastic materials. pyLabFEA can import and analyse data sets on mechanical behavior of materials following the modular materials data schema published on [GitHub](https://github.com/Ronakshoghi/MetadataSchema.git) and described in this [article](https://doi.org/10.1002/adem.202401876). Based on such data, machine learning (ML) yield functions can be trained and used as constitutive models in elasto-plastic FEA. Due to
 its simplicity, pyLabFEA is well-suited for teaching, and its flexibility in
 constitutive modeling of materials makes it a useful research tool for data-oriented constitutive modeling.
 
+## Features
+
+- pyLabFEA offers a lightweight Python Application Programming Interface (API).
+- Object oriented methods for generation of finite element models.
+- Flexible methods for material definitions, from conventional continuum elasticity and plasticity methods to training of machine learning yield functions, see this [research article](https://doi.org/10.3389/fmats.2022.868248).
+- Import of mechanical data based on the [modular material data schema](https://github.com/Ronakshoghi/MetadataSchema.git), see this [research article](https://doi.org/10.1088/2632-2153/ad379e).
+
 ## Installation
 
-The pyLabFEA package requires an [Anaconda](https://www.anaconda.com/products/individual) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html) environment with a recent Python version. It can be installed from [conda-forge](https://conda-forge.org) by
+The preferred method to use Kanapy is within [Anaconda](https://www.anaconda.com) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), into which it can be easily installed from [conda-forge](https://conda-forge.org) by
 
 ```
-$ conda install pylabfea
+$ conda install pylabfea -c conda-forge
 ```
 
-or from [PyPi](https://pypi.org/project/pylabfea/) via pip
+Generally, it can be installed within any 
+Python environment supporting the package installer for python [pip](https://pypi.org/project/pip/) from its latest [PyPi](https://pypi.org/project/pylabfea/) image via pip
 
 ```
 $ pip install pylabfea
@@ -39,13 +46,13 @@ $ git clone https://github.com/AHartmaier/pyLabFEA.git ./pyLabFEA
 $ cd pyLabFEA
 $ conda env create -f environment.yml
 $ conda activate pylabfea
-$ python -m pip install .
+$ (pylabfea) python -m pip install .
 ```
 
 The correct installation with this method can be tested with
 
 ```
-$ pytest tests -v
+$ (pylabfea) pytest tests -v
 ```
 
 After this, the package can be used within python, e.g. by importing the entire package with
@@ -58,20 +65,23 @@ import pylabfea as fea
 ## Documentation
 
 Online documentation for pyLabFEA can be found under [https://ahartmaier.github.io/pyLabFEA/](https://ahartmaier.github.io/pyLabFEA/).
-For offline use, open docs/index.html in your local copy to browse through the contents.
+
 The documentation has been generated using [Sphinx](http://www.sphinx-doc.org/en/master/).
 
-## Jupyter notebooks
-
-pyLabFEA is conveniently used with Jupyter notebooks. 
-Available notebooks with tutorials on linear and non-linear FEA, homogenization of elastic and
+## Examples
+A collection of exemplary notebooks and python scripts is available on pyLabFEA'S [GitHub repository](https://github.com/AHartmaier/pyLabFEA.git) with tutorials on linear and non-linear FEA, homogenization of elastic and
 elastic-plastic material behavior, and constitutive models based on
-machine learning algorithms are contained in the subfolder 'notebooks' of this repository and can be accessed via `index.ipynb`. An
-overview on the contents of the notebooks is also available [here](https://ahartmaier.github.io/pyLabFEA/examples.html).
+machine learning algorithms.
+
+### Jupyter notebooks
+
+pyLabFEA is conveniently used with Jupyter notebooks, which 
+are contained in the subfolder 'notebooks' of this repository and can be accessed via `index.ipynb`. An
+overview on the contents of the notebooks is also available in the [documentation](https://ahartmaier.github.io/pyLabFEA/examples.html).
 
 The Jupyter notebooks of the pyLabFEA tutorials are directly accessible on [Binder](https://mybinder.org/v2/gh/AHartmaier/pyLabFEA.git/master)
 
-## Examples
+### Python scripts
 
 Python routines contained in the subfolder 'examples' of this repository demonstrate how ML yield funcitons can be trained based on reference materials with significant plastic anisotropy, as Hill or Barlat reference materials, but also for isotropic J2 plasticity. The training data consists of different stress tensors that mark the onset of plastic yielding of the material. It is important that these stress tensors cover the onset of plastic yielding in the full 6-dimensional stress space, including normal and shear stresses. 
 
@@ -96,11 +106,11 @@ pyLabFEA requires the following packages as imports:
 ## Version history
 
  - v1: 2D finite element solver for pricipal stresses only
- - v2: Introduction of machine learning (ML) yield function
- - v3: Generalization of finite element solver and training of ML yield function to full stress tensors
- - v4: Import and analysis of microstructure-sensitive data on mechanical behavior for training and testing of ML yield function
- - v4.2: Support of strain hardening in machine learning yield function
- - v4.3: Import of data on mechanical behavior as basis for training 
+ - v2: Introduction of machine learning (ML) yield functions
+ - v3: Generalization of finite element solver and training of ML yield functions to full stress tensors
+ - v4: Import and analysis of microstructure-sensitive data on mechanical behavior for training and testing of ML yield functions
+ - v4.2: Support of strain hardening in machine learning yield functions
+ - v4.3: Import of data on mechanical behavior following the [modular material data schema](https://github.com/Ronakshoghi/MetadataSchema.git) as basis for training of machine learning yield functions
  - v4.4: Support of data with crystallographic texture information
 
 ## License
