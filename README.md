@@ -123,3 +123,5 @@ the GNU General Public License
 The contents of examples, notebooks and documentation are published under the 
 Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
 ([CC BY-NC-SA 4.0 DEED](http://creativecommons.org/licenses/by-nc-sa/4.0/))
+
+&copy; 2025 by Authors, ICAMS/Ruhr University Bochum, Germany
