@@ -1,0 +1,32 @@
+This project makes use of the following third-party Python libraries:
+
+- NumPy  
+  License: BSD 3-Clause License  
+  URL: https://numpy.org  
+  License text: https://numpy.org/doc/stable/license.html
+
+- SciPy  
+  License: BSD License  
+  URL: https://scipy.org  
+  License text: https://scipy.org/scipylib/license.html
+
+- Matplotlib  
+  License: Matplotlib License (based on the Python Software Foundation license)  
+  URL: https://matplotlib.org  
+  License text: https://matplotlib.org/stable/users/project/license.html
+
+- scikit-learn  
+  License: BSD 3-Clause License  
+  URL: https://scikit-learn.org  
+  License text: https://scikit-learn.org/stable/about.html#license
+
+- ipympl ("Jupyter Matplotlib widget")  
+  License: BSD License  
+  URL: https://github.com/matplotlib/ipympl  
+  License text: https://github.com/matplotlib/ipympl/blob/main/LICENSE
+
+---
+
+These libraries are **not distributed with pyLabFEA**. They are installed
+separately via PyPI or conda and include their own license information.
+This file is provided for the convenience of users.
