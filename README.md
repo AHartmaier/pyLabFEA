@@ -26,7 +26,7 @@ constitutive modeling of materials makes it a useful research tool for data-orie
 
 ## Installation
 
-The preferred method to use Kanapy is within [Anaconda](https://www.anaconda.com) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), into which it can be easily installed from [conda-forge](https://conda-forge.org) by
+The preferred method to use pyLabFEA is within [Anaconda](https://www.anaconda.com) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html), into which it can be easily installed from [conda-forge](https://conda-forge.org) by
 
 ```
 $ conda install pylabfea -c conda-forge
