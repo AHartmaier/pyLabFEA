@@ -158,11 +158,14 @@ class Material(object):
         self.name = name
         self.num = num
         self.sy = None  # Elasticity will be considered unless sy is set
+        self.sy0 = None  # Initial value of yield strength, constant troughout
         self.ML_yf = False  # use conventional plasticity unless trained ML functions exists
         self.ML_grad = False  # use conventional gradient unless ML function exists
         self.dev_only = False  # use only deviatoric stresses in ML feature vector
         self.tresca = False  # use J2 or Hill equivalent stress unless defined otherwise
         self.barlat = False  # Use Barlat equiv. stress if parameters are given
+        self.lhs = None  # anisotropic tension-compression assymmetry according to Liu, Huang & Stout, 1997
+        self.drucker = None  # tension compression asymmetry according to Drucker-Prager
         self.msparam = None  # parameters for primary microstructure
         self.whdat = False
         self.txdat = False
@@ -634,14 +637,17 @@ class Material(object):
                 seq[i] = self.calc_seqB(sig[i, :])
         else:
             # calculate J2 or Hill equiv. stress
-            I1 = np.sum(sp, axis=1) / 3.  # hydrostatic stress as 1st invariant
             if self.sy is None:
                 # elastic material
                 hp = np.ones(3)
-                d0 = 0.
+                d0 = np.zeros(3)
             else:
                 hp = self.hill
-                d0 = self.drucker
+                if self.lhs:
+                    d0 = self.lhs
+                else:
+                    d0 = np.ones(3) * self.drucker
+            I1 = (sig[:, 0] * d0[0] + sig[:, 1] * d0[1] + sig[:, 2] * d0[2]) / 3.  # hydrostatic stress as 1st invariant
 
             # consider anisotropy in flow behavior in second invariant in Hill-type approach
             if self.hill_6p:
@@ -664,7 +670,7 @@ class Material(object):
                 I2 = 0.5 * (hp[0] * np.square(d12) + hp[1] * np.square(d23) + hp[2] * np.square(d31))
                 self.msg['equiv'] = '3-parameter Hill'
             # eqiv stress including hydrostatic stress for tension-compression asymmetry
-            seq = np.sqrt(I2) + d0 * I1  # generalized eqiv. stress
+            seq = np.sqrt(I2) + I1  # generalized eqiv. stress
         if N == 1:
             seq = seq[0]
         return seq
@@ -820,13 +826,16 @@ class Material(object):
             h0 = self.hill[0]
             h1 = self.hill[1]
             h2 = self.hill[2]
-            d3 = self.drucker / 3.
+            if self.lhs is not None:
+                d3 = self.lhs
+            else:
+                d3 = np.ones(3) * self.drucker / 3.
             if seq is None:
                 seq = self.calc_seq(sig)
             sdev = sig_dev(sig)
-            fgrad[:, 0] = ((h0 + h2) * sdev[:, 0] - h0 * sdev[:, 1] - h2 * sdev[:, 2]) / (2. * seq) + d3
-            fgrad[:, 1] = ((h1 + h0) * sdev[:, 1] - h0 * sdev[:, 0] - h1 * sdev[:, 2]) / (2. * seq) + d3
-            fgrad[:, 2] = ((h2 + h1) * sdev[:, 2] - h2 * sdev[:, 0] - h1 * sdev[:, 1]) / (2. * seq) + d3
+            fgrad[:, 0] = ((h0 + h2) * sdev[:, 0] - h0 * sdev[:, 1] - h2 * sdev[:, 2]) / (2. * seq) + d3[0]
+            fgrad[:, 1] = ((h1 + h0) * sdev[:, 1] - h0 * sdev[:, 0] - h1 * sdev[:, 2]) / (2. * seq) + d3[1]
+            fgrad[:, 2] = ((h2 + h1) * sdev[:, 2] - h2 * sdev[:, 0] - h1 * sdev[:, 1]) / (2. * seq) + d3[2]
             if self.sdim == 6:
                 h3 = self.hill[3]
                 h4 = self.hill[4]
@@ -2457,7 +2466,8 @@ class Material(object):
     def plasticity(self, sy=None, sdim=6, drucker=0., khard=0.,
                    tresca=False,
                    barlat=None, barlat_exp=None,
-                   hill=None, hill_3p=None, hill_6p=None, rv=None):
+                   hill=None, hill_3p=None, hill_6p=None, rv=None,
+                   lhs=None):
         """Define plastic material parameters; anisotropic Hill-like and Drucker-like
         behavior is supported
 
@@ -2490,6 +2500,7 @@ class Material(object):
             Dimensionality of stress tensor to be used for plasticity, must be either 3 
             (only principal stresses are considered) or 6 (full stress tensor is considered),
             (optional, default: 6)
+            :param lhs:
         """
         if sy < 0.:
             raise ValueError('Initial yield strength cannot be negative.')
@@ -2500,6 +2511,10 @@ class Material(object):
         self.sy = sy  # current yield strength (may be modified by texture)
         self.khard = khard  # strain hardening slope (d flow stress / d plastic strain)
         self.drucker = drucker  # Drucker-Prager parameter: weight of hydrostatic stress
+        # Parameters for anisotropic tension compression asymmmetry (Liu, Huang Stout, 1997)
+        self.lhs = None if lhs is None else np.array(lhs)
+        if lhs is not None and not np.isclose(drucker, 0.0):
+            raise ValueError('Parameters for Drucker-Prager and LHS plasticity models cannot be given at the same time.')
         if sdim != 3 and sdim != 6:
             raise ValueError('{} in plasticity: sdim must be either 3 or 6'.format(self.name))
         else:
@@ -2508,7 +2523,11 @@ class Material(object):
             self.sdim = sdim
         if hill is None and rv is None:
             hill = np.ones(self.sdim)
+            if lhs is not None:
+                raise ValueError('LHS parameters for anisotropic yield asymmetry provided, '
+                                 'but no anisotropy parameters for plastic yielding have been given.')
         elif hill is None:
+            # compute Hill parameters from rv values
             hill = np.ones(self.sdim)
             if len(rv) != self.sdim:
                 raise ValueError(f'plasticity: wrong dimension of yield stress ratios, must be {sdim}')
