@@ -30,12 +30,11 @@ dependencies = [
   "matplotlib",
   "scipy",
   "scikit-learn",
-  "pytest",
   "ipympl"
 ]
 
 [project.optional-dependencies]
-dev = ["pytest-runner", "black", "build", "twine"]
+dev = ["pytest", "black", "build", "twine"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
