@@ -78,12 +78,12 @@ path_m = 'models/'
 path_r = 'results/'
 file_m = path_m + 'abq_' + ml_name + '-svm.csv'
 if not os.path.isdir(path_m):
-    raise NotADirectoryError('Path '+path_m+' is not a directory.')
+    raise RunTimeError('Path '+path_m+' is not a directory.')
 if not os.path.exists(file_m):
-    raise FileNotFoundError('Model file '+file_m+' not found.')
+    raise RunTimeError('Model file '+file_m+' not found.')
 if not os.path.isdir(path_r):
     if os.path.exists(path_r):
-        raise NotADirectoryError('Path '+path_r+' exists, but is not a directory.')
+        raise RunTimeError('Path '+path_r+' exists, but is not a directory.')
     else:
         os.mkdir(path_r)
 
@@ -230,6 +230,6 @@ for jj in lc:
     with open(abq_job+'.inp','w') as f:
       f.writelines(data)
  
-    os.system('abq6142 job={0} user={1} cpus={2} int'.format(abq_job,abq_umat,ncpu)) 
+    os.system('abaqus job={0} user={1} cpus={2} int'.format(abq_job,abq_umat,ncpu)) 
     write_res()
     fclear()
