@@ -841,7 +841,11 @@ class Data(object):
                     hh = peeq[i]
                     if hh >= eps + depl:
                         sig.append(val['Stress'][i])
-                        sc_epl = max(0., 1. - epc_lc / hh)
+                        sc_epl = max(0., 1. - epc_lc / hh) # JS: removed shifting bracket after 1. # JS: Why?
+                        # print(f"shifting with {sc_epl}")
+                        # print(f"epc_lc: {epc_lc}")
+                        # print(f"PEEQ[i]: {hh}")
+                        # print(f"PEEQ['Strain_Plastic'][i]]: {FE.eps_eq(val['Strain_Plastic'][i])}")
                         epl.append(val['Strain_Plastic'][i] * sc_epl)
                         eps = hh
                         nv += 1
