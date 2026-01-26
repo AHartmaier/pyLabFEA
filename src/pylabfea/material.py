@@ -1841,12 +1841,12 @@ class Material(object):
                                                  Nseq=Nseq, Fe=Fe, Ce=Ce,
                                                  extend=extend)
         xt[:, 0:self.sdim] = sig_train
-        #            print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
+        # print('HERE: ', Ndinp, Nsdata, iwh, self.msparam[0]['plastic_strain'][0, :].shape)
         if self.whdat:
             # Add DOF for work Plastic Strain
-            if 'normalized_accumulated_strain' in self.msparam[0].keys():
+            if 'normalized_accumulated_strain' in ms_dict.keys():
                 reversal = True
-                if 'max_stress' not in self.msparam[0].keys():
+                if 'max_stress' not in ms_dict.keys():
                     raise ValueError("Data contains field for 'normalized_accumulated_strain' "
                                      "but not for 'max_stress'. Cannot continue.")
                 if self.Ndof < 2 * self.sdim + 2:
@@ -1857,12 +1857,12 @@ class Material(object):
             for i in range(Ndinp):
                 for j in range(Nsdata):
                     xt[i + j * Ndinp, self.ind_wh:self.ind_wh + self.sdim] = \
-                        self.msparam[0]['plastic_strain'][i, :]  # plastic strain from data is corrected for epc
+                        ms_dict['plastic_strain'][i, :]  # plastic strain from data is corrected for epc # JS: changed to take matdict instead of taking the self.msparam[0]
                     if reversal:
                         xt[i + j * Ndinp, self.ind_wh + self.sdim] = \
-                            self.msparam[0]['normalized_accumulated_strain'][i]
+                            ms_dict['normalized_accumulated_strain'][i]
                         xt[i + j * Ndinp, self.ind_wh + self.sdim + 1] = \
-                            self.msparam[0]['max_stress'][i]
+                            ms_dict['max_stress'][i]
         if self.txdat:
             # JS: Add DOF for Texture
             # print(f"Control Print: Nlc: {Nlc} - Ndinp: {Ndinp} - shape xt: {xt.shape} - idtx: {self.ind_tx}"
