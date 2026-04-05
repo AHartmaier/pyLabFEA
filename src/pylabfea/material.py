@@ -643,7 +643,7 @@ class Material(object):
                 d0 = np.zeros(3)
             else:
                 hp = self.hill
-                if self.lhs:
+                if self.lhs is not None:
                     d0 = self.lhs
                 else:
                     d0 = np.ones(3) * self.drucker
@@ -658,7 +658,7 @@ class Material(object):
                      6. * hp[3] * np.square(sig[:, 3]) + \
                      6. * hp[4] * np.square(sig[:, 4]) + \
                      6. * hp[5] * np.square(sig[:, 5])
-                I2 *= 0.5
+                I2 *= 0.5  # corresponds to 3 * second invariant of stress deviator
                 self.msg['equiv'] = '6-parameter Hill, full Voigt stress'
                 # print('Full stress', np.sqrt(I2))
             else:
@@ -699,6 +699,10 @@ class Material(object):
               np.abs(Stp1[1] - Stp2[0]) ** a + np.abs(Stp1[1] - Stp2[1]) ** a + np.abs(Stp1[1] - Stp2[2]) ** a + \
               np.abs(Stp1[2] - Stp2[0]) ** a + np.abs(Stp1[2] - Stp2[1]) ** a + np.abs(Stp1[2] - Stp2[2]) ** a
         seq = (0.25 * seq) ** (1. / a)
+        if self.lhs is not None:
+            d0 = self.lhs
+            I1 = (sv[0] * d0[0] + sv[1] * d0[1] + sv[2] * d0[2]) / 3.  # hydrostatic stress as 1st invariant
+            seq += I1
         return seq
 
     def calc_fgrad(self, sig, epl=None, seq=None,
@@ -827,7 +831,7 @@ class Material(object):
             h1 = self.hill[1]
             h2 = self.hill[2]
             if self.lhs is not None:
-                d3 = self.lhs
+                d3 = self.lhs / 3.
             else:
                 d3 = np.ones(3) * self.drucker / 3.
             if seq is None:
@@ -2523,9 +2527,6 @@ class Material(object):
             self.sdim = sdim
         if hill is None and rv is None:
             hill = np.ones(self.sdim)
-            if lhs is not None:
-                raise ValueError('LHS parameters for anisotropic yield asymmetry provided, '
-                                 'but no anisotropy parameters for plastic yielding have been given.')
         elif hill is None:
             # compute Hill parameters from rv values
             hill = np.ones(self.sdim)
@@ -2592,12 +2593,17 @@ class Material(object):
             self.barlat_exp = barlat_exp
         else:
             self.barlat = False
+        #if lhs is not None:
+        #    print(f'Using LHS parameters: {lhs}')
+        #    print(f'Using LHS with hill parameters: {hill}')
+        #    if self.barlat:
+        #        print(f'Using LHS with Barlat parameters: {barlat}')
 
     def from_data(self, param):
         """Define material properties from data sets generated in module `Data`:
         contains data on elastic and plastic behavior, including work hardening,
         for different crystallographic textures. Possible to extend to grain sizes,
-        grain shapes and porosities. Will invoke definition of elastic and plastic
+        grain shapes and porosities. Subroutine invokes definition of elastic and plastic
         parameters by calls to the methods `Material.elasticity` and `Material.plasticity`
         with the parameters provided in the data set.
         Also initializes current texture to first one in list and resets work hardening

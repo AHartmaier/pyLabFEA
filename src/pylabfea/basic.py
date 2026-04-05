@@ -27,6 +27,16 @@ yf_tolerance = 5.e-3
 """Tolerance: Plastic yielding if yield function > yf_tolerance"""
 
 
+def sig_hydro(sig):
+    if isinstance(sig, list):
+        sig = np.array(sig)
+    dim = len(sig.shape)  # determine whether sig is single stress tensor or array of tensors
+    if dim == 1:
+        return np.sum(sig[0:3]) / 3.
+    else:
+        return np.sum(sig[:, 0:3], axis=1) / 3.
+
+
 def sig_eq_j2(sig: np.ndarray):
     """Calculate sj2 equivalent stress from any stress tensor
 

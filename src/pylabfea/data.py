@@ -460,7 +460,7 @@ class Data(object):
             self.lc_data = source
             self.parse_data(epl_crit, epl_start, epl_max, depl)  # add data to mat_data
         elif isinstance(source, list) or isinstance(source, np.ndarray):
-            print('WARNING: This data type will be no longer supported.')
+            print('WARNING in initialization: Data of type list or ndarray will be no longer supported in future versions.')
             raw_data = np.array(source)
             self.convert_data(raw_data)  # add data to mat_data
         else:
@@ -526,7 +526,7 @@ class Data(object):
                 except KeyError:
                     print("No texture_index found in this Data_Base.json -> Assign default value of 0")
                 if not self.mat_data['tx_data']:
-                    warnings.warn(f"WARNING: tx_data was set to false. I will just include qualitative texture info.")
+                    warnings.warn(f"WARNING in 'read_data': tx_data was set to false. I will just include qualitative texture info.")
                 else:
                     if 'GSH' in self.mat_data['tx_descriptor']:
                         # JS: Use GSH coefficients
@@ -614,7 +614,7 @@ class Data(object):
                                              f"Data must be provided either im MPa or in GPa.")
                     else:
                         sfct = 1.
-                        print('Warning: No units for stresses are given. Assuming MPa.')
+                        print('Warning in "read_data": No units for stresses are given. Assuming MPa.')
                     Original_Stresses *= sfct
                     seq_full = FE.sig_eq_j2(Original_Stresses)
                     tens = [1]*6
