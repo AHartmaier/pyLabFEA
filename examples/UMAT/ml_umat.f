@@ -1,25 +1,25 @@
 c=========================================================================
 c User material definition based of ML flow rule
 c
-c Version 1.0.2 (2023-10-28)
+c Version 2.0.0
 c
-c Authors: Alexander Hartmaier, Anderson Wallace Paiva do Nascimento
+c Authors: Alexander Hartmaier, Anderson Wallace Paiva do Nascimento, Ronak Shoghi
 c Email: alexander.hartmaier@rub.de
 c ICAMS / Ruhr University Bochum, Germany
-c October 2023
+c September 2026
 c
 c distributed under GNU General Public License (GPLv3)
 c==========================================================================
-      subroutine umat(stress, statev, ddsdde, sse, spd, scd, rpl, 
-     &                ddsddt, drplde, drpldt, stran, dstran, 
-     &                time, dtime, temp, dtemp, 
-     &                predef, dpred, cmname, ndi, nshr, ntens, 
+      subroutine umat(stress, statev, ddsdde, sse, spd, scd, rpl,
+     &                ddsddt, drplde, drpldt, stran, dstran,
+     &                time, dtime, temp, dtemp,
+     &                predef, dpred, cmname, ndi, nshr, ntens,
      &                nstatv, props, nprops,
-     &                coords, drot, pnewdt, celent, 
+     &                coords, drot, pnewdt, celent,
      &                dfgrd0, dfgrd1, noel, npt,
      &                layer, kspt, kstep, kinc)
 c !========================================================================
-c ! variables available in UMAT: 
+c ! variables available in UMAT:
 c !------------------------------
 c ! stress, stran, statev, props
 c ! dstran, drot, dfgrd0, dfgrd1, time, dtime, temp, dtemp, predef, dpred
@@ -51,15 +51,21 @@ c ! 17: dev_only (-1: true, else false)
 C ! 18: Nset (number of sets, if multiple textures are cpntained in SVM)
 c ! 19..29: scale_text (scaling factors for texture parameters)
 c ! 30..nsv+29: dual coefficients
-c ! nsv+30..+5*nsv+29: support vectors (5-dimensional)
+c ! nsv+30..: support vectors (nsd-dimensional)
+c !
+c ! CPFEM-trained models may use stress plus plastic-strain features
+c ! (nsd=12). Feature slots above 12 are initialized to zero here.
+c ! That preserves CPFEM exports where the additional training columns are
+c ! constant zero, and avoids undefined values in the kernel evaluation.
 c !========================================================================
 c ! State variables
 c ! 1-6: plastic strain tensor (eplas, components 11, 22, 33, 12, 13, 23)
 c ! 7  : equivalent plastic strain (PEEQ)
 c ! 8  : numer of divisions of plastic strain increment
- 
+c ! 9-11: reserved for future CPFEM history features
+
       implicit none
- 
+
       character(len=80) :: cmname  ! User defined material name
       integer :: ndi               ! Number of direct stress components
       integer :: nshr              ! Number of engineering shear stress components
@@ -93,7 +99,7 @@ c ! 8  : numer of divisions of plastic strain increment
       real(8) :: eplas(ntens)      ! plastic strain
 
       real(8) :: statev(nstatv)    ! Solution dependent state variables
-      real(8) :: props(nprops)     ! User specified material constants 
+      real(8) :: props(nprops)     ! User specified material constants
       real(8) :: dfgrd0(3,3)       ! Deformation gradient at the beggining of the increment
       real(8) :: dfgrd1(3,3)       ! Deformation gradient at the end of the increment
       real(8) :: drot(3,3)         ! Rotation increment matrix
@@ -119,7 +125,7 @@ c ! 8  : numer of divisions of plastic strain increment
       real(8), dimension(ntens) :: flow, etot, detot, depl  ! Flow vector
 
       real(8), parameter :: tol = 1.e-2  ! Rel. tolerance for for yield function
-      
+
       integer :: i, j, k, niter, ind_sv0, ind_dc0  ! Auxiliar indices
       real(8), dimension(ntens, ntens) :: Ct, grad  ! Consistent tanget stiffness matrix
       real(8), dimension(ntens) :: deps, ddeps  ! strain increment outside yield locus, if load step is splitted
@@ -166,7 +172,7 @@ c ! 8  : numer of divisions of plastic strain increment
       detot(4) = dstran(6)
       detot(5) = dstran(5)
       detot(6) = dstran(4)
-      
+
       ! get accumulated plastic strain
       eplas(1:ndi) = statev(1:ndi)
       eplas(4) = statev(6)
@@ -181,7 +187,7 @@ c ! 8  : numer of divisions of plastic strain increment
       end if
 
       ! Elastic stiffness matrix is defined
-      ddsdde = 0.d0 
+      ddsdde = 0.d0
       ddsdde(1,1) = C11
       ddsdde(1,2) = C12
       ddsdde(2,1) = C12
@@ -206,7 +212,7 @@ c ! 8  : numer of divisions of plastic strain increment
         ddsdde(3,1) = C13
         ddsdde(2,3) = C23
         ddsdde(3,2) = C23
-      end if          
+      end if
 
       ! elastic predictor for stress is computed
       deps = detot
@@ -237,7 +243,7 @@ c ! 8  : numer of divisions of plastic strain increment
             call calcEqStress(sigma, sq2)  ! equiv stress at end of load step
             call calcEqStress(stress_fl, sq1) ! eqiv. stress on yield locus
             sc_elstep = (sq1-sq0)/(sq2-sq0) ! split load step in elastic regime
-            deps(1:ntens) = detot(1:ntens)*sc_elstep ! elastic strain increment   
+            deps(1:ntens) = detot(1:ntens)*sc_elstep ! elastic strain increment
             etot = etot + deps    ! add to accomplished strain
             deps = detot - deps   ! deduct from remaining strain
             stress = stress_fl    ! stress at start of remaining load increment (on yield locus)
@@ -283,7 +289,7 @@ c ! 8  : numer of divisions of plastic strain increment
             call calcEqStress(stress_fl-stress, sq1)
             call calcEqStress(dsig, sq2)
             depl = depl + flow
-            grad = grad + Ct/nsteps 
+            grad = grad + Ct/nsteps
         end do
         if (counter.gt.5) then
            print*,"***Warning: Bad convergence!", NOEL, NPT, counter
@@ -293,7 +299,7 @@ c ! 8  : numer of divisions of plastic strain increment
            end if
         end if
       end if ! active yielding
-  
+
       !update stress
       stress(1:ndi) = sigma(1:ndi)
       stress(4) = sigma(6)
@@ -315,7 +321,7 @@ c ! 8  : numer of divisions of plastic strain increment
       call calcEqStress(stress_fl, sq1) ! eqiv. stress on yield locus
       call calcEqStrain(depl, depql)  ! equiv. plastic strain increment
       spd = 0.5*depql*(sq1+sq2)
-      
+
       !update material Jacobian
       ddsdde(:,:) = ddsdde(:,:)*sc_elstep + grad(:,:)*(1.d0-sc_elstep)
       ! exchange column 6 and 4 and row 6 and 4 in stiffness tensor to meet Abaqus convention
@@ -325,17 +331,17 @@ c ! 8  : numer of divisions of plastic strain increment
       dfds = ddsdde(6,:)
       ddsdde(6,:) = ddsdde(4,:)
       ddsdde(4,:) = dfds
-      ! END main 
+      ! END main
 
       return
-      
+
       contains
- 
+
       subroutine index(i,j,k)
         ! Calculate index of support vector in prop array
         implicit none
         integer :: i,j,k
-  
+
         k = ind_sv0 + (i-1)*nsd + j-1
       end subroutine index
 
@@ -369,7 +375,7 @@ c ! 8  : numer of divisions of plastic strain increment
         real(8), dimension(ntens) :: sig
         real(8) :: seq, sdi, ssh
         real(8), dimension(ntens) :: sd
-  
+
         call calcDevStress(sig, sd)
         ssh = 0.d0
         do i=1,nshr
@@ -403,7 +409,7 @@ c ! 8  : numer of divisions of plastic strain increment
         real(8), dimension(nsd) :: x   ! scaled component of SVC feature vector
         real(8) :: kernelFunc, hh, hs, sv
         integer :: i, i_sv, k
-  
+
         hh = 0.
         do i=1,nsd
             call index(i_sv, i, k)
@@ -425,13 +431,14 @@ c ! 8  : numer of divisions of plastic strain increment
         fsvc = 0.
         do i=1, nsv
           ! Calculate feature vector from current stress and plastic strain
+          hs = 0.d0
           if (dev_only) then
             call calcDevStress(sigma, sig_dev)
             hs(1:6) = sig_dev(1:6)/scale_seq
           else
             hs(1:6) = sigma(1:6)/scale_seq
           end if
-          if (nsd>6) then
+          if (nsd.ge.12) then
             hs(7:12) = eplas(1:6)/scale_wh
           end if
           ! evaluate ML yield function, loop over all support vectors
@@ -443,7 +450,7 @@ c ! 8  : numer of divisions of plastic strain increment
 
       subroutine calcDK_DX(x, i_sv, dk_dx)
         ! Calculate the derivative of the kernel basis function
-        ! with respect to the SVC feature vector 
+        ! with respect to the SVC feature vector
         implicit none
         real(8), dimension(nsd) :: x, dk_dx
         real(8) :: kernelFunc
@@ -458,7 +465,7 @@ c ! 8  : numer of divisions of plastic strain increment
 
       subroutine calcGradFSVC(sigma, dfds)
         ! Calculate the gradient of the decision function w.r.t. the stress
-        ! strain hardening rate khard is also updated based on gradient 
+        ! strain hardening rate khard is also updated based on gradient
         ! of SVC w.r.t plastic strain components
         implicit none
         integer :: i
@@ -467,13 +474,14 @@ c ! 8  : numer of divisions of plastic strain increment
         real(8) :: hh
 
         ! calculate feature vector from current stress and plastic strain
+        hs = 0.d0
         if (dev_only) then
             call calcDevStress(sigma, sig_dev)
             hs(1:6) = sig_dev(1:6)/scale_seq
         else
             hs(1:6) = sigma(1:6)/scale_seq
         end if
-        if (nsd>6) then
+        if (nsd.ge.12) then
             hs(7:12) = eplas(1:6)/scale_wh
         end if
         hg = 0.
@@ -486,8 +494,8 @@ c ! 8  : numer of divisions of plastic strain increment
         ! if strain hardening components in support vectors
         ! get maximum strain hardening komponent as scalar hardening rate khard
         ! Warning: this is a simplification, better calculate (dPEEQ/deplas)^-1
-        if (nsd>6) then
-          do i=7,12
+        if (nsd.ge.12) then
+          do i=7,min(12,nsd)
             khard = khard - hg(i)*scale_seq/scale_wh
           end do
           if (khard < 0.d0) then
@@ -514,6 +522,10 @@ c ! 8  : numer of divisions of plastic strain increment
             end do
         end do
         hh = hh + khard
+        if (hh.le.1.d-30) then
+            flow = 0.d0
+            return
+        end if
         do i=1,ntens
             do j=1,ntens
                 l_dot = l_dot + dfsvc(i) * Cel(i,j) * deps(j) / hh
@@ -540,6 +552,10 @@ c ! 8  : numer of divisions of plastic strain increment
             end do
         end do
         hh = hh + khard
+        if (hh.le.1.d-30) then
+            Ct = Cel
+            return
+        end if
         do i=1,ntens
             do j=1,ntens
                 Ct(i,j) = Cel(i,j) - ca(i)*ca(j)/hh
@@ -552,7 +568,7 @@ c ! 8  : numer of divisions of plastic strain increment
         !yield function by proportional variations of the given stress sigma
         implicit none
         real(8), dimension(ntens) :: sigma, s_fl
-  
+
         integer :: i, j
         real(8) :: fsvc, error
         real(8) :: lowerBound, upperBound, increment
@@ -566,9 +582,9 @@ c ! 8  : numer of divisions of plastic strain increment
             return
         else
             !An initial broad interval is split into subintervals and a change
-            !in the sign of fsvc is sought. The first subinterval meeting this 
+            !in the sign of fsvc is sought. The first subinterval meeting this
             !criterion will be used for the bisection root finding procedure
-            !It is assumed that the fSVC value at sigma is positive turning negative at 
+            !It is assumed that the fSVC value at sigma is positive turning negative at
             !smaller stresses
             call calcEqStress(sigma, seq0)
             sunit = sigma/seq0
@@ -577,7 +593,7 @@ c ! 8  : numer of divisions of plastic strain increment
             lowerBound = 0.9*seq0
             b = lowerBound
             increment = lowerBound/split
-      
+
             s_fl = sunit*b
             call calcFSVC(s_fl, fsvcb)
             j = 1
@@ -586,7 +602,7 @@ c ! 8  : numer of divisions of plastic strain increment
                 s_fl = sunit*b
                 call calcFSVC(s_fl, fsvcb)
                 j = j + 1
-            end do 
+            end do
             ! b is now the factor for the largest stress with negative yield function
             ! now look for smallest upper bracket a
             increment = (a-b)/split
@@ -596,7 +612,7 @@ c ! 8  : numer of divisions of plastic strain increment
                 s_fl = sunit*a
                 call calcFSVC(s_fl, fsvca)
                 j = j + 1
-            end do 
+            end do
             a = a + increment
 
             i = 1
@@ -633,7 +649,7 @@ c ! 8  : numer of divisions of plastic strain increment
             if (abs(fsvcb).lt.error) then
                 s_fl = sunit*b
             end if
-        end if 
+        end if
       end subroutine findRoot
 
       end subroutine umat
