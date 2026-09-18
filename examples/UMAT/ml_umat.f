@@ -1,12 +1,12 @@
 c=========================================================================
 c User material definition based of ML flow rule
 c
-c Version 2.0.9
+c Version 1.0.2 (2023-10-28)
 c
-c Authors: Alexander Hartmaier, Anderson Wallace Paiva do Nascimento, Ronak Shoghi
+c Authors: Alexander Hartmaier, Anderson Wallace Paiva do Nascimento
 c Email: alexander.hartmaier@rub.de
 c ICAMS / Ruhr University Bochum, Germany
-c September 2026
+c October 2023
 c
 c distributed under GNU General Public License (GPLv3)
 c==========================================================================
@@ -51,18 +51,12 @@ c ! 17: dev_only (-1: true, else false)
 C ! 18: Nset (number of sets, if multiple textures are cpntained in SVM)
 c ! 19..29: scale_text (scaling factors for texture parameters)
 c ! 30..nsv+29: dual coefficients
-c ! nsv+30..: support vectors (nsd-dimensional)
-c !
-c ! CPFEM-trained models may use stress plus plastic-strain features
-c ! (nsd=12). Feature slots above 12 are initialized to zero here.
-c ! That preserves CPFEM exports where the additional training columns are
-c ! constant zero, and avoids undefined values in the kernel evaluation.
+c ! nsv+30..+5*nsv+29: support vectors (5-dimensional)
 c !========================================================================
 c ! State variables
 c ! 1-6: plastic strain tensor (eplas, components 11, 22, 33, 12, 13, 23)
 c ! 7  : equivalent plastic strain (PEEQ)
 c ! 8  : numer of divisions of plastic strain increment
-c ! 9-11: reserved for future CPFEM history features
  
       implicit none
  
@@ -431,14 +425,13 @@ c ! 9-11: reserved for future CPFEM history features
         fsvc = 0.
         do i=1, nsv
           ! Calculate feature vector from current stress and plastic strain
-          hs = 0.d0
           if (dev_only) then
             call calcDevStress(sigma, sig_dev)
             hs(1:6) = sig_dev(1:6)/scale_seq
           else
             hs(1:6) = sigma(1:6)/scale_seq
           end if
-          if (nsd.ge.12) then
+          if (nsd>6) then
             hs(7:12) = eplas(1:6)/scale_wh
           end if
           ! evaluate ML yield function, loop over all support vectors
@@ -474,14 +467,13 @@ c ! 9-11: reserved for future CPFEM history features
         real(8) :: hh
 
         ! calculate feature vector from current stress and plastic strain
-        hs = 0.d0
         if (dev_only) then
             call calcDevStress(sigma, sig_dev)
             hs(1:6) = sig_dev(1:6)/scale_seq
         else
             hs(1:6) = sigma(1:6)/scale_seq
         end if
-        if (nsd.ge.12) then
+        if (nsd>6) then
             hs(7:12) = eplas(1:6)/scale_wh
         end if
         hg = 0.
@@ -494,8 +486,8 @@ c ! 9-11: reserved for future CPFEM history features
         ! if strain hardening components in support vectors
         ! get maximum strain hardening komponent as scalar hardening rate khard
         ! Warning: this is a simplification, better calculate (dPEEQ/deplas)^-1
-        if (nsd.ge.12) then
-          do i=7,min(12,nsd)
+        if (nsd>6) then
+          do i=7,12
             khard = khard - hg(i)*scale_seq/scale_wh
           end do
           if (khard < 0.d0) then
@@ -522,10 +514,6 @@ c ! 9-11: reserved for future CPFEM history features
             end do
         end do
         hh = hh + khard
-        if (hh.le.1.d-30) then
-            flow = 0.d0
-            return
-        end if
         do i=1,ntens
             do j=1,ntens
                 l_dot = l_dot + dfsvc(i) * Cel(i,j) * deps(j) / hh
@@ -552,10 +540,6 @@ c ! 9-11: reserved for future CPFEM history features
             end do
         end do
         hh = hh + khard
-        if (hh.le.1.d-30) then
-            Ct = Cel
-            return
-        end if
         do i=1,ntens
             do j=1,ntens
                 Ct(i,j) = Cel(i,j) - ca(i)*ca(j)/hh

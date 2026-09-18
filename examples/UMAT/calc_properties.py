@@ -16,7 +16,6 @@ October 2022
 import numpy as np
 import os
 import json
-import sys
 from datetime import date
 from odbAccess import *
 from abaqusConstants import *
@@ -71,10 +70,7 @@ def write_res():
     return None
 
 # Initialization
-if len(sys.argv) > 1:
-    ml_name = str(sys.argv[1])
-else:
-    ml_name = 'ML-CPFEM-Random-Texture-cpfem'
+ml_name = str(sys.argv[1])
 print('Processing material data defined for ',ml_name)
 
 # set paths and check for existence
@@ -119,7 +115,7 @@ Ndata = param[i]
 ncpu=1
 fac = 0.01*0.04 # scaling factor for boundary conditions (strain * side length)
 ang = np.radians(np.linspace(0,90,num=3))  # list of angles for load cases
-abq_job = 'femBlock_cpfem'  # Abaqus .inp file
+abq_job = 'femBlock'  # Abaqus .inp file
 abq_umat = 'ml_umat' # UMAT
 f_name = 'abq_'+ml_name+'-res.csv'  # result file
 meta_fname = 'abq_'+ml_name+'-res_meta.json'  # metadata file

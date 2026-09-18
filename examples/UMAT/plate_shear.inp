@@ -399,8 +399,8 @@
 *Material, name=Material-ML
 *Depvar
      20,
-*User Material, constants=33520
-*include, input=models/abq_ML-CPFEM-Random-Texture-cpfem-svm.csv
+*User Material, constants=1816
+*include, input=models/abq_ML-J2_C15_G25-svm.csv
 ** 
 ** BOUNDARY CONDITIONS
 ** 
