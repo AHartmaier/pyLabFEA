@@ -1,0 +1,47 @@
+{
+  "Info": {
+    "Description": "Mechanical data from ML UMAT", 
+    "System": {
+      "release": "6.8.0-138-generic", 
+      "sysname": "Linux", 
+      "machine": "x86_64", 
+      "version": "#138-Ubuntu SMP PREEMPT_DYNAMIC Fri Jul 31 22:41:49 UTC 2026", 
+      "nodename": "michigan"
+    }, 
+    "Institution": "ICAMS, Ruhr University Bochum, Germany", 
+    "Date": "2026-09-18", 
+    "Owner": "shoghrm7", 
+    "Method": "FEA"
+  }, 
+  "Model": {
+    "Input": "femBlock_cpfem", 
+    "Path": "/home/users/shoghrm7/pyLabFEA/examples/UMAT", 
+    "Version": "6.14-2", 
+    "Material": "ml_umat_cpfem", 
+    "Creator": "Abaqus"
+  }, 
+  "Data": {
+    "Header": 0, 
+    "Separator": ";", 
+    "File": "abq_ML-CPFEM-Random-Texture-cpfem-res.csv", 
+    "Format": "S11;S22;S33;S23;S13;S12;E11;E22;E33;E23;E13;E12;Ep11;Ep22;Ep33;Ep23;Ep13;Ep12;PEEQ;MISES;ux;uy;uz", 
+    "Units": {
+      "Disp": "mm", 
+      "Strain": "None", 
+      "Stress": "MPa", 
+      "Force": "N"
+    }, 
+    "Path": "results/", 
+    "Type": "CSV", 
+    "Class": "Flow_Stress"
+  }, 
+  "Parameters": {
+    "Meta": "ML-CPFEM-Random-Texture-cpfem-svm_meta.json", 
+    "Repository": "https://github.com/AHartmaier/pyLabFEA.git", 
+    "Creator": "pylabfea", 
+    "Version": "3.4", 
+    "File": "ML-CPFEM-Random-Texture-cpfem-svm.csv", 
+    "Path": "models/", 
+    "Type": "CSV"
+  }
+}
